@@ -1,0 +1,15 @@
+# Thư mục này chứa ảnh PNG export từ các file .drawio
+
+# Cách export:
+# 1. Mở file .drawio bằng draw.io
+# 2. File > Export As > PNG (scale 2x, border 10px)
+# 3. Lưu vào đây với tên kebab-case
+
+# Danh sách ảnh cần tạo:
+# - context.png                   (từ 01_Context.drawio)
+# - architecture-overview.png     (từ 02_Architecture.drawio)
+# - usecase-overview.png          (từ 03_UseCase.drawio)
+# - activity-[tên].png            (từ 04_Activity.drawio)
+# - sequence-[tên].png            (từ 05_Sequence.drawio)
+# - erd-logic.png                 (từ 06_ERD.drawio)
+# - deployment.png                (từ 07_Deployment.drawio)
