@@ -1,33 +1,33 @@
-# Tài liệu Phân tích & Thiết kế
+# Tài liệu phân tích & thiết kế
 
-> Đây là cổng mục lục dẫn đến toàn bộ 12 tài liệu phân tích & thiết kế của đồ án.  
-> Mỗi tài liệu ra đời từ tài liệu trước — không có tài liệu nào là độc lập.
+Thư mục này chứa toàn bộ tài liệu phân tích và thiết kế của đồ án, được viết theo thứ tự từ trên xuống — mỗi tài liệu làm căn cứ cho tài liệu tiếp theo. Cách tổ chức này giúp mình (và sau này là hội đồng) có thể truy ngược lại lý do của bất kỳ quyết định nào trong code.
 
 ---
 
 ## Tiến độ
 
-| # | Tài liệu | Tầng | Trạng thái |
-|---|---|---|---|
-| 01 | [01_Research.md](01_Research.md) | Business | ✅ Hoàn thành |
-| 02 | [02_Requirement.md](02_Requirement.md) | Business | ⬜ Chưa bắt đầu |
-| 03 | [03_Functional_Analysis.md](03_Functional_Analysis.md) | Business | ⬜ Chưa bắt đầu |
-| 04 | [04_System_Architecture.md](04_System_Architecture.md) | Design | ⬜ Chưa bắt đầu |
-| 05 | [05_Domain_Model.md](05_Domain_Model.md) | Design | ⬜ Chưa bắt đầu |
-| 06 | [06_Database_Design.md](06_Database_Design.md) | Design | ⬜ Chưa bắt đầu |
-| 07 | [07_API_Design.md](07_API_Design.md) | Design | ⬜ Chưa bắt đầu |
-| 08 | [08_UI_UX_Design.md](08_UI_UX_Design.md) | Design | ⬜ Chưa bắt đầu |
-| 09 | [09_Implementation.md](09_Implementation.md) | Development | ⬜ Chưa bắt đầu |
-| 10 | [10_Testing.md](10_Testing.md) | Development | ⬜ Chưa bắt đầu |
-| 11 | [11_Deployment.md](11_Deployment.md) | Development | ⬜ Chưa bắt đầu |
-| 12 | [12_Report_Notes.md](12_Report_Notes.md) | Development | ⬜ Chưa bắt đầu |
+| File | Nội dung | Trạng thái |
+|---|---|---|
+| [01_Research.md](01_Research.md) | Khảo sát bài toán — tại sao cần làm đề tài này | ✅ Xong |
+| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng và phi chức năng | ⬜ Chưa làm |
+| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User story, use case, bảng tổng hợp chức năng | ⬜ Chưa làm |
+| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, lý do chọn công nghệ | ⬜ Chưa làm |
+| [05_Domain_Model.md](05_Domain_Model.md) | Các khái niệm nghiệp vụ và quan hệ giữa chúng | ⬜ Chưa làm |
+| [06_Database_Design.md](06_Database_Design.md) | Thiết kế database, giải thích từng bảng/cột | ⬜ Chưa làm |
+| [07_API_Design.md](07_API_Design.md) | Danh sách API, quy tắc nghiệp vụ từng endpoint | ⬜ Chưa làm |
+| [08_UI_UX_Design.md](08_UI_UX_Design.md) | Sitemap, user flow, link Figma | ⬜ Chưa làm |
+| [09_Implementation.md](09_Implementation.md) | Ghi chú kỹ thuật trong quá trình code | ⬜ Chưa làm |
+| [10_Testing.md](10_Testing.md) | Kết quả kiểm thử | ⬜ Chưa làm |
+| [11_Deployment.md](11_Deployment.md) | Cách deploy, môi trường | ⬜ Chưa làm |
+| [12_Report_Notes.md](12_Report_Notes.md) | Tổng hợp số liệu, ảnh dùng khi viết báo cáo | ⬜ Chưa làm |
 
-> **Cập nhật ô trạng thái** khi hoàn thành mỗi tài liệu:  
-> ⬜ Chưa bắt đầu → 🔄 Đang làm → ✅ Hoàn thành
+Khi bắt đầu một file thì đổi sang 🔄, xong thì đổi sang ✅.
 
 ---
 
-## Chuỗi phụ thuộc
+## Thứ tự phụ thuộc
+
+Sơ đồ dưới cho thấy file nào cần xong trước mới làm được file nào:
 
 ```mermaid
 graph TD
@@ -45,105 +45,38 @@ graph TD
     K --> L[12_Report_Notes]
 ```
 
-> ⚠️ **Quy tắc vàng:** Không bắt đầu tài liệu tiếp theo khi tài liệu hiện tại chưa đủ nội dung để làm căn cứ.  
-> Không mở VS Code code backend khi `07_API_Design.md` chưa có nội dung.
+Nguyên tắc chung: **không code khi chưa xong thiết kế**. Cụ thể là không mở VS Code để viết backend khi `07_API_Design.md` còn trống.
 
 ---
 
-## Tóm tắt từng tài liệu
+## Tóm tắt nội dung từng file
 
-### 📘 Tầng 1 — Business (Phân tích nghiệp vụ)
+**01_Research** — Phần này trả lời câu hỏi: tại sao cần làm đề tài này? Ai sẽ dùng? Vấn đề thực tế là gì? Đây là tài liệu đầu tiên và là nền tảng cho mọi thứ sau.
 
-**[01_Research.md](01_Research.md)** — Xác định bài toán  
-Bối cảnh, giải pháp hiện có, người dùng mục tiêu, personas, pain points, problem statement, objectives, scope.  
-→ *Làm căn cứ cho: 02_Requirement.md*
+**02_Requirement** — Chuyển những vấn đề ở file 01 thành danh sách yêu cầu cụ thể, đặt ID để tiện tham chiếu sau này (ví dụ FR-TASK-01). Cả yêu cầu chức năng lẫn phi chức năng.
 
-**[02_Requirement.md](02_Requirement.md)** — Yêu cầu hệ thống  
-Functional Requirements (FR-AUTH-xx, FR-TASK-xx...), Non-Functional Requirements, Business Rules tổng quan.  
-→ *Làm căn cứ cho: 03_Functional_Analysis.md*
+**03_Functional_Analysis** — Viết lại yêu cầu dưới dạng user story và use case. Có thêm bảng tổng hợp để kiểm tra không bỏ sót chức năng nào khi code.
 
-**[03_Functional_Analysis.md](03_Functional_Analysis.md)** — Phân tích chức năng  
-User Stories (~30), Use Case Diagram + chi tiết, Feature Matrix (bảng chéo Module × Chức năng).  
-→ *Làm căn cứ cho: 04_System_Architecture.md, 05_Domain_Model.md*
+**04_System_Architecture** — Mô tả hệ thống trông như thế nào ở tầng cao: các thành phần gồm những gì, giao tiếp ra sao. Có phần giải thích lý do chọn PostgreSQL thay vì MongoDB, tại sao dùng NestJS... để trả lời câu hỏi của hội đồng.
 
----
+**05_Domain_Model** — Trước khi thiết kế database, cần xác định rõ các khái niệm nghiệp vụ. Task khác Learning ở điểm nào? CalendarEvent là gì? File này định nghĩa rõ để tránh nhầm lẫn về sau.
 
-### 📗 Tầng 2 — Design (Thiết kế hệ thống)
+**06_Database_Design** — Từ domain model ở file 05, ánh xạ sang các bảng database thực tế. Có giải thích từng cột để sau này viết báo cáo khỏi bị hỏi "cột này để làm gì".
 
-**[04_System_Architecture.md](04_System_Architecture.md)** — Kiến trúc hệ thống  
-Context Diagram, High-Level Architecture, Module List & Dependency, Decision Log (vì sao chọn PostgreSQL, NestJS...).  
-→ *Làm căn cứ cho: 06_Database_Design.md*
+**07_API_Design** — Danh sách endpoint, cấu trúc request/response, và quan trọng hơn là các quy tắc nghiệp vụ của từng API — những thứ mà Swagger không diễn đạt được.
 
-**[05_Domain_Model.md](05_Domain_Model.md)** — Mô hình nghiệp vụ  
-Domain Entities & quan hệ (thuần nghiệp vụ, chưa nghĩ tới database), Domain Glossary.  
-→ *Làm căn cứ cho: 06_Database_Design.md*
+**08_UI_UX_Design** — Sitemap, luồng người dùng, link Figma. File này chỉ lưu link, không commit file Figma.
 
-**[06_Database_Design.md](06_Database_Design.md)** — Thiết kế cơ sở dữ liệu  
-ERD mức Logic → ERD mức Physical (từ Prisma), Data Dictionary (từng field, kiểu, ràng buộc, ý nghĩa).  
-→ *Làm căn cứ cho: 07_API_Design.md*
-
-**[07_API_Design.md](07_API_Design.md)** — Thiết kế API  
-Danh sách endpoint theo module, Business Rules chi tiết từng API, quy trình API → DTO → Swagger.  
-→ *Làm căn cứ cho: 08_UI_UX_Design.md, 09_Implementation.md*
-
-**[08_UI_UX_Design.md](08_UI_UX_Design.md)** — Thiết kế giao diện  
-Sitemap, User Flow, Wireframe → Prototype (link Figma), Design System, Component List, Responsive notes.  
-→ *Làm căn cứ cho: 09_Implementation.md*
+**09–12** — Viết trong và sau khi code xong.
 
 ---
 
-### 📙 Tầng 3 — Development (Xây dựng & triển khai)
+## Một số quy tắc khi viết
 
-**[09_Implementation.md](09_Implementation.md)** — Ghi chú triển khai  
-Folder Structure, Module Structure, Repository Pattern, DTO, Validation, Exception handling, Logging.
-
-**[10_Testing.md](10_Testing.md)** — Kiểm thử  
-Unit Test, Integration Test, Manual Test, Acceptance Test, Test Cases.
-
-**[11_Deployment.md](11_Deployment.md)** — Triển khai  
-Môi trường, CI/CD (nếu có), hướng dẫn deploy lên server/cloud.
-
-**[12_Report_Notes.md](12_Report_Notes.md)** — Ghi chú cho báo cáo  
-Hình ảnh, số liệu, kết quả cần dùng khi viết báo cáo chính thức.
+- Mỗi file bắt đầu bằng một dòng ghi rõ file này phụ thuộc vào file nào và làm căn cứ cho file nào. Dễ truy ngược.
+- Phần nội dung mà mình chưa chắc thì để comment `<!-- TODO -->` thay vì bỏ trống hoặc điền đại.
+- Diagram vẽ bằng draw.io, export ra PNG rồi nhúng vào — xem hướng dẫn ở [diagrams/README.md](../diagrams/README.md).
 
 ---
 
-## Quy tắc viết tài liệu
-
-### Header chuẩn (đầu mỗi file)
-```markdown
-> **Tầng:** Business / Design / Development  
-> **Phụ thuộc vào:** [XX_TenTaiLieu.md](XX_TenTaiLieu.md) — [lý do]  
-> **Tài liệu tiếp theo:** [YY_TenTaiLieu.md](YY_TenTaiLieu.md)  
-> **Trạng thái:** 🔄 Đang viết / ✅ Hoàn thành  
-> **Cập nhật lần cuối:** YYYY-MM-DD
-```
-
-### Footer chuẩn (cuối mỗi file)
-```markdown
----
-*Tài liệu tiếp theo trong chuỗi: [YY_TenTaiLieu.md](YY_TenTaiLieu.md)*  
-*Quay lại mục lục: [docs/README.md](README.md)*
-```
-
-### Cách tham chiếu requirement trong code
-```typescript
-// REF: FR-TASK-01 (docs/02_Requirement.md#fr-task-01)
-// Validate: dueDate không được nhỏ hơn ngày tạo
-```
-
----
-
-## Diagrams
-
-File draw.io được lưu trong `../diagrams/`. Khi viết tài liệu, nhúng ảnh đã export:
-
-```markdown
-![Tên sơ đồ](../diagrams/exports/ten-so-do.png)
-```
-
-*(Xem [diagrams/README.md](../diagrams/README.md) để biết cách export từ draw.io)*
-
----
-
-*Quay lại: [README.md gốc project](../README.md)*
+*Quay lại: [README.md](../README.md)*
