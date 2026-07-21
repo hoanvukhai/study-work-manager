@@ -1,8 +1,8 @@
 # study-work-manager
 
-Đây là đồ án tốt nghiệp của mình — xây dựng một ứng dụng web giúp quản lý công việc và việc học trong cùng một chỗ.
+Đồ án tốt nghiệp — xây dựng ứng dụng web giúp quản lý công việc và việc học trong cùng một chỗ.
 
-Ý tưởng xuất phát từ vấn đề thực tế: mình đang phải dùng Google Calendar để ghi lịch, Google Drive để lưu tài liệu, rồi lại mở thêm Trello để theo dõi task — nhưng tất cả thông tin liên quan đến một đầu việc cứ nằm rải rác ở các nơi khác nhau, rất bất tiện. Ứng dụng này muốn gộp **Task, Learning, Calendar và Reference** vào một hệ thống duy nhất, phục vụ cho sinh viên, freelancer hoặc người tự học.
+Ý tưởng xuất phát từ vấn đề thực tế: phải dùng Google Calendar để ghi lịch, Google Drive để lưu tài liệu, rồi lại mở thêm Trello để theo dõi task — tất cả thông tin liên quan đến một đầu việc cứ nằm rải rác ở các nơi khác nhau. Ứng dụng này gộp **Task, Learning, Calendar và Reference** vào một hệ thống duy nhất, phục vụ cho sinh viên, freelancer hoặc người tự học.
 
 ---
 
@@ -38,7 +38,7 @@ Tài liệu phân tích và thiết kế nằm trong `docs/` — xem [docs/READM
 
 ## Thứ tự phát triển
 
-Mình làm theo thứ tự cố định: phân tích xong mới thiết kế, thiết kế xong mới code. Không nhảy bước.
+Làm theo thứ tự cố định: phân tích xong mới thiết kế, thiết kế xong mới code. Không nhảy bước.
 
 ```
 Phân tích (Research → Requirement → Use Case)
@@ -50,7 +50,7 @@ Code (Backend → Frontend)
 Kiểm thử → Deploy → Viết báo cáo
 ```
 
-Kế hoạch khoảng 22 tuần — điều chỉnh tùy theo lịch bảo vệ thực tế.
+Kế hoạch khoảng 22 tuần, điều chỉnh tùy theo lịch bảo vệ thực tế.
 
 ---
 
@@ -70,7 +70,7 @@ cd frontend && npm install && npm run dev
 
 ## Commit convention
 
-Mình dùng prefix để dễ tìm lại lịch sử:
+Dùng prefix để dễ tìm lại lịch sử:
 
 ```
 [docs]    — viết hoặc sửa tài liệu

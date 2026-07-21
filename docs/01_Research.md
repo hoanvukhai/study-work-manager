@@ -2,7 +2,7 @@
 
 > Phụ thuộc vào: *(tài liệu đầu tiên, không phụ thuộc file nào)*  
 > Làm căn cứ cho: [02_Requirement.md](02_Requirement.md)  
-> Trạng thái: 🔄 Đang viết
+> Trạng thái: Đang viết
 
 ---
 
