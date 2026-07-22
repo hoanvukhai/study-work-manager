@@ -1,89 +1,72 @@
 # study-work-manager
 
-Đồ án tốt nghiệp — xây dựng ứng dụng web giúp quản lý công việc và việc học trong cùng một chỗ.
-
-Ý tưởng xuất phát từ vấn đề thực tế: phải dùng Google Calendar để ghi lịch, Google Drive để lưu tài liệu, rồi lại mở thêm Trello để theo dõi task — tất cả thông tin liên quan đến một đầu việc cứ nằm rải rác ở các nơi khác nhau. Ứng dụng này gộp **Task, Learning, Calendar và Reference** vào một hệ thống duy nhất, phục vụ cho sinh viên, freelancer hoặc người tự học.
+Đồ án tốt nghiệp — Xây dựng ứng dụng web quản lý học tập và công việc cá nhân (Personal Study & Work Management System).
 
 ---
 
-## Tech Stack
+## 1. Giới thiệu
 
-| | |
-|---|---|
-| Frontend | Next.js 14 + TypeScript + TailwindCSS |
-| Backend | NestJS + TypeScript |
-| Database | PostgreSQL + Prisma ORM |
-| Auth | JWT (Access Token + Refresh Token) |
+Ứng dụng giúp người dùng cá nhân (sinh viên, freelancer, người tự học) quản lý tập trung toàn bộ hoạt động học tập và công việc trên cùng một nền tảng:
+
+- **Task**: Quản lý các đầu việc cần thực hiện, theo dõi trạng thái và thời hạn (deadline).
+- **Learning**: Theo dõi các nội dung học tập, môn học, khóa học với tiến độ riêng.
+- **Calendar**: Lịch trình cá nhân, tự động đồng bộ thời hạn từ Task và Learning.
+- **Reference**: Lưu trữ tài liệu tham khảo, liên kết trực tiếp với từng Task hoặc Learning cụ thể.
+- **Dashboard**: Màn hình tổng quan tập trung thông tin trong ngày.
 
 ---
 
-## Cấu trúc repo
+## 2. Công nghệ sử dụng (Tech Stack)
 
-```
+- **Frontend**: Next.js (App Router), TypeScript, TailwindCSS
+- **Backend**: NestJS, TypeScript
+- **Database & ORM**: PostgreSQL, Prisma ORM
+- **Xác thực**: JWT (Access Token & Refresh Token)
+- **Công cụ quản lý & thiết kế**: Obsidian (Markdown), draw.io, Figma
+
+---
+
+## 3. Cấu trúc thư mục
+
+```text
 study-work-manager/
+├── README.md              # Giới thiệu tổng quan & Hướng dẫn chạy
+├── .gitignore
 │
-├── docs/          # Tài liệu phân tích & thiết kế (12 file)
-├── diagrams/      # Sơ đồ vẽ bằng draw.io
-├── design/        # Link Figma (không commit file .fig)
-├── report/        # Bản nháp báo cáo tốt nghiệp
-├── meeting/       # Biên bản họp với GVHD
+├── docs/                  # Tài liệu phân tích & thiết kế (12 tài liệu)
+│   ├── README.md          # Mục lục tài liệu & Bảng tiến độ
+│   └── Workflow.md        # Quy tắc commit, Git Tag & Quy trình làm việc
 │
-├── backend/       # NestJS — sẽ khởi tạo sau khi xong thiết kế
-└── frontend/      # Next.js — tương tự
+├── diagrams/              # File sơ đồ hệ thống (.drawio)
+├── design/                # Link thiết kế giao diện Figma
+├── report/                # Bản nháp báo cáo tốt nghiệp
+├── meeting/               # Biên bản các buổi họp với GVHD
+│
+├── backend/               # Mã nguồn Backend (NestJS)
+└── frontend/              # Mã nguồn Frontend (Next.js)
 ```
-
-Tài liệu phân tích và thiết kế nằm trong `docs/` — xem [docs/README.md](docs/README.md) để biết trạng thái từng phần.
 
 ---
 
-## Thứ tự phát triển
+## 4. Tài liệu & Quy trình
 
-Làm theo thứ tự cố định: phân tích xong mới thiết kế, thiết kế xong mới code. Không nhảy bước.
-
-```
-Phân tích (Research → Requirement → Use Case)
-    ↓
-Thiết kế (Kiến trúc → Database → API → UI)
-    ↓
-Code (Backend → Frontend)
-    ↓
-Kiểm thử → Deploy → Viết báo cáo
-```
-
-Kế hoạch khoảng 22 tuần, điều chỉnh tùy theo lịch bảo vệ thực tế.
+- Chi tiết 12 tài liệu phân tích thiết kế và tiến độ thực hiện: Xem tại [docs/README.md](docs/README.md).
+- Quy tắc commit, quản lý phiên bản (Git Tag) và quy trình phát triển: Xem tại [docs/Workflow.md](docs/Workflow.md).
 
 ---
 
-## Cách chạy
+## 5. Hướng dẫn chạy ứng dụng
 
-*(Cập nhật sau khi khởi tạo backend và frontend)*
+*(Sẽ được cập nhật chi tiết sau khi khởi tạo dự án backend và frontend)*
 
 ```bash
-# Backend
-cd backend && npm install && npm run start:dev
+# Chạy Backend (NestJS)
+cd backend
+npm install
+npm run start:dev
 
-# Frontend
-cd frontend && npm install && npm run dev
+# Chạy Frontend (Next.js)
+cd frontend
+npm install
+npm run dev
 ```
-
----
-
-## Commit convention
-
-Dùng prefix để dễ tìm lại lịch sử:
-
-```
-[docs]    — viết hoặc sửa tài liệu
-[feat]    — thêm tính năng mới
-[fix]     — sửa bug
-[diagram] — cập nhật sơ đồ draw.io
-[report]  — viết báo cáo
-[meeting] — thêm biên bản họp
-[chore]   — cấu hình, setup
-```
-
----
-
-<!-- BẠN ĐIỀN: tên trường, tên sinh viên, GVHD, năm học -->
-*Đồ án tốt nghiệp — [Trường] — [Năm học]*  
-*Sinh viên: [Tên bạn] · GVHD: [Tên thầy/cô]*

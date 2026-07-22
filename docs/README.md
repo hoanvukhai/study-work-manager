@@ -1,33 +1,33 @@
-# Tài liệu phân tích & thiết kế
+# Tài liệu Phân tích & Thiết kế
 
-Thư mục này chứa toàn bộ tài liệu phân tích và thiết kế của đồ án, được viết theo thứ tự từ trên xuống — mỗi tài liệu làm căn cứ cho tài liệu tiếp theo. Cách tổ chức này giúp có thể truy ngược lại lý do của bất kỳ quyết định nào trong code.
+Thư mục này chứa toàn bộ 12 tài liệu phân tích và thiết kế của đồ án. Các tài liệu được xây dựng theo chuỗi phụ thuộc nối tiếp nhau — mỗi tài liệu ra đời làm căn cứ cho tài liệu tiếp theo.
+
+Quy định về quy tắc commit, đặt tên file và quy trình làm việc chung: Xem tại [Workflow.md](Workflow.md).
 
 ---
 
-## Tiến độ
+## 1. Bảng tiến độ tài liệu
 
-| File | Nội dung | Trạng thái |
+| File | Nội dung chính | Trạng thái |
 |---|---|---|
-| [01_Research.md](01_Research.md) | Khảo sát bài toán — tại sao cần làm đề tài này | Đang làm |
-| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng và phi chức năng | Chưa làm |
-| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User story, use case, bảng tổng hợp chức năng | Chưa làm |
-| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, lý do chọn công nghệ | Chưa làm |
-| [05_Domain_Model.md](05_Domain_Model.md) | Các khái niệm nghiệp vụ và quan hệ giữa chúng | Chưa làm |
-| [06_Database_Design.md](06_Database_Design.md) | Thiết kế database, giải thích từng bảng/cột | Chưa làm |
-| [07_API_Design.md](07_API_Design.md) | Danh sách API, quy tắc nghiệp vụ từng endpoint | Chưa làm |
-| [08_UI_UX_Design.md](08_UI_UX_Design.md) | Sitemap, user flow, link Figma | Chưa làm |
-| [09_Implementation.md](09_Implementation.md) | Ghi chú kỹ thuật trong quá trình code | Chưa làm |
-| [10_Testing.md](10_Testing.md) | Kết quả kiểm thử | Chưa làm |
-| [11_Deployment.md](11_Deployment.md) | Cách deploy, môi trường | Chưa làm |
-| [12_Report_Notes.md](12_Report_Notes.md) | Tổng hợp số liệu, ảnh dùng khi viết báo cáo | Chưa làm |
+| [01_Research.md](01_Research.md) | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế | Đang làm |
+| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Chưa làm |
+| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix | Chưa làm |
+| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, danh sách module, Decision Log | Chưa làm |
+| [05_Domain_Model.md](05_Domain_Model.md) | Các thực thể nghiệp vụ (Entities) và Domain Glossary | Chưa làm |
+| [06_Database_Design.md](06_Database_Design.md) | Sơ đồ ERD, Từ điển dữ liệu (Data Dictionary) | Chưa làm |
+| [07_API_Design.md](07_API_Design.md) | Danh sách API Endpoints và Quy tắc nghiệp vụ | Chưa làm |
+| [08_UI_UX_Design.md](08_UI_UX_Design.md) | Sitemap, User Flow, Link Figma & Design System | Chưa làm |
+| [09_Implementation.md](09_Implementation.md) | Ghi chú kỹ thuật triển khai mã nguồn | Chưa làm |
+| [10_Testing.md](10_Testing.md) | Kế hoạch và kết quả kiểm thử | Chưa làm |
+| [11_Deployment.md](11_Deployment.md) | Hướng dẫn triển khai ứng dụng | Chưa làm |
+| [12_Report_Notes.md](12_Report_Notes.md) | Tổng hợp số liệu và hình ảnh phục vụ viết báo cáo | Chưa làm |
 
-Trạng thái: **Chưa làm** → **Đang làm** → **Xong**
+*Quy ước trạng thái:* Chưa làm → Đang làm → Xong
 
 ---
 
-## Thứ tự phụ thuộc
-
-Sơ đồ dưới cho thấy file nào cần xong trước mới làm được file nào:
+## 2. Chuỗi phụ thuộc giữa các tài liệu
 
 ```mermaid
 graph TD
@@ -45,37 +45,22 @@ graph TD
     K --> L[12_Report_Notes]
 ```
 
-Nguyên tắc chung: không code khi chưa xong thiết kế. Cụ thể là không mở VS Code để viết backend khi `07_API_Design.md` còn trống.
-
 ---
 
-## Tóm tắt nội dung từng file
+## 3. Tóm tắt nội dung từng tài liệu
 
-**01_Research** — Trả lời câu hỏi: tại sao cần làm đề tài này? Ai sẽ dùng? Vấn đề thực tế là gì? Đây là tài liệu đầu tiên và là nền tảng cho mọi thứ sau.
-
-**02_Requirement** — Chuyển những vấn đề ở file 01 thành danh sách yêu cầu cụ thể, đặt ID để tiện tham chiếu sau (ví dụ FR-TASK-01). Cả yêu cầu chức năng lẫn phi chức năng.
-
-**03_Functional_Analysis** — Viết lại yêu cầu dưới dạng user story và use case. Có thêm bảng tổng hợp để kiểm tra không bỏ sót chức năng nào khi code.
-
-**04_System_Architecture** — Mô tả hệ thống trông như thế nào ở tầng cao: các thành phần gồm những gì, giao tiếp ra sao. Có phần giải thích lý do chọn PostgreSQL thay vì MongoDB, tại sao dùng NestJS... để trả lời câu hỏi của hội đồng.
-
-**05_Domain_Model** — Trước khi thiết kế database, cần xác định rõ các khái niệm nghiệp vụ: Task khác Learning ở điểm nào, CalendarEvent là gì. File này định nghĩa rõ để tránh nhầm lẫn về sau.
-
-**06_Database_Design** — Từ domain model ở file 05, ánh xạ sang các bảng database thực tế. Có giải thích từng cột để sau này viết báo cáo không bị hỏi "cột này để làm gì".
-
-**07_API_Design** — Danh sách endpoint, cấu trúc request/response, và quan trọng hơn là các quy tắc nghiệp vụ của từng API — những thứ mà Swagger không diễn đạt được.
-
-**08_UI_UX_Design** — Sitemap, luồng người dùng, link Figma. File này chỉ lưu link, không commit file Figma.
-
-**09–12** — Viết trong và sau khi code xong.
-
----
-
-## Một số quy tắc khi viết
-
-- Mỗi file bắt đầu bằng một dòng ghi rõ file này phụ thuộc vào file nào và làm căn cứ cho file nào — để dễ truy ngược.
-- Phần nội dung chưa chắc thì để comment `<!-- TODO -->` thay vì bỏ trống hoặc điền đại.
-- Diagram vẽ bằng draw.io, export ra PNG rồi nhúng vào — xem hướng dẫn ở [diagrams/README.md](../diagrams/README.md).
+- **01_Research**: Xác định bối cảnh, đối tượng sử dụng, khó khăn thực tế (Pain Points) và mục tiêu đề tài.
+- **02_Requirement**: Định nghĩa các yêu cầu chức năng (FR) và phi chức năng (NFR) kèm mã định danh (ID).
+- **03_Functional_Analysis**: Chuyển đổi yêu cầu thành User Stories, mô tả chi tiết Use Cases và xây dựng Feature Matrix.
+- **04_System_Architecture**: Thiết kế sơ đồ kiến trúc tổng quan, phân chia module và giải thích lý do lựa chọn công nghệ.
+- **05_Domain_Model**: Xây dựng mô hình nghiệp vụ, từ điển thuật ngữ (Domain Glossary) độc lập với cơ sở dữ liệu.
+- **06_Database_Design**: Chuyển đổi Domain Model thành ERD (Logic & Physical) và xây dựng Data Dictionary cho từng bảng.
+- **07_API_Design**: Thiết kế chuẩn các API endpoints, cấu trúc dữ liệu gửi/nhận và quy tắc nghiệp vụ (Business Rules).
+- **08_UI_UX_Design**: Xây dựng Sitemap, User Flow, danh sách UI components và liên kết tới thiết kế Figma.
+- **09_Implementation**: Ghi nhận các pattern lập trình, cấu trúc thư mục code thực tế và ghi chú kỹ thuật.
+- **10_Testing**: Xây dựng kịch bản kiểm thử (Unit test, Integration test, Manual test) và ghi nhận kết quả.
+- **11_Deployment**: Hướng dẫn cấu hình môi trường và triển khai ứng dụng.
+- **12_Report_Notes**: Tổng hợp số liệu, danh sách hình ảnh cần chụp để chuẩn bị viết báo cáo tốt nghiệp.
 
 ---
 
