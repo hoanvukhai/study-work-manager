@@ -57,7 +57,6 @@ study-work-manager/
 
 ## 5. Hướng dẫn chạy ứng dụng
 
-*(Sẽ được cập nhật chi tiết sau khi khởi tạo dự án backend và frontend)*
 
 ```bash
 # Chạy Backend (NestJS)
