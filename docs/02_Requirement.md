@@ -28,26 +28,26 @@
 
 | ID         | Yêu cầu                                                                                 | Nguồn gốc        | Độ ưu tiên  |
 | ---------- | --------------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-TASK-01 | Hệ thống cho phép người dùng tạo công việc mới.                                         | OBJ01, PP06      | Must have   |
-| FR-TASK-02 | Hệ thống cho phép người dùng chỉnh sửa thông tin công việc.                             | OBJ01            | Must have   |
-| FR-TASK-03 | Hệ thống cho phép người dùng xóa công việc.                                             | OBJ01            | Must have   |
-| FR-TASK-04 | Hệ thống cho phép người dùng xem danh sách công việc.                                   | OBJ01            | Must have   |
-| FR-TASK-05 | Hệ thống cho phép người dùng xem chi tiết một công việc.                                | OBJ01            | Must have   |
-| FR-TASK-06 | Hệ thống cho phép thiết lập thời hạn hoàn thành (Deadline) cho công việc.               | OBJ01, PP04      | Must have   |
-| FR-TASK-07 | Hệ thống cho phép thiết lập mức độ ưu tiên của công việc.                               | OBJ01            | Must have   |
-| FR-TASK-08 | Hệ thống cho phép thay đổi trạng thái công việc (To do, In Progress, Done).             | OBJ01, PP03      | Must have   |
-| FR-TASK-09 | Hệ thống cho phép tìm kiếm công việc theo tên.                                          | PP02             | Should have |
-| FR-TASK-10 | Hệ thống cho phép lọc công việc theo trạng thái.                                        | PP03             | Should have |
-| FR-TASK-11 | Hệ thống cho phép lọc công việc theo mức độ ưu tiên.                                    | PP03             | Should have |
-| FR-TASK-12 | Hệ thống cho phép sắp xếp công việc theo thời gian tạo hoặc deadline.                   | PP03             | Should have |
-| FR-TASK-13 | Hệ thống cho phép đính kèm một hoặc nhiều tài liệu tham khảo vào công việc.             | OBJ04, PP05      | Must have   |
-| FR-TASK-14 | Hệ thống cho phép liên kết công việc với lịch trình cá nhân.                            | OBJ03            | Must have   |
-| FR-TASK-15 | Hệ thống hỗ trợ hiển thị công việc theo dạng bảng Kanban.                               | PP03             | Should have |
+| FR-TASK-01 | Hệ thống cho phép người dùng tạo công việc mới.                                         | OBJ-01, PP-06      | Must have   |
+| FR-TASK-02 | Hệ thống cho phép người dùng chỉnh sửa thông tin công việc.                             | OBJ-01            | Must have   |
+| FR-TASK-03 | Hệ thống cho phép người dùng xóa công việc.                                             | OBJ-01            | Must have   |
+| FR-TASK-04 | Hệ thống cho phép người dùng xem danh sách công việc.                                   | OBJ-01            | Must have   |
+| FR-TASK-05 | Hệ thống cho phép người dùng xem chi tiết một công việc.                                | OBJ-01            | Must have   |
+| FR-TASK-06 | Hệ thống cho phép thiết lập thời hạn hoàn thành (Deadline) cho công việc.               | OBJ-01, PP-04      | Must have   |
+| FR-TASK-07 | Hệ thống cho phép thiết lập mức độ ưu tiên của công việc.                               | OBJ-01            | Must have   |
+| FR-TASK-08 | Hệ thống cho phép thay đổi trạng thái công việc (To do, In Progress, Done).             | OBJ-01, PP-03      | Must have   |
+| FR-TASK-09 | Hệ thống cho phép tìm kiếm công việc theo tên.                                          | PP-02             | Should have |
+| FR-TASK-10 | Hệ thống cho phép lọc công việc theo trạng thái.                                        | PP-03             | Should have |
+| FR-TASK-11 | Hệ thống cho phép lọc công việc theo mức độ ưu tiên.                                    | PP-03             | Should have |
+| FR-TASK-12 | Hệ thống cho phép sắp xếp công việc theo thời gian tạo hoặc deadline.                   | PP-03             | Should have |
+| FR-TASK-13 | Hệ thống cho phép đính kèm một hoặc nhiều tài liệu tham khảo vào công việc.             | OBJ-04, PP-05      | Must have   |
+| FR-TASK-14 | Hệ thống cho phép liên kết công việc với lịch trình cá nhân.                            | OBJ-03            | Must have   |
+| FR-TASK-15 | Hệ thống hỗ trợ hiển thị công việc theo dạng bảng Kanban.                               | PP-03             | Should have |
 | FR-TASK-16 | Hệ thống chỉ hiển thị các công việc thuộc về người dùng hiện tại.                       | Base Requirement | Must have   |
-| FR-TASK-17 | Hệ thống tự động cập nhật thông tin công việc trên Dashboard sau khi có thay đổi.       | OBJ05            | Must have   |
+| FR-TASK-17 | Hệ thống tự động cập nhật thông tin công việc trên Dashboard sau khi có thay đổi.       | OBJ-05            | Must have   |
 | FR-TASK-18 | Hệ thống hỗ trợ phân trang khi danh sách công việc có số lượng lớn.                     | Base Requirement | Could have  |
-| FR-TASK-19 | Hệ thống cho phép tạo và quản lý công việc con (Sub-task) thuộc một công việc chính.    | OBJ01            | Should have |
-| FR-TASK-20 | Hệ thống cho phép gắn nhãn (Tag/Label) cho công việc nhằm hỗ trợ phân loại và tìm kiếm. | OBJ01, PP03      | Should have |
+| FR-TASK-19 | Hệ thống cho phép tạo và quản lý công việc con (Sub-task) thuộc một công việc chính.    | OBJ-01            | Should have |
+| FR-TASK-20 | Hệ thống cho phép gắn nhãn (Tag/Label) cho công việc nhằm hỗ trợ phân loại và tìm kiếm. | OBJ-01, PP-03      | Should have |
 
 ---
 
@@ -55,21 +55,21 @@
 
 | ID          | Yêu cầu                                                                                          | Nguồn gốc        | Độ ưu tiên  |
 | ----------- | ------------------------------------------------------------------------------------------------ | ---------------- | ----------- |
-| FR-LEARN-01 | Hệ thống cho phép người dùng tạo nội dung học tập mới.                                           | OBJ02            | Must have   |
-| FR-LEARN-02 | Hệ thống cho phép chỉnh sửa nội dung học tập.                                                    | OBJ02            | Must have   |
-| FR-LEARN-03 | Hệ thống cho phép xóa nội dung học tập.                                                          | OBJ02            | Must have   |
-| FR-LEARN-04 | Hệ thống cho phép xem danh sách nội dung học tập.                                                | OBJ02            | Must have   |
-| FR-LEARN-05 | Hệ thống cho phép tổ chức nội dung học tập theo chủ đề hoặc khóa học.                            | OBJ02, PP06      | Must have   |
-| FR-LEARN-06 | Hệ thống cho phép theo dõi tiến độ học tập của từng chủ đề hoặc khóa học.                        | OBJ02, PP03      | Must have   |
-| FR-LEARN-07 | Hệ thống cho phép thiết lập mục tiêu hoặc thời hạn hoàn thành nội dung học tập.                  | OBJ02, PP04      | Should have |
-| FR-LEARN-08 | Hệ thống cho phép liên kết tài liệu tham khảo với nội dung học tập.                              | OBJ04, PP05      | Must have   |
-| FR-LEARN-09 | Hệ thống cho phép tìm kiếm nội dung học tập theo tên.                                            | PP02             | Should have |
-| FR-LEARN-10 | Hệ thống cho phép lọc nội dung học tập theo trạng thái hoặc tiến độ.                             | PP03             | Should have |
-| FR-LEARN-11 | Hệ thống cho phép hiển thị lộ trình học tập theo cấu trúc phân cấp.                              | OBJ02            | Should have |
+| FR-LEARN-01 | Hệ thống cho phép người dùng tạo nội dung học tập mới.                                           | OBJ-02            | Must have   |
+| FR-LEARN-02 | Hệ thống cho phép chỉnh sửa nội dung học tập.                                                    | OBJ-02            | Must have   |
+| FR-LEARN-03 | Hệ thống cho phép xóa nội dung học tập.                                                          | OBJ-02            | Must have   |
+| FR-LEARN-04 | Hệ thống cho phép xem danh sách nội dung học tập.                                                | OBJ-02            | Must have   |
+| FR-LEARN-05 | Hệ thống cho phép tổ chức nội dung học tập theo chủ đề hoặc khóa học.                            | OBJ-02, PP-06      | Must have   |
+| FR-LEARN-06 | Hệ thống cho phép theo dõi tiến độ học tập của từng chủ đề hoặc khóa học.                        | OBJ-02, PP-03      | Must have   |
+| FR-LEARN-07 | Hệ thống cho phép thiết lập mục tiêu hoặc thời hạn hoàn thành nội dung học tập.                  | OBJ-02, PP-04      | Should have |
+| FR-LEARN-08 | Hệ thống cho phép liên kết tài liệu tham khảo với nội dung học tập.                              | OBJ-04, PP-05      | Must have   |
+| FR-LEARN-09 | Hệ thống cho phép tìm kiếm nội dung học tập theo tên.                                            | PP-02             | Should have |
+| FR-LEARN-10 | Hệ thống cho phép lọc nội dung học tập theo trạng thái hoặc tiến độ.                             | PP-03             | Should have |
+| FR-LEARN-11 | Hệ thống cho phép hiển thị lộ trình học tập theo cấu trúc phân cấp.                              | OBJ-02            | Should have |
 | FR-LEARN-12 | Hệ thống chỉ hiển thị nội dung học tập thuộc về người dùng hiện tại.                             | Base Requirement | Must have   |
-| FR-LEARN-13 | Hệ thống tự động cập nhật Dashboard khi tiến độ học tập thay đổi.                                | OBJ05            | Must have   |
+| FR-LEARN-13 | Hệ thống tự động cập nhật Dashboard khi tiến độ học tập thay đổi.                                | OBJ-05            | Must have   |
 | FR-LEARN-14 | Hệ thống hỗ trợ phân trang khi danh sách nội dung học tập có số lượng lớn.                       | Base Requirement | Could have  |
-| FR-LEARN-15 | Hệ thống cho phép chia nội dung học tập thành nhiều bài học hoặc mốc học tập (Lesson/Milestone). | OBJ02            | Should have |
+| FR-LEARN-15 | Hệ thống cho phép chia nội dung học tập thành nhiều bài học hoặc mốc học tập (Lesson/Milestone). | OBJ-02            | Should have |
 
 ---
 
@@ -77,14 +77,14 @@
 
 | ID        | Yêu cầu                                                                         | Nguồn gốc        | Độ ưu tiên  |
 | --------- | ------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-CAL-01 | Hệ thống cho phép người dùng tạo sự kiện trên lịch cá nhân.                     | OBJ03            | Must have   |
-| FR-CAL-02 | Hệ thống cho phép chỉnh sửa thông tin sự kiện.                                  | OBJ03            | Must have   |
-| FR-CAL-03 | Hệ thống cho phép xóa sự kiện.                                                  | OBJ03            | Must have   |
-| FR-CAL-04 | Hệ thống cho phép hiển thị lịch theo ngày hoặc tháng.                           | OBJ03            | Must have   |
-| FR-CAL-05 | Hệ thống cho phép liên kết sự kiện với Task hoặc Learning.                      | OBJ03, PP03      | Must have   |
-| FR-CAL-06 | Hệ thống hiển thị các deadline của Task và Learning trên lịch.                  | OBJ03, PP04      | Must have   |
+| FR-CAL-01 | Hệ thống cho phép người dùng tạo sự kiện trên lịch cá nhân.                     | OBJ-03            | Must have   |
+| FR-CAL-02 | Hệ thống cho phép chỉnh sửa thông tin sự kiện.                                  | OBJ-03            | Must have   |
+| FR-CAL-03 | Hệ thống cho phép xóa sự kiện.                                                  | OBJ-03            | Must have   |
+| FR-CAL-04 | Hệ thống cho phép hiển thị lịch theo ngày hoặc tháng.                           | OBJ-03            | Must have   |
+| FR-CAL-05 | Hệ thống cho phép liên kết sự kiện với Task hoặc Learning.                      | OBJ-03, PP-03      | Must have   |
+| FR-CAL-06 | Hệ thống hiển thị các deadline của Task và Learning trên lịch.                  | OBJ-03, PP-04      | Must have   |
 | FR-CAL-07 | Hệ thống chỉ hiển thị lịch và sự kiện của người dùng hiện tại.                  | Base Requirement | Must have   |
-| FR-CAL-08 | Hệ thống tự động cập nhật lịch khi Task hoặc Learning có thay đổi về thời gian. | OBJ05            | Should have |
+| FR-CAL-08 | Hệ thống tự động cập nhật lịch khi Task hoặc Learning có thay đổi về thời gian. | OBJ-05            | Should have |
 
 ---
 
@@ -92,16 +92,16 @@
 
 | ID        | Yêu cầu                                                                                            | Nguồn gốc        | Độ ưu tiên  |
 | --------- | -------------------------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-REF-01 | Hệ thống cho phép người dùng tạo tài liệu tham khảo (Reference).                                   | OBJ04           | Must have   |
+| FR-REF-01 | Hệ thống cho phép người dùng tạo tài liệu tham khảo (Reference).                                   | OBJ-04           | Must have   |
 | FR-REF-02 | Hệ thống cho phép cập nhật thông tin tài liệu tham khảo.                                           | Base Requirement | Must have   |
 | FR-REF-03 | Hệ thống cho phép xóa tài liệu tham khảo.                                                          | Base Requirement | Must have   |
-| FR-REF-04 | Hệ thống cho phép lưu liên kết (URL) đến các nguồn như Google Drive, GitHub, YouTube hoặc Website. | PP05, OBJ04     | Must have   |
-| FR-REF-05 | Hệ thống cho phép đính kèm một hoặc nhiều Reference vào Task.                                      | PP01, OBJ04     | Must have   |
-| FR-REF-06 | Hệ thống cho phép đính kèm một hoặc nhiều Reference vào Learning.                                  | PP01, OBJ04     | Must have   |
-| FR-REF-07 | Hệ thống cho phép tìm kiếm Reference theo tên.                                                     | PP05             | Should have |
-| FR-REF-08 | Hệ thống cho phép gắn Tag để phân loại Reference.                                                  | PP05             | Should have |
-| FR-REF-09 | Hệ thống hiển thị Reference dưới dạng thẻ (Card) gồm tiêu đề, liên kết và mô tả ngắn.              | PP05             | Could have  |
-| FR-REF-10 | Hệ thống cho phép lưu Reference độc lập trước khi gắn vào Task hoặc Learning.                      | PP01, PP05       | Could have  |
+| FR-REF-04 | Hệ thống cho phép lưu liên kết (URL) đến các nguồn như Google Drive, GitHub, YouTube hoặc Website. | PP-05, OBJ-04     | Must have   |
+| FR-REF-05 | Hệ thống cho phép đính kèm một hoặc nhiều Reference vào Task.                                      | PP-01, OBJ-04     | Must have   |
+| FR-REF-06 | Hệ thống cho phép đính kèm một hoặc nhiều Reference vào Learning.                                  | PP-01, OBJ-04     | Must have   |
+| FR-REF-07 | Hệ thống cho phép tìm kiếm Reference theo tên.                                                     | PP-05             | Should have |
+| FR-REF-08 | Hệ thống cho phép gắn Tag để phân loại Reference.                                                  | PP-05             | Should have |
+| FR-REF-09 | Hệ thống hiển thị Reference dưới dạng thẻ (Card) gồm tiêu đề, liên kết và mô tả ngắn.              | PP-05             | Could have  |
+| FR-REF-10 | Hệ thống cho phép lưu Reference độc lập trước khi gắn vào Task hoặc Learning.                      | PP-01, PP-05       | Could have  |
 
 ---
 
@@ -109,14 +109,14 @@
 
 | ID         | Yêu cầu                                                                                                   | Nguồn gốc          | Độ ưu tiên  |
 | ---------- | --------------------------------------------------------------------------------------------------------- | ------------------ | ----------- |
-| FR-DASH-01 | Hệ thống hiển thị tổng quan các Task cần thực hiện trong ngày.                                            | OBJ05             | Must have   |
-| FR-DASH-02 | Hệ thống hiển thị các nội dung Learning đang thực hiện hoặc sắp đến hạn.                                  | OBJ05             | Must have   |
-| FR-DASH-03 | Hệ thống hiển thị các sự kiện trong ngày từ Calendar.                                                     | OBJ05             | Must have   |
-| FR-DASH-04 | Hệ thống hiển thị các công việc hoặc hoạt động sắp đến hạn.                                               | PP03, PP04, OBJ05 | Must have   |
-| FR-DASH-05 | Hệ thống hiển thị thống kê tổng quan về Task và Learning (Tổng số, Đang thực hiện, Hoàn thành...).        | PP03               | Should have |
-| FR-DASH-06 | Hệ thống cho phép truy cập nhanh từ Dashboard đến Task, Learning hoặc Calendar tương ứng.                 | PP02, OBJ05       | Should have |
-| FR-DASH-07 | Hệ thống cho phép lọc nội dung hiển thị theo ngày hoặc khoảng thời gian.                                  | PP03               | Could have  |
-| FR-DASH-08 | Hệ thống hiển thị danh sách các Reference được sử dụng gần đây hoặc liên quan đến các công việc hiện tại. | PP05               | Could have  |
+| FR-DASH-01 | Hệ thống hiển thị tổng quan các Task cần thực hiện trong ngày.                                            | OBJ-05             | Must have   |
+| FR-DASH-02 | Hệ thống hiển thị các nội dung Learning đang thực hiện hoặc sắp đến hạn.                                  | OBJ-05             | Must have   |
+| FR-DASH-03 | Hệ thống hiển thị các sự kiện trong ngày từ Calendar.                                                     | OBJ-05             | Must have   |
+| FR-DASH-04 | Hệ thống hiển thị các công việc hoặc hoạt động sắp đến hạn.                                               | PP-03, PP-04, OBJ-05 | Must have   |
+| FR-DASH-05 | Hệ thống hiển thị thống kê tổng quan về Task và Learning (Tổng số, Đang thực hiện, Hoàn thành...).        | PP-03               | Should have |
+| FR-DASH-06 | Hệ thống cho phép truy cập nhanh từ Dashboard đến Task, Learning hoặc Calendar tương ứng.                 | PP-02, OBJ-05       | Should have |
+| FR-DASH-07 | Hệ thống cho phép lọc nội dung hiển thị theo ngày hoặc khoảng thời gian.                                  | PP-03               | Could have  |
+| FR-DASH-08 | Hệ thống hiển thị danh sách các Reference được sử dụng gần đây hoặc liên quan đến các công việc hiện tại. | PP-05               | Could have  |
 
 ---
 
@@ -124,12 +124,12 @@
 
 |ID|Yêu cầu|Nguồn gốc|Độ ưu tiên|
 |---|---|---|---|
-|FR-NOTIF-01|Hệ thống tự động tạo thông báo khi Task hoặc Learning sắp đến hạn.|OBJ06, PP04|Must have|
-|FR-NOTIF-02|Hệ thống hiển thị danh sách các thông báo cho người dùng sau khi đăng nhập.|OBJ06|Must have|
+|FR-NOTIF-01|Hệ thống tự động tạo thông báo khi Task hoặc Learning sắp đến hạn.|OBJ-06, PP-04|Must have|
+|FR-NOTIF-02|Hệ thống hiển thị danh sách các thông báo cho người dùng sau khi đăng nhập.|OBJ-06|Must have|
 |FR-NOTIF-03|Hệ thống cho phép người dùng đánh dấu thông báo là đã đọc.|Base Requirement|Should have|
 |FR-NOTIF-04|Hệ thống chỉ hiển thị các thông báo thuộc về chính người dùng hiện tại.|Base Requirement|Must have|
 |FR-NOTIF-05|Hệ thống cho phép người dùng xóa thông báo không còn cần thiết.|Base Requirement|Could have|
-|FR-NOTIF-06|Hệ thống hỗ trợ gửi thông báo qua email đối với các sự kiện hoặc deadline quan trọng (nếu được cấu hình SMTP).|OBJ06|Could have|
+|FR-NOTIF-06|Hệ thống hỗ trợ gửi thông báo qua email đối với các sự kiện hoặc deadline quan trọng (nếu được cấu hình SMTP).|OBJ-06|Could have|
 
 ---
 
