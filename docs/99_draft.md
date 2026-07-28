@@ -138,3 +138,10 @@ Phần này tiến hành khảo sát các phần mềm, công cụ hiện đang 
 - **Lưu trữ sinh động:** Rich Card View (Padlet) + Metadata Reference (Notion/Obsidian).
 - **Phân rã cấu trúc:** Tree View + Sub-tasks (MindMeister).
 - **Trung tâm điều phối:** Dashboard "Today" Time-blocking (Sunsama).
+  
+  
+  
+# Cải tiến tương lai
+
+Tích hợp các api(gg calendar, ...) và ai(gemini)
+Chia sẻ với người khác

@@ -2,7 +2,7 @@
 
 > Tài liệu trước: Tài liệu đầu tiên
 > Tài liệu sau: [02_Requirement.md](02_Requirement.md)  
-> Trạng thái: Chưa hoàn thành
+> Trạng thái: Hoàn thành
 
 ---
 
@@ -13,7 +13,6 @@ Nhu cầu ghi chú, quản lý lịch trình, công việc và lưu trữ thông
 Việc sử dụng nhiều phần mềm gây ra nhiều bất tiện trong quá trình học tập và làm việc. Người dùng gặp khó khăn trong việc tìm kiếm và quản lý thông tin cũng như phải chuyển đổi qua lại giữa các phần mềm hoặc tab trình duyệt. Bên cạnh đó, việc sử dụng nhiều phần mềm gây ra tình trạng thông tin bị phân tán, rời rạc, trùng lặp hoặc bỏ sót. Đồng thời, việc thiếu một giao diện tổng quan cũng khiến người dùng khó theo dõi tiến độ và sắp xếp các công việc cần ưu tiên.
 
 Từ thực tế đó, đề tài hướng đến việc xây dựng phần mềm quản lý học tập và quản lý công việc cá nhân trên nền tảng web. Phần mềm cho phép người dùng quản lý tập trung các công việc, lịch trình, tài liệu tham khảo và nội dung học tập trong cùng một hệ thống, giúp việc theo dõi và quản lý thông tin trở nên tiện lợi hơn. Người dùng chỉ cần truy cập vào một địa chỉ duy nhất trên trình duyệt là có thể nắm bắt các công việc, lịch trình và thông tin cần thiết trong ngày, từ đó giảm bớt sự phân tán thông tin và hạn chế việc phải chuyển đổi giữa nhiều phần mềm.
-
 
 
 ---
@@ -139,14 +138,14 @@ Có một hệ thống giúp quản lý riêng phần học tập và công vi�
 
 ## 5. Vấn đề cụ thể (Pain Points)
 
-| ID   | Vấn đề                                                                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| PP01 | Thông tin học tập, công việc và tài liệu được lưu trữ trên nhiều phần mềm khác nhau, gây phân tán dữ liệu và khó quản lý.                  |
-| PP02 | Phải thường xuyên chuyển đổi giữa nhiều phần mềm hoặc nhiều tab trình duyệt để tìm kiếm thông tin, làm giảm sự tập trung và mất thời gian. |
-| PP03 | Khó theo dõi tổng quan tiến độ học tập và công việc khi lịch trình, nhiệm vụ và tài liệu không được liên kết với nhau.                     |
-| PP04 | Dễ bỏ sót hoặc quên các công việc quan trọng do thông báo, deadline và tài liệu liên quan nằm trên các nền tảng khác nhau.                 |
-| PP05 | Việc lưu trữ tài liệu chủ yếu dưới dạng liên kết hoặc tệp rời rạc khiến quá trình tìm kiếm và tái sử dụng thông tin gặp nhiều khó khăn.    |
-| PP06 | Chưa có một hệ thống duy nhất hỗ trợ đồng thời quản lý học tập, công việc, lịch biểu và tài liệu tham khảo theo nhu cầu cá nhân.           |
+| ID    | Vấn đề                                                                                                                                     |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| PP-01 | Thông tin học tập, công việc và tài liệu được lưu trữ trên nhiều phần mềm khác nhau, gây phân tán dữ liệu và khó quản lý.                  |
+| PP-02 | Phải thường xuyên chuyển đổi giữa nhiều phần mềm hoặc nhiều tab trình duyệt để tìm kiếm thông tin, làm giảm sự tập trung và mất thời gian. |
+| PP-03 | Khó theo dõi tổng quan tiến độ học tập và công việc khi lịch trình, nhiệm vụ và tài liệu không được liên kết với nhau.                     |
+| PP-04 | Dễ bỏ sót hoặc quên các công việc quan trọng do thông báo, deadline và tài liệu liên quan nằm trên các nền tảng khác nhau.                 |
+| PP-05 | Việc lưu trữ tài liệu chủ yếu dưới dạng liên kết hoặc tệp rời rạc khiến quá trình tìm kiếm và tái sử dụng thông tin gặp nhiều khó khăn.    |
+| PP-06 | Chưa có một hệ thống duy nhất hỗ trợ đồng thời quản lý học tập, công việc, lịch biểu và tài liệu tham khảo theo nhu cầu cá nhân.           |
 **Kết luận**
 > Từ các vấn đề ở trên có thể thấy, nguyên nhân chủ yếu không nằm ở việc thiếu công cụ hỗ trợ mà là ở sự phân tán giữa nhiều nền tảng riêng lẻ. Điều này làm giảm hiệu quả quản lý, tăng thời gian tìm kiếm thông tin và gây khó khăn trong việc theo dõi tiến độ học tập cũng như công việc. Vì vậy, cần có một hệ thống quản lý tập trung giúp liên kết các thông tin liên quan và hỗ trợ người dùng quản lý thuận tiện hơn.
 
@@ -164,14 +163,14 @@ Từ thực tế đó, đề tài hướng tới việc xây dựng một ứng 
 
 Dựa trên các vấn đề đã nêu, hệ thống cần có:
 
-| ID        | Mục tiêu                                                                                                  | Giải quyết vấn đề |
-| --------- | --------------------------------------------------------------------------------------------------------- | ----------------- |
-| **OBJ01** | Cho phép tạo, quản lý và theo dõi công việc (Task) có deadline và trạng thái thực hiện.                   | PP03, PP04        |
-| **OBJ02** | Xây dựng quản lý học tập riêng, hỗ trợ theo dõi lộ trình học, tiến độ và nội dung học tập.                | PP01, PP06        |
-| **OBJ03** | Quản lý lịch trình và liên kết lịch với các công việc hoặc hoạt động học tập liên quan.                   | PP03, PP04        |
-| **OBJ04** | Cho phép lưu trữ và liên kết tài liệu tham khảo với từng công việc hoặc nội dung học tập.                 | PP01, PP05        |
-| **OBJ05** | Cung cấp Dashboard tổng quan giúp người dùng theo dõi lịch trình, công việc và tiến độ trên một màn hình. | PP02, PP03, PP06  |
-| **OBJ06** | Hỗ trợ nhắc nhở các công việc và sự kiện sắp đến hạn nhằm giảm tình trạng bỏ sót deadline.                | PP04              |
+| ID         | Mục tiêu                                                                                                  | Giải quyết vấn đề   |
+| ---------- | --------------------------------------------------------------------------------------------------------- | ------------------- |
+| **OBJ-01** | Cho phép tạo, quản lý và theo dõi công việc (Task) có deadline và trạng thái thực hiện.                   | PP-03, PP-04        |
+| **OBJ-02** | Xây dựng quản lý học tập riêng, hỗ trợ theo dõi lộ trình học, tiến độ và nội dung học tập.                | PP-01, PP-06        |
+| **OBJ-03** | Quản lý lịch trình và liên kết lịch với các công việc hoặc hoạt động học tập liên quan.                   | PP-03, PP-04        |
+| **OBJ-04** | Cho phép lưu trữ và liên kết tài liệu tham khảo với từng công việc hoặc nội dung học tập.                 | PP-01, PP-05        |
+| **OBJ-05** | Cung cấp Dashboard tổng quan giúp người dùng theo dõi lịch trình, công việc và tiến độ trên một màn hình. | PP-02, PP-03, PP-06 |
+| **OBJ-06** | Hỗ trợ nhắc nhở các công việc và sự kiện sắp đến hạn nhằm giảm tình trạng bỏ sót deadline.                | PP-04               |
 
 Các mục tiêu trên được xây dựng dựa trên những vấn đề đã phân tích trước đó, hướng đến việc xây dựng một hệ thống giúp người dùng quản lý tập trung việc học tập và công việc cá nhân, đồng thời nâng cao khả năng theo dõi tiến độ, tổ chức thông tin và sử dụng thời gian hiệu quả hơn.
 
@@ -204,3 +203,4 @@ Trong phạm vi đồ án, hệ thống không tập trung phát triển các ch
 ---
 
 *Tiếp theo: [02_Requirement.md](02_Requirement.md) - chuyển các vấn đề ở trên thành danh sách yêu cầu cụ thể*
+*Quay lại mục lục: [docs/README.md](README.md)*

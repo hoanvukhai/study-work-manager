@@ -10,8 +10,8 @@ Quy định về quy tắc commit, đặt tên file và quy trình làm việc c
 
 | File | Nội dung chính | Trạng thái |
 |---|---|---|
-| [01_Research.md](01_Research.md) | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế | Đang làm |
-| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Chưa làm |
+| [01_Research.md](01_Research.md) | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế | Xong |
+| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Xong |
 | [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix | Chưa làm |
 | [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, danh sách module, Decision Log | Chưa làm |
 | [05_Domain_Model.md](05_Domain_Model.md) | Các thực thể nghiệp vụ (Entities) và Domain Glossary | Chưa làm |
