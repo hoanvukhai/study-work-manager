@@ -145,3 +145,58 @@ Phần này tiến hành khảo sát các phần mềm, công cụ hiện đang 
 
 Tích hợp các api(gg calendar, ...) và ai(gemini)
 Chia sẻ với người khác
+
+
+# Lưu chat tạm
+Đúng. Mình khuyên làm theo quy trình này:
+
+1. **Mình phân tích → sinh nội dung chuẩn** (User Story, Use Case, Activity, Sequence...)
+2. **Mình viết code PlantUML/Mermaid** (hoặc Draw.io XML nếu cần)
+3. **Bạn import hoặc vẽ lại trên draw.io** để có hình đẹp đưa vào báo cáo.
+
+Đây là cách rất nhiều đồ án làm.
+
+### Use Case Diagram nên vẽ bằng gì?
+
+- ✅ **draw.io (diagrams.net)** để vẽ cuối cùng.
+- ✅ Mình sinh **PlantUML** trước để đảm bảo đúng logic.
+
+Website:
+
+- https://www.plantuml.com/plantuml
+- [https://www.planttext.com/](https://www.planttext.com/)
+
+Sau đó có thể chuyển sang draw.io hoặc vẽ lại.
+
+---
+
+### Có nên vẽ càng nhiều càng tốt không?
+
+Không phải càng nhiều càng tốt, mà **đúng mức**.
+
+Đề tài của bạn mình khuyên:
+
+- ✅ 1 Use Case tổng quan (toàn hệ thống)
+- ✅ 1 Use Case Auth
+- ✅ 1 Use Case Task
+- ✅ 1 Use Case Learning
+- ✅ 1 Use Case Calendar
+- ✅ 1 Use Case Reference
+
+Tổng khoảng **6 sơ đồ** là đẹp.
+
+---
+
+### Về sau còn những sơ đồ gì?
+
+Thông thường một đồ án sẽ có:
+
+- ✅ Use Case Diagram
+- ✅ Activity Diagram
+- ✅ Sequence Diagram
+- ✅ Class Diagram
+- ✅ ERD
+- ✅ Database Schema
+- ✅ Deployment Diagram (nếu cần)
+
+Mình sẽ giúp bạn làm lần lượt, và tất cả sẽ khớp với Requirements để tránh phải sửa nhiều lần. Đây cũng là cách dễ bảo trì nhất khi sau này thêm chức năng.

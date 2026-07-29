@@ -1,17 +1,15 @@
 # 03_Functional_Analysis.md — Phân tích chức năng
 
-> **Tầng:** Business (Tầng 1 / 3)  
-> **Phụ thuộc vào:** [02_Requirement.md](02_Requirement.md) — Functional Requirements (FR-*)  
-> **Tài liệu tiếp theo:** [04_System_Architecture.md](04_System_Architecture.md) và [05_Domain_Model.md](05_Domain_Model.md)  
-> **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** —
+> Tài liệu trước: [02_Requirement.md](02_Requirement.md)  
+> Tài liệu sau: [04_System_Architecture.md](04_System_Architecture.md) và [05_Domain_Model.md](05_Domain_Model.md)  
+> Trạng thái: Chưa hoàn thành
 
 ---
 
 <!--
   HƯỚNG DẪN VIẾT FILE NÀY:
   
-  Đây là bước chuyển Requirement sang Use Case & User Story.
+  Đây là bước chuyển Requirement sang User Story, Use Case & Activity Diagram.
   Mỗi User Story phải liên kết ngược lại FR tương ứng trong 02_Requirement.md.
   
   Use Case Diagram (.drawio) lưu tại: ../diagrams/03_UseCase.drawio
@@ -30,7 +28,7 @@
 
 ---
 
-## 2. Use Case Diagram
+## 2. Use Case Diagram (Sơ đồ Use Case)
 
 *(Nhúng ảnh export từ draw.io sau khi vẽ xong)*
 
@@ -40,11 +38,25 @@ Export: ../diagrams/exports/usecase-overview.png
 ```
 
 <!-- ![Use Case Diagram](../diagrams/exports/usecase-overview.png) -->
-<!-- Bỏ comment dòng trên khi đã export ảnh -->
 
 ---
 
-## 3. Chi tiết Use Case
+## 3. Activity Diagram (Sơ đồ Hoạt động)
+
+> Sơ đồ hoạt động biểu diễn luồng thực thi chi tiết của các chức năng/luồng nghiệp vụ phức tạp trong hệ thống.
+
+*(Nhúng ảnh export từ draw.io sau khi vẽ xong)*
+
+```
+Sơ đồ: ../diagrams/04_Activity.drawio
+Export: ../diagrams/exports/activity-overview.png
+```
+
+<!-- ![Activity Diagram](../diagrams/exports/activity-overview.png) -->
+
+---
+
+## 4. Chi tiết Use Case
 
 <!-- 
   Dùng template dưới đây cho mỗi use case quan trọng.
@@ -69,7 +81,7 @@ Export: ../diagrams/exports/usecase-overview.png
 
 ---
 
-## 4. Feature Matrix
+## 5. Feature Matrix (Ma trận Chức năng)
 
 > Bảng chéo kiểm tra: Module nào có chức năng gì — đảm bảo không bỏ sót khi code.
 
@@ -84,9 +96,7 @@ Export: ../diagrams/exports/usecase-overview.png
 | Gắn với Task/Learning | — | — | — | ✅ | ✅ | — | — |
 | Nhắc nhở deadline | — | ✅ | ✅ | — | — | — | ✅ |
 
-> *(Điền đầy đủ khi hoàn thành 02_Requirement.md)*
-
 ---
 
-*Tài liệu tiếp theo trong chuỗi: [04_System_Architecture.md](04_System_Architecture.md) (song song với [05_Domain_Model.md](05_Domain_Model.md))*  
+*Tiếp theo: [04_System_Architecture.md](04_System_Architecture.md) (song song với [05_Domain_Model.md](05_Domain_Model.md))*  
 *Quay lại mục lục: [docs/README.md](README.md)*

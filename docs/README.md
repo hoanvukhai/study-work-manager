@@ -8,20 +8,20 @@ Quy định về quy tắc commit, đặt tên file và quy trình làm việc c
 
 ## 1. Bảng tiến độ tài liệu
 
-| File | Nội dung chính | Trạng thái |
-|---|---|---|
-| [01_Research.md](01_Research.md) | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế | Xong |
-| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Xong |
-| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix | Chưa làm |
-| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, danh sách module, Decision Log | Chưa làm |
-| [05_Domain_Model.md](05_Domain_Model.md) | Các thực thể nghiệp vụ (Entities) và Domain Glossary | Chưa làm |
-| [06_Database_Design.md](06_Database_Design.md) | Sơ đồ ERD, Từ điển dữ liệu (Data Dictionary) | Chưa làm |
-| [07_API_Design.md](07_API_Design.md) | Danh sách API Endpoints và Quy tắc nghiệp vụ | Chưa làm |
-| [08_UI_UX_Design.md](08_UI_UX_Design.md) | Sitemap, User Flow, Link Figma & Design System | Chưa làm |
-| [09_Implementation.md](09_Implementation.md) | Ghi chú kỹ thuật triển khai mã nguồn | Chưa làm |
-| [10_Testing.md](10_Testing.md) | Kế hoạch và kết quả kiểm thử | Chưa làm |
-| [11_Deployment.md](11_Deployment.md) | Hướng dẫn triển khai ứng dụng | Chưa làm |
-| [12_Report_Notes.md](12_Report_Notes.md) | Tổng hợp số liệu và hình ảnh phục vụ viết báo cáo | Chưa làm |
+| File                                                   | Nội dung chính                                          | Trạng thái |
+| ------------------------------------------------------ | ------------------------------------------------------- | ---------- |
+| [01_Research.md](01_Research.md)                       | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế    | Xong       |
+| [02_Requirement.md](02_Requirement.md)                 | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Xong       |
+| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix         | Chưa làm   |
+| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, danh sách module, Decision Log      | Chưa làm   |
+| [05_Domain_Model.md](05_Domain_Model.md)               | Các thực thể nghiệp vụ (Entities) và Domain Glossary    | Chưa làm   |
+| [06_Database_Design.md](06_Database_Design.md)         | Sơ đồ ERD, Từ điển dữ liệu (Data Dictionary)            | Chưa làm   |
+| [07_API_Design.md](07_API_Design.md)                   | Danh sách API Endpoints và Quy tắc nghiệp vụ            | Chưa làm   |
+| [08_UI_UX_Design.md](08_UI_UX_Design.md)               | Sitemap, User Flow, Link Figma & Design System          | Chưa làm   |
+| [09_Implementation.md](09_Implementation.md)           | Ghi chú kỹ thuật triển khai mã nguồn                    | Chưa làm   |
+| [10_Testing.md](10_Testing.md)                         | Kế hoạch và kết quả kiểm thử                            | Chưa làm   |
+| [11_Deployment.md](11_Deployment.md)                   | Hướng dẫn triển khai ứng dụng                           | Chưa làm   |
+| [12_Report_Notes.md](12_Report_Notes.md)               | Tổng hợp số liệu và hình ảnh phục vụ viết báo cáo       | Chưa làm   |
 
 *Quy ước trạng thái:* Chưa làm → Đang làm → Xong
 

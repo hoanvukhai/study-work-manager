@@ -2,7 +2,6 @@
 
 > Tài liệu trước: Tài liệu đầu tiên
 > Tài liệu sau: [02_Requirement.md](02_Requirement.md)  
-> Trạng thái: Hoàn thành
 
 ---
 

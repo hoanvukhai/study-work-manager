@@ -2,7 +2,6 @@
 
 > Tài liệu trước: [01_Research.md](01_Research.md)
 > Tài liệu sau: [03_Functional_Analysis.md](03_Functional_Analysis.md)
-> Trạng thái: Hoàn thành
 
 ---
 ## 1. Functional Requirements (Yêu cầu chức năng)
