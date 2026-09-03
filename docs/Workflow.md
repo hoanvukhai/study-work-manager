@@ -37,14 +37,14 @@ Các giá trị scope hợp lệ:
 
 Các cột mốc chính của dự án được đánh tag để dễ truy xuất lại lịch sử:
 
-| Tag | Nội dung cột mốc |
-|---|---|
-| v0.1-docs-business | Hoàn thành Tầng 1 (docs 01, 02, 03) |
-| v0.2-docs-design | Hoàn thành Tầng 2 (docs 04, 05, 06, 07, 08) |
-| v0.3-backend-core | Backend khởi tạo và hoàn thành các API cốt lõi |
+| Tag                | Nội dung cột mốc                                |
+| ------------------ | ----------------------------------------------- |
+| v0.1-docs-business | Hoàn thành Phần 1 (docs 01, 02, 03)             |
+| v0.2-docs-design   | Hoàn thành Phần 2 (docs 04, 05, 06, 07, 08)     |
+| v0.3-backend-core  | Backend khởi tạo và hoàn thành các API cốt lõi  |
 | v0.4-frontend-core | Frontend tích hợp xong giao diện và kết nối API |
-| v0.5-testing | Hoàn thành kiểm thử và sửa lỗi |
-| v1.0-final | Phiên bản hoàn thiện nộp đồ án tốt nghiệp |
+| v0.5-testing       | Hoàn thành kiểm thử và sửa lỗi                  |
+| v1.0-final         | Phiên bản hoàn thiện nộp đồ án tốt nghiệp       |
 
 ---
 

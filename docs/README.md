@@ -27,7 +27,7 @@ Quy định về quy tắc commit, đặt tên file và quy trình làm việc c
 
 ---
 
-## 2. Chuỗi phụ thuộc giữa các tài liệu
+## 2. Liên kết giữa các tài liệu
 
 ```mermaid
 graph TD

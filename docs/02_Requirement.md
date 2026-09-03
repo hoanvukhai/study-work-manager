@@ -39,7 +39,7 @@
 | FR-TASK-10 | Hệ thống cho phép lọc công việc theo trạng thái.                                        | PP-03             | Should have |
 | FR-TASK-11 | Hệ thống cho phép lọc công việc theo mức độ ưu tiên.                                    | PP-03             | Should have |
 | FR-TASK-12 | Hệ thống cho phép sắp xếp công việc theo thời gian tạo hoặc deadline.                   | PP-03             | Should have |
-| FR-TASK-13 | Hệ thống cho phép đính kèm một hoặc nhiều tài liệu tham khảo vào công việc.             | OBJ-04, PP-05      | Must have   |
+| FR-TASK-13 | Hệ thống cho phép đính kèm một hoặc nhiều ghi chú (Note) vào công việc.             | OBJ-04, PP-05      | Must have   |
 | FR-TASK-14 | Hệ thống cho phép liên kết công việc với lịch trình cá nhân.                            | OBJ-03            | Must have   |
 | FR-TASK-15 | Hệ thống hỗ trợ hiển thị công việc theo dạng bảng Kanban.                               | PP-03             | Should have |
 | FR-TASK-16 | Hệ thống chỉ hiển thị các công việc thuộc về người dùng hiện tại.                       | Base Requirement | Must have   |
@@ -61,7 +61,7 @@
 | FR-LEARN-05 | Hệ thống cho phép tổ chức nội dung học tập theo chủ đề hoặc khóa học.                            | OBJ-02, PP-06      | Must have   |
 | FR-LEARN-06 | Hệ thống cho phép theo dõi tiến độ học tập của từng chủ đề hoặc khóa học.                        | OBJ-02, PP-03      | Must have   |
 | FR-LEARN-07 | Hệ thống cho phép thiết lập mục tiêu hoặc thời hạn hoàn thành nội dung học tập.                  | OBJ-02, PP-04      | Should have |
-| FR-LEARN-08 | Hệ thống cho phép liên kết tài liệu tham khảo với nội dung học tập.                              | OBJ-04, PP-05      | Must have   |
+| FR-LEARN-08 | Hệ thống cho phép đính kèm ghi chú (Note) với nội dung học tập.                              | OBJ-04, PP-05      | Must have   |
 | FR-LEARN-09 | Hệ thống cho phép tìm kiếm nội dung học tập theo tên.                                            | PP-02             | Should have |
 | FR-LEARN-10 | Hệ thống cho phép lọc nội dung học tập theo trạng thái hoặc tiến độ.                             | PP-03             | Should have |
 | FR-LEARN-11 | Hệ thống cho phép hiển thị lộ trình học tập theo cấu trúc phân cấp.                              | OBJ-02            | Should have |
@@ -87,20 +87,20 @@
 
 ---
 
-### 1.5 Reference — Tài liệu tham khảo
+### 1.5 Note — Ghi chú
 
 | ID        | Yêu cầu                                                                                            | Nguồn gốc        | Độ ưu tiên  |
 | --------- | -------------------------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-REF-01 | Hệ thống cho phép người dùng tạo tài liệu tham khảo (Reference).                                   | OBJ-04           | Must have   |
-| FR-REF-02 | Hệ thống cho phép cập nhật thông tin tài liệu tham khảo.                                           | Base Requirement | Must have   |
-| FR-REF-03 | Hệ thống cho phép xóa tài liệu tham khảo.                                                          | Base Requirement | Must have   |
-| FR-REF-04 | Hệ thống cho phép lưu liên kết (URL) đến các nguồn như Google Drive, GitHub, YouTube hoặc Website. | PP-05, OBJ-04     | Must have   |
-| FR-REF-05 | Hệ thống cho phép đính kèm một hoặc nhiều Reference vào Task.                                      | PP-01, OBJ-04     | Must have   |
-| FR-REF-06 | Hệ thống cho phép đính kèm một hoặc nhiều Reference vào Learning.                                  | PP-01, OBJ-04     | Must have   |
-| FR-REF-07 | Hệ thống cho phép tìm kiếm Reference theo tên.                                                     | PP-05             | Should have |
-| FR-REF-08 | Hệ thống cho phép gắn Tag để phân loại Reference.                                                  | PP-05             | Should have |
-| FR-REF-09 | Hệ thống hiển thị Reference dưới dạng thẻ (Card) gồm tiêu đề, liên kết và mô tả ngắn.              | PP-05             | Could have  |
-| FR-REF-10 | Hệ thống cho phép lưu Reference độc lập trước khi gắn vào Task hoặc Learning.                      | PP-01, PP-05       | Could have  |
+| FR-NOTE-01 | Hệ thống cho phép người dùng tạo ghi chú (Note) mới.                                   | OBJ-04           | Must have   |
+| FR-NOTE-02 | Hệ thống cho phép cập nhật nội dung ghi chú.                                           | Base Requirement | Must have   |
+| FR-NOTE-03 | Hệ thống cho phép xóa ghi chú.                                                          | Base Requirement | Must have   |
+| FR-NOTE-04 | Hệ thống cho phép soạn thảo văn bản và lưu trữ liên kết (URL) bên trong ghi chú để làm thẻ Bookmark. | PP-05, OBJ-04     | Must have   |
+| FR-NOTE-05 | Hệ thống cho phép đính kèm một hoặc nhiều Note vào Task.                                      | PP-01, OBJ-04     | Must have   |
+| FR-NOTE-06 | Hệ thống cho phép đính kèm một hoặc nhiều Note vào Learning.                                  | PP-01, OBJ-04     | Must have   |
+| FR-NOTE-07 | Hệ thống cho phép tìm kiếm Note theo tiêu đề.                                                     | PP-05             | Should have |
+| FR-NOTE-08 | Hệ thống cho phép gắn Tag để phân loại Note.                                                  | PP-05             | Should have |
+| FR-NOTE-09 | Hệ thống hiển thị Note dưới dạng thẻ (Card) Bookmark nếu Note đó có chứa đường dẫn URL.              | PP-05             | Could have  |
+| FR-NOTE-10 | Hệ thống cho phép lưu Note độc lập trước khi đính kèm vào Task hoặc Learning.                      | PP-01, PP-05       | Could have  |
 
 ---
 
@@ -115,7 +115,7 @@
 | FR-DASH-05 | Hệ thống hiển thị thống kê tổng quan về Task và Learning (Tổng số, Đang thực hiện, Hoàn thành...).        | PP-03               | Should have |
 | FR-DASH-06 | Hệ thống cho phép truy cập nhanh từ Dashboard đến Task, Learning hoặc Calendar tương ứng.                 | PP-02, OBJ-05       | Should have |
 | FR-DASH-07 | Hệ thống cho phép lọc nội dung hiển thị theo ngày hoặc khoảng thời gian.                                  | PP-03               | Could have  |
-| FR-DASH-08 | Hệ thống hiển thị danh sách các Reference được sử dụng gần đây hoặc liên quan đến các công việc hiện tại. | PP-05               | Could have  |
+| FR-DASH-08 | Hệ thống hiển thị danh sách các Note được sử dụng gần đây hoặc liên quan đến các công việc hiện tại. | PP-05               | Could have  |
 
 ---
 
@@ -167,8 +167,8 @@
 |**BR-04**|Mỗi Calendar Event phải thuộc đúng một người dùng.|
 |**BR-05**|`dueDate` của Task không được nhỏ hơn ngày tạo (`createdAt`).|
 |**BR-06**|`dueDate` của Learning không được nhỏ hơn ngày tạo (`createdAt`).|
-|**BR-07**|Một Task có thể liên kết với nhiều Reference và một Reference có thể được sử dụng cho nhiều Task.|
-|**BR-08**|Một Learning có thể liên kết với nhiều Reference và một Reference có thể được sử dụng cho nhiều Learning.|
+|**BR-07**|Một Task có thể liên kết với nhiều Note và một Note có thể được sử dụng cho nhiều Task.|
+|**BR-08**|Một Learning có thể liên kết với nhiều Note và một Note có thể được sử dụng cho nhiều Learning.|
 |**BR-09**|Khi Task hoặc Learning được đánh dấu hoàn thành thì không được tạo thông báo nhắc hạn mới.|
 |**BR-10**|Dashboard chỉ hiển thị dữ liệu thuộc người dùng hiện tại.|
 |**BR-11**|Notification chỉ được tạo cho Task hoặc Learning có thời hạn.|
