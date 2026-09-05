@@ -12,7 +12,7 @@ Quy định về quy tắc commit, đặt tên file và quy trình làm việc c
 | ------------------------------------------------------ | ------------------------------------------------------- | ---------- |
 | [01_Research.md](01_Research.md)                       | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế    | Xong       |
 | [02_Requirement.md](02_Requirement.md)                 | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Xong       |
-| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix         | Chưa làm   |
+| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix         | Đang làm   |
 | [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, danh sách module, Decision Log      | Chưa làm   |
 | [05_Domain_Model.md](05_Domain_Model.md)               | Các thực thể nghiệp vụ (Entities) và Domain Glossary    | Chưa làm   |
 | [06_Database_Design.md](06_Database_Design.md)         | Sơ đồ ERD, Từ điển dữ liệu (Data Dictionary)            | Chưa làm   |
@@ -49,13 +49,13 @@ graph TD
 
 ## 3. Tóm tắt nội dung từng tài liệu
 
-- **01_Research**: Xác định bối cảnh, đối tượng sử dụng, khó khăn thực tế (Pain Points) và mục tiêu đề tài.
-- **02_Requirement**: Định nghĩa các yêu cầu chức năng (FR) và phi chức năng (NFR) kèm mã định danh (ID).
-- **03_Functional_Analysis**: Chuyển đổi yêu cầu thành User Stories, mô tả chi tiết Use Cases và xây dựng Feature Matrix.
-- **04_System_Architecture**: Thiết kế sơ đồ kiến trúc tổng quan, phân chia module và giải thích lý do lựa chọn công nghệ.
-- **05_Domain_Model**: Xây dựng mô hình nghiệp vụ, từ điển thuật ngữ (Domain Glossary) độc lập với cơ sở dữ liệu.
-- **06_Database_Design**: Chuyển đổi Domain Model thành ERD (Logic & Physical) và xây dựng Data Dictionary cho từng bảng.
-- **07_API_Design**: Thiết kế chuẩn các API endpoints, cấu trúc dữ liệu gửi/nhận và quy tắc nghiệp vụ (Business Rules).
+- **01_Research**: Xác định bối cảnh, đối tượng sử dụng, khó khăn thực tế (Pain Points) và mục tiêu đề tài. Kiến trúc mới: người dùng tự tạo **Space** theo chủ đề riêng thay vì bị ép phân loại Học/Việc.
+- **02_Requirement**: Định nghĩa các yêu cầu chức năng (FR) và phi chức năng (NFR) kèm mã định danh (ID). Chia theo 10 nhóm: Auth / Space / Task / Note / Event / Reference / Relation / View / Dashboard / Notification.
+- **03_Functional_Analysis**: Chuyển đổi yêu cầu thành User Stories, mô tả chi tiết Use Cases và xây dựng Feature Matrix theo kiến trúc Space/Item/Relation.
+- **04_System_Architecture**: Thiết kế sơ đồ kiến trúc tổng quan (Context Diagram, High-Level Architecture), phân chia module và Decision Log giải thích lý do lựa chọn công nghệ.
+- **05_Domain_Model**: Xây dựng mô hình nghiệp vụ theo kiến trúc Space/Item/Relation — gồm Space, Item (Task/Note/Event/Reference), Relation và View — kèm Domain Glossary, độc lập với cơ sở dữ liệu.
+- **06_Database_Design**: Chuyển đổi Domain Model thành ERD (Logic & Physical) theo mẫu Class Table Inheritance, xây dựng Data Dictionary cho từng bảng.
+- **07_API_Design**: Thiết kế các API endpoints theo nhóm Space/Task/Note/Event/Reference/Relation/View/Dashboard, kèm Business Rules chi tiết cho từng endpoint.
 - **08_UI_UX_Design**: Xây dựng Sitemap, User Flow, danh sách UI components và liên kết tới thiết kế Figma.
 - **09_Implementation**: Ghi nhận các pattern lập trình, cấu trúc thư mục code thực tế và ghi chú kỹ thuật.
 - **10_Testing**: Xây dựng kịch bản kiểm thử (Unit test, Integration test, Manual test) và ghi nhận kết quả.
