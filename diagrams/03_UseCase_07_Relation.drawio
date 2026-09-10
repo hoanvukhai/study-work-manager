@@ -1,0 +1,46 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="NvveNBcoZ4_OpU-d9lVd">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="txBr_Txnjv9Opq5eNZld-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeWidth=1;perimeterSpacing=10;" value="Người dùng" vertex="1">
+          <mxGeometry height="60" width="30" x="170" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="300" width="270" x="360" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font face=&quot;Tahoma&quot;&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;&lt;b&gt;Module Liên kết (Relation)&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="270" x="360" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-4" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;Tạo liên kết giữa 2 Object&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="422.5" y="362" as="geometry" />
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-5" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Xoá liên kết&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="422.5" y="522" as="geometry" />
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-6" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;Xem danh sách liên kết của Object&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="422.5" y="442" as="geometry" />
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-7" edge="1" parent="1" source="txBr_Txnjv9Opq5eNZld-1" style="endArrow=none;html=1;rounded=0;" target="txBr_Txnjv9Opq5eNZld-4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="270" y="472.95744680851067" as="sourcePoint" />
+            <mxPoint x="464" y="557" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-8" edge="1" parent="1" source="txBr_Txnjv9Opq5eNZld-1" style="endArrow=none;html=1;rounded=0;" target="txBr_Txnjv9Opq5eNZld-5" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="270" y="489.97872340425533" as="sourcePoint" />
+            <mxPoint x="563" y="467" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="txBr_Txnjv9Opq5eNZld-9" edge="1" parent="1" source="txBr_Txnjv9Opq5eNZld-1" style="endArrow=none;html=1;rounded=0;" target="txBr_Txnjv9Opq5eNZld-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="270" y="481.4680851063829" as="sourcePoint" />
+            <mxPoint x="554" y="477" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

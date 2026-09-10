@@ -1,0 +1,58 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="U5k6G_xBfx01ydp4aODa">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;horizontal=1;perimeterSpacing=10;spacingTop=0;" value="Khách" vertex="1">
+          <mxGeometry height="60" width="30" x="220" y="432" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeWidth=1;perimeterSpacing=10;" value="Người dùng" vertex="1">
+          <mxGeometry height="60" width="30" x="220" y="592" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="400" width="250" x="350" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font face=&quot;Tahoma&quot; style=&quot;&quot;&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;&lt;b&gt;Module&amp;nbsp;&lt;/b&gt;&lt;/span&gt;&lt;b style=&quot;font-size: 12px;&quot;&gt;xác thực&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="250" x="350" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-6" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Đăng ký" vertex="1">
+          <mxGeometry height="70" width="140" x="400" y="342" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Đăng nhập" vertex="1">
+          <mxGeometry height="70" width="140" x="400" y="422" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-8" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Quên mật khẩu" vertex="1">
+          <mxGeometry height="70" width="140" x="400" y="502" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-14" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Đăng xuất" vertex="1">
+          <mxGeometry height="70" width="140" x="400" y="582" as="geometry" />
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-18" edge="1" parent="1" source="-2oUJKDrKGLBzLTMXawE-2" style="endArrow=none;html=1;rounded=0;" target="-2oUJKDrKGLBzLTMXawE-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="404" y="587" as="sourcePoint" />
+            <mxPoint x="454" y="537" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-19" edge="1" parent="1" source="-2oUJKDrKGLBzLTMXawE-2" style="endArrow=none;html=1;rounded=0;" target="-2oUJKDrKGLBzLTMXawE-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="344" y="506" as="sourcePoint" />
+            <mxPoint x="553" y="447" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-20" edge="1" parent="1" source="-2oUJKDrKGLBzLTMXawE-2" style="endArrow=none;html=1;rounded=0;" target="-2oUJKDrKGLBzLTMXawE-8" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="344" y="457" as="sourcePoint" />
+            <mxPoint x="544" y="457" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-2oUJKDrKGLBzLTMXawE-24" edge="1" parent="1" source="-2oUJKDrKGLBzLTMXawE-3" style="endArrow=none;html=1;rounded=0;" target="-2oUJKDrKGLBzLTMXawE-14" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="384" y="1190" as="sourcePoint" />
+            <mxPoint x="576" y="967" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

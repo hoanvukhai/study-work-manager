@@ -158,7 +158,9 @@ Mỗi khoá học có một không gian riêng — ghi chú bài học, task luy
 
 Qua quá trình khảo sát và phân tích, có thể thấy người dùng thường xuyên phải sử dụng nhiều phần mềm khác nhau để quản lý công việc, học tập, lịch biểu và tài liệu tham khảo. Hầu hết các công cụ hiện có đều buộc người dùng phân loại thông tin theo những danh mục được thiết kế sẵn, trong khi trên thực tế nhiều công việc, dự án hay mối quan tâm cá nhân không nằm gọn trong một danh mục duy nhất. Điều này khiến người dùng phải ghi trùng thông tin ở nhiều nơi, mất thời gian tìm kiếm và khó có cái nhìn tổng quan.
 
-Từ thực tế đó, đề tài hướng đến việc xây dựng một ứng dụng web cho phép người dùng tự tạo các **Không gian (Space)** theo đúng chủ đề của riêng mình, không bị giới hạn bởi việc phải phân loại "Học tập" hay "Công việc". Trong mỗi Space, người dùng có thể tạo công việc (Task), ghi chú (Note), sự kiện (Event) và tài liệu tham khảo (Reference), liên kết chúng với nhau và xem chúng theo nhiều góc nhìn khác nhau (danh sách, lịch, bảng Kanban). Hệ thống hướng đến việc giảm sự phân tán thông tin, hỗ trợ theo dõi tiến độ hiệu quả hơn và mang lại trải nghiệm quản lý đơn giản, thuận tiện cho người dùng cá nhân.
+Bên cạnh đó, ngay cả khi người dùng tự tạo được không gian quản lý theo chủ đề riêng, mỗi nội dung vẫn thường bị giới hạn trong một không gian duy nhất. Một ghi chú về JWT có thể liên quan đến cả dự án đồ án lẫn khoá học NestJS đang theo — nhưng hầu hết công cụ không cho phép nó xuất hiện ở cả hai nơi mà không cần sao chép.
+
+Từ thực tế đó, đề tài hướng đến việc xây dựng ứng dụng web quản lý cá nhân, trong đó mỗi nội dung (Task, Note, Event, Reference) tồn tại như một **đối tượng độc lập (Object)** thuộc về người dùng — có thể được đặt vào một hoặc nhiều **Không gian (Space)** tuỳ theo ngữ cảnh, liên kết với các đối tượng khác, và có vòng đời riêng (lưu trữ, xoá tạm, xoá vĩnh viễn). Hệ thống hướng đến việc giảm sự phân tán thông tin, giúp người dùng tổ chức và theo dõi công việc theo đúng cách họ nghĩ mà không bị ép vào khuôn có sẵn.
 
 ---
 
@@ -166,14 +168,15 @@ Từ thực tế đó, đề tài hướng đến việc xây dựng một ứng
 
 Dựa trên các vấn đề đã nêu, hệ thống cần có:
 
-| ID         | Mục tiêu                                                                                                                    | Giải quyết vấn đề |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| **OBJ-01** | Cho phép người dùng tự tạo Space theo chủ đề riêng, không giới hạn bởi khái niệm Học tập hay Công việc cố định.            | PP-01, PP-06      |
-| **OBJ-02** | Cho phép tạo và quản lý 4 loại nội dung trong mỗi Space: Task (công việc), Note (ghi chú), Event (sự kiện), Reference (tài liệu). | PP-02, PP-03      |
-| **OBJ-03** | Cho phép liên kết các nội dung với nhau (Relation) để thể hiện mối quan hệ giữa chúng.                                     | PP-03, PP-05      |
-| **OBJ-04** | Cung cấp nhiều góc nhìn (View) trên cùng một tập dữ liệu: Calendar View, List View, Board View (Kanban).                   | PP-02, PP-03      |
-| **OBJ-05** | Cung cấp Dashboard tổng quan giúp người dùng theo dõi Task và Event sắp đến hạn trên toàn bộ Space.                        | PP-03, PP-04      |
-| **OBJ-06** | Hỗ trợ nhắc nhở tự động các Task và Event sắp đến hạn nhằm giảm tình trạng bỏ sót deadline.                                | PP-04             |
+| ID         | Mục tiêu                                                                                                                                          | Giải quyết vấn đề |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| **OBJ-01** | Cho phép người dùng tự tạo Space theo chủ đề riêng, không giới hạn bởi khái niệm Học tập hay Công việc cố định.                                  | PP-01, PP-06      |
+| **OBJ-02** | Cho phép tạo và quản lý 4 loại nội dung: Task (công việc), Note (ghi chú), Event (sự kiện), Reference (tài liệu) — mỗi loại tồn tại độc lập với Space. | PP-02, PP-03      |
+| **OBJ-03** | Cho phép đặt một nội dung vào nhiều Space khác nhau tuỳ theo ngữ cảnh, không cần sao chép dữ liệu.                                               | PP-01, PP-03      |
+| **OBJ-04** | Cho phép liên kết các nội dung với nhau (Relation) để thể hiện mối quan hệ ngữ nghĩa giữa chúng.                                                 | PP-03, PP-05      |
+| **OBJ-05** | Cung cấp nhiều góc nhìn (View) trên cùng một tập dữ liệu: Calendar View, List View, Board View (Kanban).                                         | PP-02, PP-03      |
+| **OBJ-06** | Cung cấp Dashboard tổng quan giúp người dùng theo dõi Task và Event sắp đến hạn trên toàn bộ Space.                                              | PP-03, PP-04      |
+| **OBJ-07** | Hỗ trợ nhắc nhở tự động các Task và Event sắp đến hạn nhằm giảm tình trạng bỏ sót deadline.                                                      | PP-04             |
 
 ---
 
@@ -181,12 +184,14 @@ Dựa trên các vấn đề đã nêu, hệ thống cần có:
 
 ### Thực hiện
 
-Đề tài tập trung xây dựng ứng dụng web hỗ trợ người dùng cá nhân tự tổ chức không gian quản lý của mình, bao gồm các chức năng chính:
+Đề tài tập trung xây dựng ứng dụng web hỗ trợ người dùng cá nhân tự tổ chức thông tin của mình, bao gồm các chức năng chính:
 
 - Quản lý tài khoản và xác thực người dùng (Authentication).
-- Space do người dùng tự tạo, tự đặt tên và tự tổ chức.
-- 4 loại nội dung trong Space: Task (có deadline và trạng thái), Note (ghi chú văn bản/markdown), Event (sự kiện có thời gian), Reference (liên kết tài liệu tham khảo).
-- Relation liên kết giữa các nội dung trong Space.
+- Space do người dùng tự tạo, tự đặt tên để phân nhóm nội dung theo chủ đề riêng.
+- 4 loại nội dung (Object): Task (có deadline và trạng thái), Note (ghi chú văn bản/markdown), Event (sự kiện có thời gian), Reference (liên kết tài liệu tham khảo).
+- Mỗi Object tồn tại độc lập và có thể được đặt vào một hoặc nhiều Space tuỳ theo ngữ cảnh.
+- Relation liên kết giữa các Object với nhãn do người dùng tự đặt.
+- Vòng đời Object: active → archived → trash → xoá vĩnh viễn.
 - View: Calendar (theo thời gian), List, Board (Kanban theo trạng thái Task).
 - Dashboard tổng quan Task và Event sắp đến hạn.
 - Hệ thống thông báo, nhắc nhở Task và Event sắp đến hạn.
@@ -200,7 +205,8 @@ Trong phạm vi đồ án, hệ thống không tập trung phát triển các ch
 - Phát triển ứng dụng di động dạng native (Android hoặc iOS).
 - Tích hợp thanh toán, thương mại điện tử hoặc các dịch vụ tài chính.
 - Đồng bộ dữ liệu trực tiếp với các nền tảng bên thứ ba như Google Calendar, Google Drive hay Notion (nếu có chỉ dừng ở mức lưu liên kết).
-- Trình soạn thảo dạng block lồng nhau tự do kiểu Notion — Note trong đề tài này là văn bản và markdown đơn giản, không xây dựng block-editor có thể nhúng đệ quy.
+- Space chứa Space lồng nhau (nested Space) — cấu trúc phân cấp Space để nghiên cứu ở phiên bản sau.
+- Trình soạn thảo dạng block lồng nhau tự do kiểu Notion — Note trong đề tài này là văn bản và markdown đơn giản.
 
 ---
 

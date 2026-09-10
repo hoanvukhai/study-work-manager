@@ -1,0 +1,55 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="erVKpF-b-QQjH401J-vD">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeWidth=1;perimeterSpacing=10;" value="Người dùng" vertex="1">
+          <mxGeometry height="60" width="30" x="180" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="390" width="270" x="370" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font face=&quot;Tahoma&quot;&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;&lt;b&gt;Module Placement (Đặt Object vào Space)&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="270" x="370" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-4" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;Đặt Object vào Space&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="432.5" y="332" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-5" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Xem danh sách Space chứa Object&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="432.5" y="492" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-6" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Gỡ Object khỏi Space&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="432.5" y="412" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-7" edge="1" parent="1" source="LrNm-Lbp3Mg2nV9xTINY-1" style="endArrow=none;html=1;rounded=0;" target="LrNm-Lbp3Mg2nV9xTINY-4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="280" y="442.95744680851067" as="sourcePoint" />
+            <mxPoint x="474" y="527" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-8" edge="1" parent="1" source="LrNm-Lbp3Mg2nV9xTINY-1" style="endArrow=none;html=1;rounded=0;" target="LrNm-Lbp3Mg2nV9xTINY-5" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="280" y="459.97872340425533" as="sourcePoint" />
+            <mxPoint x="573" y="437" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-9" edge="1" parent="1" source="LrNm-Lbp3Mg2nV9xTINY-1" style="endArrow=none;html=1;rounded=0;" target="LrNm-Lbp3Mg2nV9xTINY-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="280" y="451.4680851063829" as="sourcePoint" />
+            <mxPoint x="564" y="447" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Xem Object chưa gắn Space (Unassigned)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="430" y="572" as="geometry" />
+        </mxCell>
+        <mxCell id="LrNm-Lbp3Mg2nV9xTINY-12" edge="1" parent="1" source="LrNm-Lbp3Mg2nV9xTINY-1" style="endArrow=none;html=1;rounded=0;" target="LrNm-Lbp3Mg2nV9xTINY-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="390" y="490" as="sourcePoint" />
+            <mxPoint x="533" y="541" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -7,14 +7,15 @@
 
 ## Liên kết với Objectives
 
-| Objective (từ 01_Research)                                      | Nhóm FR liên quan                            |
-| --------------------------------------------------------------- | -------------------------------------------- |
-| OBJ-01 — Tự tạo Space theo chủ đề riêng                        | FR-SPACE                                     |
-| OBJ-02 — Quản lý Task / Note / Event / Reference trong Space    | FR-TASK, FR-NOTE, FR-EVENT, FR-REF           |
-| OBJ-03 — Liên kết (Relation) giữa các nội dung                 | FR-REL                                       |
-| OBJ-04 — Nhiều góc nhìn (View) trên cùng dữ liệu               | FR-VIEW                                      |
-| OBJ-05 — Dashboard tổng quan                                    | FR-DASH                                      |
-| OBJ-06 — Nhắc nhở tự động                                      | FR-NOTIF                                     |
+| Objective (từ 01_Research)                                                                          | Nhóm FR liên quan                  |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| OBJ-01 — Tự tạo Space theo chủ đề riêng                                                           | FR-SPACE                           |
+| OBJ-02 — Quản lý Task / Note / Event / Reference tồn tại độc lập (Object)                         | FR-TASK, FR-NOTE, FR-EVENT, FR-REF |
+| OBJ-03 — Đặt Object vào nhiều Space theo ngữ cảnh                                                   | FR-PLACEMENT                       |
+| OBJ-04 — Liên kết ngữ nghĩa giữa các Object (Relation)                                              | FR-REL                             |
+| OBJ-05 — Nhiều góc nhìn (View) trên cùng dữ liệu                                                    | FR-VIEW                            |
+| OBJ-06 — Dashboard tổng quan                                                                      | FR-DASH                            |
+| OBJ-07 — Nhắc nhở tự động                                                                          | FR-NOTIF                           |
 
 ---
 
@@ -116,41 +117,53 @@
 
 ---
 
-### 1.7 Relation — Liên kết giữa các nội dung
+### 1.7 Placement — Đặt Object vào Space
 
-| ID          | Yêu cầu                                                                                       | Nguồn gốc        | Độ ưu tiên  |
-| ----------- | --------------------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-REL-01   | Hệ thống cho phép tạo liên kết giữa 2 nội dung bất kỳ (Task/Note/Event/Reference), chọn loại quan hệ: contains / links-to / related-to. | OBJ-03, PP-03 | Must have   |
-| FR-REL-02   | Hệ thống cho phép xem danh sách các nội dung đang liên kết với một nội dung cụ thể.          | OBJ-03           | Must have   |
-| FR-REL-03   | Hệ thống cho phép xoá một liên kết.                                                          | OBJ-03           | Must have   |
-
----
-
-### 1.8 View — Góc nhìn dữ liệu
-
-| ID           | Yêu cầu                                                                                     | Nguồn gốc        | Độ ưu tiên  |
-| ------------ | ------------------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-VIEW-01   | Hệ thống cung cấp Calendar View — các nội dung có thông tin thời gian (Task có deadline, Event có startAt) hiển thị theo ngày/tuần/tháng. | OBJ-04, PP-02 | Must have   |
-| FR-VIEW-02   | Hệ thống cung cấp List View — toàn bộ nội dung trong một Space hiển thị dạng danh sách.    | OBJ-04           | Must have   |
-| FR-VIEW-03   | Hệ thống cung cấp Board View — Task hiển thị dạng Kanban theo trạng thái (Todo / Doing / Done). | OBJ-04, PP-03 | Should have |
+| ID              | Yêu cầu                                                                                                                              | Nguồn gốc        | Độ ưu tiên  |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ----------- |
+| FR-PLACE-01     | Hệ thống cho phép người dùng đặt một Object vào một Space.                                                                      | OBJ-03           | Must have   |
+| FR-PLACE-02     | Hệ thống cho phép người dùng đặt cùng một Object vào nhiều Space khác nhau mà không sao chép dữ liệu.                            | OBJ-03, PP-01    | Must have   |
+| FR-PLACE-03     | Hệ thống cho phép người dùng gỡ một Object khỏi Space mà không xóa Object đó — Object vẫn tồn tại nhưng không gắn với Space nữa. | OBJ-03           | Must have   |
+| FR-PLACE-04     | Hệ thống hiển thị danh sách các Space mà một Object đang được đặt vào.                                                         | OBJ-03           | Should have |
+| FR-PLACE-05     | Hệ thống cung cấp khu vực xem các Object chưa được đặt vào Space nào (Unassigned).                                               | OBJ-03, PP-03    | Should have |
 
 ---
 
-### 1.9 Dashboard — Tổng quan
+### 1.8 Relation — Liên kết giữa các Object
+
+| ID          | Yêu cầu                                                                                                                                       | Nguồn gốc        | Độ ưu tiên  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- | ----------- |
+| FR-REL-01   | Hệ thống cho phép tạo liên kết giữa 2 Object bất kỳ và đặt nhãn tự do cho mối liên kết (ờ dụ: “tham khảo”, “liên quan”, “cần làm trước”). | OBJ-04, PP-03    | Must have   |
+| FR-REL-02   | Hệ thống cho phép xem danh sách các Object đang liên kết với một Object cụ thể (cả 2 chiều đi ra và đi vào).            | OBJ-04           | Must have   |
+| FR-REL-03   | Hệ thống cho phép xoá một liên kết.                                                                                              | OBJ-04           | Must have   |
+
+---
+
+### 1.9 View — Góc nhìn dữ liệu
 
 | ID           | Yêu cầu                                                                                     | Nguồn gốc        | Độ ưu tiên  |
 | ------------ | ------------------------------------------------------------------------------------------- | ---------------- | ----------- |
-| FR-DASH-01   | Hệ thống hiển thị Task và Event sắp đến hạn trong 7 ngày tới trên toàn bộ Space.           | OBJ-05, PP-04    | Must have   |
-| FR-DASH-02   | Hệ thống hiển thị tổng quan số lượng Task theo trạng thái trên toàn bộ Space.              | OBJ-05, PP-03    | Should have |
-| FR-DASH-03   | Hệ thống hiển thị số lượng Task theo từng Space để người dùng nắm tổng quan tiến độ.       | OBJ-05, PP-03    | Should have |
-| FR-DASH-04   | Hệ thống hiển thị danh sách Space truy cập gần đây.                                        | OBJ-05           | Should have |
-| FR-DASH-05   | Hệ thống cho phép truy cập nhanh từ Dashboard đến Space, Task hoặc Event tương ứng.        | OBJ-05, PP-02    | Should have |
+| FR-VIEW-01   | Hệ thống cung cấp Calendar View — các Object có dữ liệu thời gian (Task có dueDate, Event có startAt) hiển thị theo ngày/tuần/tháng. | OBJ-05, PP-02 | Must have   |
+| FR-VIEW-02   | Hệ thống cung cấp List View — toàn bộ Object trong một Space hiển thị dạng danh sách.    | OBJ-05           | Must have   |
+| FR-VIEW-03   | Hệ thống cung cấp Board View — Task hiển thị dạng Kanban theo trạng thái (Todo / Doing / Done). | OBJ-05, PP-03 | Should have |
+
+---
+
+### 1.10 Dashboard — Tổng quan
+
+| ID           | Yêu cầu                                                                                     | Nguồn gốc        | Độ ưu tiên  |
+| ------------ | ------------------------------------------------------------------------------------------- | ---------------- | ----------- |
+| FR-DASH-01   | Hệ thống hiển thị Task và Event sắp đến hạn trong 7 ngày tới trên toàn bộ Space.           | OBJ-06, PP-04    | Must have   |
+| FR-DASH-02   | Hệ thống hiển thị tổng quan số lượng Task theo trạng thái trên toàn bộ Space.              | OBJ-06, PP-03    | Should have |
+| FR-DASH-03   | Hệ thống hiển thị số lượng Task theo từng Space để người dùng nắm tổng quan tiến độ.       | OBJ-06, PP-03    | Should have |
+| FR-DASH-04   | Hệ thống hiển thị danh sách Space truy cập gần đây.                                        | OBJ-06           | Should have |
+| FR-DASH-05   | Hệ thống cho phép truy cập nhanh từ Dashboard đến Space, Task hoặc Event tương ứng.        | OBJ-06, PP-02    | Should have |
 | FR-DASH-06   | Hệ thống cho phép lọc nội dung Dashboard theo khoảng thời gian cụ thể.                       | PP-03            | Could have  |
 | FR-DASH-07   | Hệ thống hiển thị danh sách Note và Reference được truy cập hoặc cập nhật gần đây.          | PP-02, PP-05     | Could have  |
 
 ---
 
-### 1.10 Notification — Nhắc nhở
+### 1.11 Notification — Nhắc nhở
 
 | ID            | Yêu cầu                                                                                    | Nguồn gốc        | Độ ưu tiên  |
 | ------------- | ------------------------------------------------------------------------------------------ | ---------------- | ----------- |
@@ -195,8 +208,21 @@
 
 **Space**
 - Tên Space không được để trống.
-- Xoá Space sẽ xoá toàn bộ nội dung và Relation bên trong (cascade) — bắt buộc xác nhận trước khi xoá.
+- Xoá Space chỉ xóa các bản ghi trong bảng `SpaceObject` (gỡ Object khỏi Space), không xóa các Object đó khỏi hệ thống trừ khi chúng không còn được đặt ở Space nào khác.
 - Mỗi Space phải thuộc đúng một người dùng.
+
+**Object — Vòng đời**
+- Mỗi Object thuộc đúng một người dùng, xác định qua `ownerId`.
+- Object có thể tồn tại mà không được đặt vào Space nào (Unassigned).
+- Archive: set `archivedAt`, Object không hiển thị mặc định nhưng vẫn tìm được.
+- Trash: set `deletedAt`, không tự động xóa vĩnh viễn trong V1.
+- Permanent Delete: xóa cứng Object + cascade xóa `SpaceObject` và `Relation` liên quan.
+- Không thể Archive hoặc Trash một Object đã bị Permanently Deleted.
+
+**Placement (SpaceObject)**
+- Một Object có thể được đặt vào nhiều Space khác nhau cùng lúc.
+- Một Object chỉ xuất hiện tối đa một lần trong mỗi Space (unique constraint trên cặp spaceId + objectId).
+- Gỡ Object khỏi Space chỉ xóa bản ghi SpaceObject, không ảnh hưởng đến Object hay các Space khác.
 
 **Task**
 - `title` không được để trống.
@@ -214,8 +240,9 @@
 - Phải có ít nhất URL hoặc file đính kèm, không được để trống cả hai.
 
 **Relation**
-- Không tạo Relation giữa một nội dung với chính nó.
-- Không tạo trùng lặp 2 Relation cùng loại giữa cùng một cặp nội dung.
+- Không tạo Relation giữa một Object với chính nó.
+- Không tạo trùng lặp 2 Relation có cùng nhãn giữa cùng một cặp Object.
+- `label` không được để trống.
 
 **Notification**
 - Không tạo thông báo mới cho Task đã ở trạng thái Done.
