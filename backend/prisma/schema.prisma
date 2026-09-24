@@ -1,0 +1,181 @@
+// Prisma Schema for study-work-manager (Architecture Lan 3 - Hybrid Object)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ObjectType {
+  TASK
+  NOTE
+  EVENT
+  REFERENCE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ObjectLifecycle {
+  ACTIVE
+  ARCHIVED
+  TRASH
+}
+
+enum RelationType {
+  RELATES_TO
+  DEPENDS_ON
+  REFERENCES
+  PARENT_OF
+}
+
+model User {
+  id           String         @id @default(uuid()) @db.Uuid
+  email        String         @unique @db.VarChar(255)
+  passwordHash String         @map("password_hash") @db.VarChar(255)
+  fullName     String         @map("full_name") @db.VarChar(100)
+  avatarUrl    String?        @map("avatar_url")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  spaces        Space[]
+  objects       Object[]
+  tags          Tag[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Space {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  name        String    @db.VarChar(100)
+  description String?
+  icon        String    @default("📁") @db.VarChar(50)
+  color       String    @default("#6366f1") @db.VarChar(20)
+  parentId    String?   @map("parent_id") @db.Uuid
+  isArchived  Boolean   @default(false) @map("is_archived")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent       Space?        @relation("SpaceHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Space[]       @relation("SpaceHierarchy")
+  spaceObjects SpaceObject[]
+
+  @@map("spaces")
+}
+
+model Object {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @map("user_id") @db.Uuid
+  type        ObjectType
+  title       String          @db.VarChar(255)
+  description String?
+  status      TaskStatus      @default(TODO)
+  priority    Priority        @default(MEDIUM)
+  lifecycle   ObjectLifecycle @default(ACTIVE)
+  dueDate     DateTime?       @map("due_date") @db.Timestamptz
+  startAt     DateTime?       @map("start_at") @db.Timestamptz
+  endAt       DateTime?       @map("end_at") @db.Timestamptz
+  url         String?
+  metadata    Json            @default("{}")
+  deletedAt   DateTime?       @map("deleted_at") @db.Timestamptz
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spaceObjects  SpaceObject[]
+  outgoingRel   ObjectRelation[] @relation("OutgoingRelations")
+  incomingRel   ObjectRelation[] @relation("IncomingRelations")
+  objectTags    ObjectTag[]
+  notifications Notification[]
+
+  @@index([userId, lifecycle])
+  @@index([userId, type])
+  @@map("objects")
+}
+
+model SpaceObject {
+  id        String   @id @default(uuid()) @db.Uuid
+  spaceId   String   @map("space_id") @db.Uuid
+  objectId  String   @map("object_id") @db.Uuid
+  position  Int      @default(0)
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  addedAt   DateTime @default(now()) @map("added_at") @db.Timestamptz
+
+  space  Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  object Object @relation(fields: [objectId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, objectId])
+  @@map("space_objects")
+}
+
+model ObjectRelation {
+  id           String       @id @default(uuid()) @db.Uuid
+  fromObjectId String       @map("from_object_id") @db.Uuid
+  toObjectId   String       @map("to_object_id") @db.Uuid
+  relationType RelationType @default(RELATES_TO) @map("relation_type")
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  fromObject Object @relation("OutgoingRelations", fields: [fromObjectId], references: [id], onDelete: Cascade)
+  toObject   Object @relation("IncomingRelations", fields: [toObjectId], references: [id], onDelete: Cascade)
+
+  @@unique([fromObjectId, toObjectId, relationType])
+  @@map("object_relations")
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(50)
+  color     String   @default("#94a3b8") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objectTags ObjectTag[]
+
+  @@unique([userId, name])
+  @@map("tags")
+}
+
+model ObjectTag {
+  objectId String @map("object_id") @db.Uuid
+  tagId    String @map("tag_id") @db.Uuid
+
+  object Object @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([objectId, tagId])
+  @@map("object_tags")
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  objectId  String?   @map("object_id") @db.Uuid
+  title     String    @db.VarChar(255)
+  message   String
+  isRead    Boolean   @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  object Object? @relation(fields: [objectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
