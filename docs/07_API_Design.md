@@ -1,10 +1,10 @@
 # 07_API_Design.md — Thiết kế API
 
 > **Tầng:** Design (Tầng 2 / 3)  
-> **Phụ thuộc vào:** [06_Database_Design.md](06_Database_Design.md) — Data Dictionary, [03_Functional_Analysis.md](03_Functional_Analysis.md) — Feature Matrix  
+> **Phụ thuộc vào:** [06_Database_Design.md](06_Database_Design.md) — Data Dictionary & Prisma Schema, [03_Functional_Analysis.md](03_Functional_Analysis.md) — Feature Matrix  
 > **Tài liệu tiếp theo:** [08_UI_UX_Design.md](08_UI_UX_Design.md) và [09_Implementation.md](09_Implementation.md)  
-> **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** —
+> **Trạng thái:** Hoàn thành  
+> **Cập nhật lần cuối:** 11/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hybrid Object)
 
 ---
 
@@ -12,69 +12,70 @@
   HƯỚNG DẪN VIẾT FILE NÀY:
   
   Quy trình:
-  1. Thiết kế API trong file này (Markdown) — đây là "source of truth" nghiệp vụ
-  2. Khi code NestJS → tạo DTO/Controller khớp với thiết kế này
-  3. NestJS tự sinh Swagger từ decorator → Swagger là bản kỹ thuật bổ sung
+  1. Thiết kế API trong file này (Markdown) trước khi code
+  2. Khi code xong backend, dùng Swagger / Postman để test
+  3. Xuất file OpenAPI spec (openapi.json) nếu cần nộp cùng báo cáo
   
-  Tại sao không dùng Swagger trực tiếp?
-  → Swagger không diễn đạt được business rules (vd: "dueDate < ngày tạo → reject")
-  → Markdown đọc được không cần chạy server
-  
-  Quy tắc đặt tên endpoint:
-  - RESTful: noun, plural, lowercase
-  - Ví dụ: GET /tasks, POST /tasks, PATCH /tasks/:id, DELETE /tasks/:id
+  Cấu trúc một endpoint chuẩn:
+  - Method + Path
+  - Auth required: Yes/No
+  - Request body (nếu POST/PATCH) + ví dụ JSON
+  - Response (status code + ví dụ JSON)
+  - Business rules / validation liên quan
 -->
 
 ## Quy ước chung
 
-| | |
-|---|---|
-| Base URL | `http://localhost:3001/api` |
-| Auth header | `Authorization: Bearer <access_token>` |
-| Format | JSON (request & response) |
-| Timezone | ISO 8601 với timezone (e.g. `2026-07-21T09:00:00+07:00`) |
-| ID format | UUID v4 |
-
-**HTTP Status Codes:**
-
-| Code | Ý nghĩa |
-|---|---|
-| 200 OK | Thành công, có dữ liệu trả về |
-| 201 Created | Tạo mới thành công |
-| 204 No Content | Thành công, không có dữ liệu trả về |
-| 400 Bad Request | Dữ liệu đầu vào không hợp lệ |
-| 401 Unauthorized | Chưa đăng nhập hoặc token hết hạn |
-| 403 Forbidden | Không có quyền |
-| 404 Not Found | Không tìm thấy tài nguyên |
-| 409 Conflict | Xung đột dữ liệu (ví dụ: email đã tồn tại) |
-| 500 Internal Server Error | Lỗi hệ thống |
+- **Base URL:** `/api/v1`
+- **Format:** JSON cho cả request và response (`Content-Type: application/json`)
+- **Auth:** Bearer Token trong header `Authorization: Bearer <jwt_token>`
+- **Error Response format:**
+```json
+{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "errors": ["title must not be empty"],
+  "timestamp": "2026-09-11T07:30:00.000Z"
+}
+```
 
 ---
 
 ## 1. Auth Module
 
-### POST /auth/register — Đăng ký tài khoản
+| Endpoint | Mô tả |
+|---|---|
+| POST /auth/register | Đăng ký tài khoản mới |
+| POST /auth/login | Đăng nhập lấy JWT access token |
+| GET /auth/me | Thông tin user đăng nhập hiện tại |
+
+### POST /auth/register — Đăng ký
 
 **Request Body:**
 ```json
 {
   "email": "user@example.com",
-  "password": "password123",
-  "name": "Nguyễn Văn A"
+  "password": "Password123",
+  "fullName": "Nguyễn Văn A"
 }
 ```
 
 **Business Rules:**
-- Email phải hợp lệ (format email)
-- Password tối thiểu 8 ký tự
-- Email chưa tồn tại trong hệ thống → nếu đã tồn tại: `409 Conflict`
+- `email` phải đúng định dạng email, không được trùng với tài khoản đã có.
+- `password` tối thiểu 8 ký tự.
+- `fullName` không được rỗng.
 
 **Response 201:**
 ```json
-{ "message": "Đăng ký thành công" }
+{
+  "user": {
+    "id": "uuid-user-1",
+    "email": "user@example.com",
+    "fullName": "Nguyễn Văn A"
+  },
+  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+}
 ```
-
----
 
 ### POST /auth/login — Đăng nhập
 
@@ -82,217 +83,181 @@
 ```json
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "Password123"
 }
 ```
 
 **Business Rules:**
-- Email và password phải khớp → nếu sai: `401 Unauthorized`
+- Sai email hoặc sai mật khẩu đều trả về lỗi chung `401 Unauthorized: "Email hoặc mật khẩu không chính xác"` để chống dò tài khoản.
 
-**Response 200:**
-```json
-{
-  "accessToken": "eyJ...",
-  "refreshToken": "eyJ..."
-}
-```
+**Response 200:** *(trả về accessToken và thông tin user)*
 
 ---
 
-### POST /auth/refresh — Làm mới access token
+## 2. Space Module
 
-**Request Body:**
-```json
-{ "refreshToken": "eyJ..." }
-```
+| Endpoint | Mô tả |
+|---|---|
+| GET /spaces | Danh sách tất cả Space của user |
+| POST /spaces | Tạo Space mới |
+| GET /spaces/:id | Chi tiết một Space |
+| PATCH /spaces/:id | Cập nhật thông tin Space (tên, icon, color) |
+| DELETE /spaces/:id | Xóa Space (chuyển các Object con về Unassigned) |
 
-**Response 200:**
-```json
-{ "accessToken": "eyJ..." }
-```
-
----
-
-### POST /auth/logout — Đăng xuất
-
-*Yêu cầu: Authorization header*
-
-**Response 204:** *(không có body)*
-
----
-
-## 2. Task Module
-
-*Tất cả endpoint đều yêu cầu Authorization header.*  
-*Mọi Task đều thuộc user đang đăng nhập — không thể đọc/sửa task của người khác.*
-
-### GET /tasks — Lấy danh sách task
-
-**Query Parameters:**
-| Param | Kiểu | Mô tả |
-|---|---|---|
-| `status` | string | Lọc theo status: TODO / IN_PROGRESS / DONE / CANCELLED |
-| `priority` | string | Lọc theo priority: LOW / MEDIUM / HIGH |
-| `tagId` | UUID | Lọc theo tag |
-| `page` | int | Trang (default: 1) |
-| `limit` | int | Số item mỗi trang (default: 20, max: 100) |
-
-**Response 200:**
-```json
-{
-  "data": [
-    {
-      "id": "uuid",
-      "title": "Nộp báo cáo chương 3",
-      "status": "TODO",
-      "priority": "HIGH",
-      "dueDate": "2026-07-25T23:59:00+07:00",
-      "tags": [{ "id": "uuid", "name": "Đồ án", "color": "#6366f1" }],
-      "createdAt": "2026-07-21T09:00:00+07:00"
-    }
-  ],
-  "total": 15,
-  "page": 1,
-  "limit": 20
-}
-```
-
----
-
-### POST /tasks — Tạo task mới
+### POST /spaces — Tạo Space mới
 
 **Request Body:**
 ```json
 {
-  "title": "Nộp báo cáo chương 3",
-  "description": "Gồm phần phân tích và thiết kế",
+  "name": "Đồ án tốt nghiệp",
+  "description": "Quản lý tiến độ ĐATN",
+  "icon": "🎓",
+  "color": "#6366f1",
+  "parentId": null
+}
+```
+
+**Business Rules:**
+- `name` bắt buộc, không được để trống.
+- `parentId` (nếu có) phải thuộc về user hiện tại.
+
+---
+
+## 3. Object Core Module (Task, Note, Event, Reference)
+
+| Endpoint | Mô tả |
+|---|---|
+| GET /objects | Lấy danh sách Object (lọc theo type, status, spaceId, tagId, search) |
+| POST /objects | Tạo Object mới (tự động gán vào spaceId nếu có truyền) |
+| GET /objects/:id | Chi tiết Object kèm tags và relations |
+| PATCH /objects/:id | Cập nhật thuộc tính Object |
+| PATCH /objects/:id/lifecycle | Chuyển đổi trạng thái (ARCHIVE, TRASH, RESTORE) |
+| DELETE /objects/:id | Xóa vĩnh viễn (Hard delete từ Trash) |
+
+### POST /objects — Tạo Object mới
+
+**Request Body (Ví dụ tạo TASK):**
+```json
+{
+  "type": "TASK",
+  "title": "Hoàn thiện bản thiết kế API",
+  "description": "Mô tả chi tiết các endpoint",
   "priority": "HIGH",
-  "dueDate": "2026-07-25T23:59:00+07:00",
+  "dueDate": "2026-09-12T23:59:00.000Z",
+  "spaceId": "uuid-space-1",
   "tagIds": ["uuid-tag-1"]
 }
 ```
 
 **Business Rules:**
-- `title` bắt buộc, không được rỗng
-- `dueDate` (nếu có) không được nhỏ hơn thời điểm tạo
-- `tagIds` phải thuộc user hiện tại
+- `title` bắt buộc, không được rỗng.
+- `type` bắt buộc thuộc một trong bốn loại: `TASK`, `NOTE`, `EVENT`, `REFERENCE`.
+- Nếu truyền `spaceId`, hệ thống tự động tạo bản ghi `SpaceObject` tương ứng.
 
-**Response 201:** *(trả về task vừa tạo)*
+### PATCH /objects/:id/lifecycle — Quản lý vòng đời
 
----
-
-### GET /tasks/:id — Xem chi tiết task
-
-**Business Rules:**
-- Task phải thuộc user hiện tại → `403 Forbidden` nếu không phải
-
-**Response 200:** *(trả về task đầy đủ gồm tags và references)*
-
----
-
-### PATCH /tasks/:id — Cập nhật task
-
-**Request Body:** *(tất cả fields đều optional)*
+**Request Body:**
 ```json
 {
-  "title": "...",
-  "status": "IN_PROGRESS",
-  "dueDate": "..."
+  "action": "TRASH" // Hợp lệ: "ARCHIVE", "TRASH", "RESTORE"
 }
 ```
 
 **Business Rules:**
-- Không thể sửa task của người khác → `403 Forbidden`
-- Task status `DONE` hoặc `CANCELLED` → không thể sửa các field khác (chỉ có thể reopen)
-
-**Response 200:** *(trả về task đã cập nhật)*
+- `TRASH`: Gán `deletedAt = now()`, ẩn khỏi mọi view và Space.
+- `RESTORE`: Gán `deletedAt = null`, đưa về `ACTIVE`.
+- `ARCHIVE`: Đưa vào lưu trữ, không kích hoạt thông báo nhắc việc.
 
 ---
 
-### DELETE /tasks/:id — Xóa task
+## 4. Placement Module (Gán & Gỡ Space)
+
+| Endpoint | Mô tả |
+|---|---|
+| POST /spaces/:spaceId/objects/:objectId | Đặt Object vào Space |
+| DELETE /spaces/:spaceId/objects/:objectId | Gỡ Object khỏi Space (không xóa Object gốc) |
+
+### DELETE /spaces/:spaceId/objects/:objectId — Gỡ khỏi Space
 
 **Business Rules:**
-- Soft delete (đánh dấu `deletedAt`) hoặc hard delete — quyết định khi code
+- Chỉ xóa bản ghi vị trí trong `space_objects`.
+- Dữ liệu gốc trong `objects` vẫn an toàn tuyệt đối.
+- Nếu Object không còn nằm trong Space nào khác, tự động xuất hiện ở mục Unassigned.
 
-**Response 204**
-
----
-
-## 3. Learning Module
-
-*(Tương tự Task Module — cấu trúc endpoint giống nhau)*
-
-| Endpoint | Mô tả |
-|---|---|
-| GET /learning | Danh sách learning items |
-| POST /learning | Tạo learning item mới |
-| GET /learning/:id | Chi tiết |
-| PATCH /learning/:id | Cập nhật (bao gồm `progress` 0–100) |
-| DELETE /learning/:id | Xóa |
-
-**Business Rule đặc thù:**
-- `progress` phải là số nguyên 0–100
-- Khi `progress = 100`, status tự động chuyển sang `COMPLETED`
-
----
-
-## 4. Calendar Module
-
-| Endpoint | Mô tả |
-|---|---|
-| GET /calendar | Lấy events trong khoảng thời gian (`?from=&to=`) |
-| POST /calendar | Tạo event mới (có thể gắn taskId/learningId) |
-| PATCH /calendar/:id | Cập nhật event |
-| DELETE /calendar/:id | Xóa event |
-
-**Business Rule:**
-- `startTime` bắt buộc
-- `endTime` (nếu có) phải >= `startTime`
-- Một event chỉ được gắn với **một** task hoặc **một** learning item (không phải cả hai)
-
----
-
-## 5. Reference Module
-
-| Endpoint | Mô tả |
-|---|---|
-| GET /references | Danh sách (lọc theo taskId/learningId) |
-| POST /references | Tạo mới |
-| PATCH /references/:id | Cập nhật |
-| DELETE /references/:id | Xóa |
-
----
-
-## 6. Notification Module
-
-| Endpoint | Mô tả |
-|---|---|
-| GET /notifications | Lấy danh sách notifications của user |
-| PATCH /notifications/:id/read | Đánh dấu đã đọc |
-| PATCH /notifications/read-all | Đánh dấu tất cả đã đọc |
-
----
-
-## 7. Dashboard Module
-
-| Endpoint | Mô tả |
-|---|---|
-| GET /dashboard/summary | Tổng quan: số task theo status, learning sắp deadline, events hôm nay |
-
-**Response 200 (ví dụ):**
+**Response 200:**
 ```json
 {
-  "tasks": {
-    "total": 12,
-    "todo": 5,
-    "inProgress": 4,
-    "done": 3,
-    "overdue": 2
+  "message": "Đã gỡ Object khỏi Space thành công"
+}
+```
+
+---
+
+## 5. Relation Module (Liên kết Chéo giữa các Object)
+
+| Endpoint | Mô tả |
+|---|---|
+| POST /relations | Tạo liên kết giữa 2 Object bất kỳ |
+| GET /objects/:id/relations | Lấy toàn bộ liên kết chiều đi và đến của một Object |
+| DELETE /relations/:id | Xóa liên kết giữa 2 Object |
+
+### POST /relations — Tạo liên kết
+
+**Request Body:**
+```json
+{
+  "fromObjectId": "uuid-object-task",
+  "toObjectId": "uuid-object-note",
+  "relationType": "REFERENCES"
+}
+```
+
+**Business Rules:**
+- `fromObjectId` không được trùng với `toObjectId` (không tự liên kết).
+- Cả hai Object phải thuộc quyền sở hữu của user đăng nhập hiện tại.
+
+---
+
+## 6. Views & Dashboard Module
+
+| Endpoint | Mô tả |
+|---|---|
+| GET /views/kanban | Lấy danh sách Object gom nhóm theo trạng thái (TODO, IN_PROGRESS, DONE) |
+| GET /views/calendar | Lấy các Object có mốc thời gian trong khoảng `?from=&to=` |
+| GET /views/timeline | Lấy danh sách Object sắp xếp theo dòng thời gian |
+| GET /views/unassigned | Lấy toàn bộ các Object chưa được gán vào Space nào |
+| GET /dashboard/summary | Thống kê số lượng theo status, task quá hạn, sự kiện hôm nay |
+
+**Response GET /dashboard/summary (ví dụ):**
+```json
+{
+  "counts": {
+    "tasksTotal": 15,
+    "todo": 6,
+    "inProgress": 5,
+    "done": 4,
+    "overdue": 1,
+    "notesTotal": 10,
+    "eventsTotal": 3,
+    "referencesTotal": 8
   },
-  "todayEvents": [...],
-  "upcomingDeadlines": [...]
+  "todayEvents": [ ... ],
+  "upcomingDeadlines": [ ... ]
 }
 ```
+
+---
+
+## 7. Notification Module & Tags
+
+| Endpoint | Mô tả |
+|---|---|
+| GET /notifications | Lấy danh sách thông báo nhắc việc của user |
+| PATCH /notifications/:id/read | Đánh dấu một thông báo đã đọc |
+| PATCH /notifications/read-all | Đánh dấu tất cả thông báo đã đọc |
+| GET /tags | Danh sách Tag của user |
+| POST /tags | Tạo Tag mới |
+| DELETE /tags/:id | Xóa Tag |
 
 ---
 

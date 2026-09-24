@@ -7,15 +7,15 @@
 
 ## Liên kết với Objectives
 
-| Objective (từ 01_Research)                                                                          | Nhóm FR liên quan                  |
-| ----------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| OBJ-01 — Tự tạo Space theo chủ đề riêng                                                           | FR-SPACE                           |
-| OBJ-02 — Quản lý Task / Note / Event / Reference tồn tại độc lập (Object)                         | FR-TASK, FR-NOTE, FR-EVENT, FR-REF |
-| OBJ-03 — Đặt Object vào nhiều Space theo ngữ cảnh                                                   | FR-PLACEMENT                       |
-| OBJ-04 — Liên kết ngữ nghĩa giữa các Object (Relation)                                              | FR-REL                             |
-| OBJ-05 — Nhiều góc nhìn (View) trên cùng dữ liệu                                                    | FR-VIEW                            |
-| OBJ-06 — Dashboard tổng quan                                                                      | FR-DASH                            |
-| OBJ-07 — Nhắc nhở tự động                                                                          | FR-NOTIF                           |
+| Objective (từ 01_Research)                                                | Nhóm FR liên quan                  |
+| ------------------------------------------------------------------------- | ---------------------------------- |
+| OBJ-01 — Tự tạo Space theo chủ đề riêng                                   | FR-SPACE                           |
+| OBJ-02 — Quản lý Task / Note / Event / Reference tồn tại độc lập (Object) | FR-TASK, FR-NOTE, FR-EVENT, FR-REF |
+| OBJ-03 — Đặt Object vào nhiều Space theo ngữ cảnh                         | FR-PLACEMENT                       |
+| OBJ-04 — Liên kết ngữ nghĩa giữa các Object (Relation)                    | FR-REL                             |
+| OBJ-05 — Nhiều góc nhìn (View) trên cùng dữ liệu                          | FR-VIEW                            |
+| OBJ-06 — Dashboard tổng quan                                              | FR-DASH                            |
+| OBJ-07 — Nhắc nhở tự động                                                 | FR-NOTIF                           |
 
 ---
 

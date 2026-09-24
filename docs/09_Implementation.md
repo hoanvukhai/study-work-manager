@@ -4,81 +4,95 @@
 > **Phụ thuộc vào:** [07_API_Design.md](07_API_Design.md), [08_UI_UX_Design.md](08_UI_UX_Design.md)  
 > **Tài liệu tiếp theo:** [10_Testing.md](10_Testing.md)  
 > **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** —
+> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hạt nhân Đa hình Object)
 
 ---
-
-<!--
-  File này là "nhật ký kỹ thuật" — ghi lại những quyết định khi code.
-  Không cần viết trước — viết song song khi code.
-  Những gì ghi ở đây sẽ được đưa vào Chương 4 của báo cáo.
--->
 
 ## 1. Môi trường phát triển
 
 | Công cụ | Phiên bản | Ghi chú |
 |---|---|---|
-| Node.js | 20.x LTS | |
-| npm | 10.x | |
-| PostgreSQL | 16.x | |
-| VS Code | Latest | Extensions: Prisma, ESLint, Prettier |
+| Node.js | 20.x LTS | Môi trường runtime JavaScript/TypeScript |
+| npm | 10.x | Quản lý gói |
+| PostgreSQL | 16.x | Cơ sở dữ liệu chính (8 bảng Lần 3) |
+| Prisma ORM | 5.x | ORM kết nối CSDL và sinh TypeScript client |
+| NestJS | 10.x | Framework Backend |
+| Next.js | 14.x / 15.x | Framework Frontend (App Router) |
 
 ### Cài đặt môi trường
 
 ```bash
-# 1. Clone repo
-git clone https://github.com/[username]/study-work-manager.git
+# 1. Clone repository
+git clone https://github.com/hoanvukhai/study-work-manager.git
 cd study-work-manager
 
-# 2. Backend
+# 2. Khởi tạo Backend (NestJS + Prisma)
 cd backend
 npm install
-cp .env.example .env       # Điền DATABASE_URL, JWT_SECRET
-npx prisma migrate dev      # Tạo database + chạy migration
-npx prisma db seed          # Seed dữ liệu mẫu (nếu có)
+cp .env.example .env          # Điền DATABASE_URL, JWT_SECRET
+npx prisma migrate dev         # Chạy migration tạo 8 bảng dữ liệu
+npx prisma db seed             # Nạp dữ liệu mẫu
 npm run start:dev
 
-# 3. Frontend
+# 3. Khởi tạo Frontend (Next.js)
 cd ../frontend
 npm install
-cp .env.example .env.local  # Điền NEXT_PUBLIC_API_URL
+cp .env.example .env.local     # Điền NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 npm run dev
 ```
 
 ---
 
-## 2. Cấu trúc Backend (NestJS)
+## 2. Cấu trúc Backend (NestJS — Kiến trúc Lần 3)
 
-### Patterns sử dụng
-
-| Pattern | Áp dụng ở đâu | Lý do |
-|---|---|---|
-| Repository Pattern | Tất cả Service | Tách logic DB ra khỏi Service, dễ test |
-| DTO (Data Transfer Object) | Controller input | Validate và type-safe dữ liệu đầu vào |
-| Guard | JWT Auth | Bảo vệ endpoint cần đăng nhập |
-| Global Exception Filter | common/filters/ | Xử lý lỗi thống nhất toàn app |
-
-### Cấu trúc một Module (ví dụ: Task)
+### Danh mục các Module chính:
+* `auth/`: Xác thực tài khoản (JWT, Register, Login, Me).
+* `space/`: Quản lý Không gian học tập & làm việc.
+* `object/`: **Hạt nhân đa hình** xử lý CRUD cho Task, Note, Event, Reference; quản lý vòng đời dữ liệu (`ACTIVE`, `ARCHIVE`, `TRASH`).
+* `space-object/`: Xử lý bảng trung gian n-n (gán/gỡ Object vào Space, vị trí position, ghim pinned).
+* `relation/`: Xử lý liên kết chéo 2 chiều giữa 2 Object bất kỳ.
+* `view/`: Cung cấp dữ liệu theo góc nhìn (Kanban lọc theo Task status, Calendar lọc theo thời gian, Unassigned lấy Inbox).
+* `notification/` & `tag/`: Xử lý nhắc nhở và gắn thẻ phân loại.
 
 ```
-task/
-├── task.module.ts          ← Import dependencies, export Service
-├── task.controller.ts      ← Nhận request, gọi Service, trả response
-├── task.service.ts         ← Business logic
-├── task.repository.ts      ← Prisma queries (nếu dùng Repository Pattern)
-└── dto/
-    ├── create-task.dto.ts  ← Validate input khi tạo task
-    └── update-task.dto.ts  ← Validate input khi update (PartialType của create)
+backend/src/
+├── auth/
+├── space/
+├── object/                      ← Module hạt nhân đa hình
+│   ├── object.module.ts
+│   ├── object.controller.ts     ← Định tuyến API /objects
+│   ├── object.service.ts        ← Nghiệp vụ xử lý đa hình & vòng đời
+│   ├── object.repository.ts     ← Truy vấn Prisma
+│   └── dto/
+│       ├── create-object.dto.ts ← DTO tạo Task/Note/Event/Ref
+│       ├── update-object.dto.ts
+│       └── lifecycle-action.dto.ts
+├── space-object/                ← Gán / gỡ Object vào Space
+├── relation/                    ← Liên kết chéo giữa các Object
+├── view/                        ← Các góc nhìn Kanban, Calendar, Dashboard
+└── common/
+    ├── guards/jwt-auth.guard.ts
+    └── filters/http-exception.filter.ts
 ```
 
-### Ví dụ DTO
+### Ví dụ DTO Hạt nhân: `CreateObjectDto`
 
 ```typescript
-// create-task.dto.ts
-// REF: FR-TASK-01 (docs/02_Requirement.md)
-import { IsString, IsOptional, IsEnum, IsDateString, IsUUID, IsArray } from 'class-validator';
+// backend/src/object/dto/create-object.dto.ts
+// REF: 02_Requirement.md (FR-TASK, FR-NOTE, FR-EVENT, FR-REF) & 07_API_Design.md
+import { IsString, IsOptional, IsEnum, IsDateString, IsUUID, IsObject } from 'class-validator';
 
-export class CreateTaskDto {
+export enum ObjectType {
+  TASK = 'TASK',
+  NOTE = 'NOTE',
+  EVENT = 'EVENT',
+  REFERENCE = 'REFERENCE',
+}
+
+export class CreateObjectDto {
+  @IsEnum(ObjectType)
+  type: ObjectType;
+
   @IsString()
   title: string;
 
@@ -87,90 +101,48 @@ export class CreateTaskDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum(['LOW', 'MEDIUM', 'HIGH'])
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  @IsEnum(['TODO', 'IN_PROGRESS', 'DONE'])
+  status?: string;
+
+  @IsOptional()
+  @IsEnum(['LOW', 'MEDIUM', 'HIGH', 'URGENT'])
+  priority?: string;
 
   @IsOptional()
   @IsDateString()
   dueDate?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsUUID('4', { each: true })
-  tagIds?: string[];
+  @IsDateString()
+  startAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endAt?: string;
+
+  @IsOptional()
+  @IsString()
+  url?: string;
+
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, any>;
+
+  @IsOptional()
+  @IsUUID('4')
+  spaceId?: string; // Tùy chọn: tự động gán vào Space nếu được truyền
 }
 ```
 
 ---
 
-## 3. Authentication Flow
+## 3. Quy ước Frontend (Next.js)
 
-```
-POST /auth/login
-    → Validate email/password
-    → Tạo accessToken (15 phút) + refreshToken (7 ngày)
-    → Trả về cả 2 token
-
-POST /auth/refresh
-    → Validate refreshToken
-    → Tạo accessToken mới
-    → Trả về accessToken mới
-
-POST /auth/logout
-    → Xóa refreshToken khỏi database (hoặc blacklist)
-```
-
-**Token storage (Frontend):**
-- `accessToken` → lưu trong memory (variable) — không lưu localStorage
-- `refreshToken` → lưu trong httpOnly cookie
+* Sử dụng **App Router** (`app/` directory).
+* Quản lý trạng thái: React Query / TanStack Query (caching API) + Zustand (quản lý state cục bộ).
+* Styling: Vanilla CSS kết hợp cấu trúc Design System Google Neutral Palette (Off-white `#f8f9fa`, Border `#dadce0`, Dark Charcoal `#202124`).
 
 ---
 
-## 4. Frontend — Conventions
-
-### Quy tắc đặt tên component
-
-| Loại | Quy tắc | Ví dụ |
-|---|---|---|
-| Page | `page.tsx` (Next.js convention) | `tasks/page.tsx` |
-| Feature component | `PascalCase.tsx` | `TaskCard.tsx` |
-| UI component | `PascalCase.tsx` | `Button.tsx`, `Modal.tsx` |
-| Hook | `useCamelCase.ts` | `useTasks.ts`, `useAuth.ts` |
-| Utility | `camelCase.ts` | `formatDate.ts` |
-| Type | `camelCase.ts` hoặc `index.ts` | `types/task.ts` |
-
-### API calls (ví dụ)
-
-```typescript
-// lib/api.ts — Axios instance
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-});
-
-// Interceptor: tự động thêm accessToken
-api.interceptors.request.use((config) => {
-  const token = getAccessToken(); // từ memory
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// Interceptor: tự động refresh khi 401
-// ...
-```
-
----
-
-## 5. Ghi chú kỹ thuật phát sinh (cập nhật liên tục)
-
-> *(Ghi lại các quyết định kỹ thuật trong quá trình code — không biết trước, viết khi gặp)*
-
-| Ngày | Vấn đề | Giải pháp | Module |
-|---|---|---|---|
-| YYYY-MM-DD | ... | ... | ... |
-
----
-
-*Tài liệu tiếp theo trong chuỗi: [10_Testing.md](10_Testing.md)*  
+*Tài liệu tiếp theo: [10_Testing.md](10_Testing.md)*  
 *Quay lại mục lục: [docs/README.md](README.md)*

@@ -4,7 +4,7 @@
 > **Phụ thuộc vào:** [10_Testing.md](10_Testing.md)  
 > **Tài liệu tiếp theo:** [12_Report_Notes.md](12_Report_Notes.md)  
 > **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** —
+> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3)
 
 ---
 
@@ -12,85 +12,55 @@
 
 | Môi trường | Mục đích | URL |
 |---|---|---|
-| Local (dev) | Phát triển | `http://localhost:3000` (FE), `http://localhost:3001` (BE) |
-| Staging (optional) | Test trước khi deploy | — |
-| Production | Demo + nộp đồ án | *(điền sau)* |
+| Local (dev) | Phát triển nội bộ | `http://localhost:3000` (FE), `http://localhost:3001` (BE) |
+| Production | Demo nghiệm thu ĐATN | *(Vercel cho Frontend, Railway/Render cho Backend)* |
 
 ---
 
-## 2. Yêu cầu server (Production)
-
-*(Điền sau khi chọn nền tảng deploy)*
-
-**Đề xuất cho đồ án (miễn phí/chi phí thấp):**
+## 2. Nền tảng triển khai đề xuất
 
 | Thành phần | Dịch vụ đề xuất | Ghi chú |
 |---|---|---|
-| Frontend (Next.js) | Vercel | Free tier, deploy từ GitHub tự động |
-| Backend (NestJS) | Railway / Render | Free tier có giới hạn sleep |
-| Database (PostgreSQL) | Supabase / Railway | Free tier, 500MB |
+| Frontend (Next.js) | Vercel | Tự động CI/CD từ GitHub branch `main` |
+| Backend (NestJS) | Railway / Render | Chạy Docker container hoặc Node.js server |
+| Database (PostgreSQL) | Supabase / Railway | Cơ sở dữ liệu PostgreSQL cho 8 bảng dữ liệu |
 
 ---
 
-## 3. Environment Variables
+## 3. Environment Variables (Biến môi trường)
 
-**Backend (.env):**
+**Backend (`.env`):**
 ```env
-DATABASE_URL="postgresql://user:password@host:5432/dbname"
-JWT_SECRET="your-secret-key-here"
+DATABASE_URL="postgresql://user:password@host:5432/study_work_db?schema=public"
+JWT_SECRET="super-secret-jwt-key"
 JWT_ACCESS_EXPIRES_IN="15m"
 JWT_REFRESH_EXPIRES_IN="7d"
 PORT=3001
+CORS_ORIGIN="http://localhost:3000,https://study-work-manager.vercel.app"
 ```
 
-**Frontend (.env.local):**
+**Frontend (`.env.local`):**
 ```env
-NEXT_PUBLIC_API_URL="http://localhost:3001/api"
+NEXT_PUBLIC_API_URL="http://localhost:3001/api/v1"
 ```
 
 ---
 
-## 4. Deploy Steps
+## 4. Các bước triển khai (Deploy Steps)
 
-### Frontend (Vercel)
+### Chạy Migration Database (Prisma)
 ```bash
-# 1. Push code lên GitHub
-git push origin main
-
-# 2. Vào vercel.com → Import repo → Vercel tự detect Next.js
-# 3. Thêm environment variables trong Vercel dashboard
-# 4. Deploy
+# Áp dụng migration cho 8 bảng dữ liệu lên production database
+npx prisma migrate deploy
 ```
 
-### Backend (Railway)
-```bash
-# 1. Vào railway.app → New Project → Deploy from GitHub
-# 2. Thêm PostgreSQL service
-# 3. Thêm environment variables
-# 4. Đảm bảo Dockerfile hoặc nixpacks hoạt động
-```
+### Triển khai Frontend lên Vercel
+1. Kết nối repository GitHub `hoanvukhai/study-work-manager` với Vercel.
+2. Cấu hình root directory: `./frontend`.
+3. Thêm biến môi trường `NEXT_PUBLIC_API_URL`.
+4. Deploy tự động.
 
 ---
 
-## 5. Post-Deploy Checklist
-
-- [ ] Frontend load được trang login
-- [ ] API `/health` (nếu có) trả về 200
-- [ ] Database đã chạy migration
-- [ ] Đăng ký tài khoản mới thành công trên production
-- [ ] CORS config đúng (frontend domain → backend)
-
----
-
-## 6. Ghi chú vận hành
-
-*(Ghi lại các vấn đề gặp phải khi deploy và cách giải quyết)*
-
-| Ngày | Vấn đề | Giải pháp |
-|---|---|---|
-| — | — | — |
-
----
-
-*Tài liệu tiếp theo trong chuỗi: [12_Report_Notes.md](12_Report_Notes.md)*  
+*Tài liệu tiếp theo: [12_Report_Notes.md](12_Report_Notes.md)*  
 *Quay lại mục lục: [docs/README.md](README.md)*

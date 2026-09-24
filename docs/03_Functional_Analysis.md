@@ -2,7 +2,6 @@
 
 > Tài liệu trước: [02_Requirement.md](02_Requirement.md)
 > Tài liệu sau: [04_System_Architecture.md](04_System_Architecture.md) và [05_Domain_Model.md](05_Domain_Model.md)
-> Trạng thái: Chưa hoàn thành
 
 ---
 
@@ -152,7 +151,7 @@
 ![Space](../diagrams/exports/03_UseCase_03_Space.png)
 
 **Module Quản lý Task:**
-![Task](../diagrams/exports/03_UseCase_04_Task_.png)
+![Task](03_UseCase_04_Task.png)
 
 **Module Lifecycle Object:**
 ![Object Lifecycle](../diagrams/exports/03_UseCase_05_Object_Lifecycle.png)

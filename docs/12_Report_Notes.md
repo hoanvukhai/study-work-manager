@@ -1,92 +1,52 @@
-# 12_Report_Notes.md — Ghi chú cho báo cáo
+# 12_Report_Notes.md — Ghi chú cho báo cáo tốt nghiệp
 
 > **Tầng:** Development (Tầng 3 / 3)  
 > **Phụ thuộc vào:** Toàn bộ tài liệu trước (01–11)  
-> **Tài liệu tiếp theo:** *(Cuối chuỗi — bước tiếp là viết báo cáo tốt nghiệp trong `report/drafts/`)*  
+> **Tài liệu tiếp theo:** Báo cáo luận văn tốt nghiệp trong `report/`  
 > **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** —
+> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3)
 
 ---
 
-<!--
-  File này là "hộp tổng hợp" — ghi lại mọi thứ cần dùng khi viết báo cáo.
-  Ghi bất cứ khi nào bạn có số liệu, kết quả, hình ảnh đáng chú ý.
-  Không cần viết theo thứ tự — viết khi nhớ ra.
--->
+## 1. Số liệu quan trọng của Đề tài
 
-## 1. Số liệu quan trọng
-
-*(Điền trong và sau quá trình phát triển)*
-
-| Chỉ số | Giá trị | Nguồn |
+| Chỉ số | Giá trị | Nguồn tham chiếu |
 |---|---|---|
-| Tổng số Functional Requirements | — | 02_Requirement.md |
-| Tổng số User Stories | — | 03_Functional_Analysis.md |
-| Tổng số Use Cases | — | 03_Functional_Analysis.md |
-| Tổng số API Endpoints | — | 07_API_Design.md |
-| Tổng số bảng database | — | 06_Database_Design.md |
-| Số test cases | — | 10_Testing.md |
-| Test pass rate | — | 10_Testing.md |
+| Tổng số Yêu cầu chức năng (FR) | 11 nhóm (Auth, Space, Task, Note, Event, Ref, Place, Rel, View, Dash, Notif) | `02_Requirement.md` |
+| Tổng số Use Cases | 18 Use Cases | `03_Functional_Analysis.md` |
+| Tổng số Sơ đồ Hoạt động (Activity) | 6 sơ đồ | `03_Functional_Analysis.md` |
+| Tổng số Bảng Cơ sở dữ liệu | 8 bảng chuẩn hóa (PostgreSQL) | `06_Database_Design.md` |
+| Tổng số API Endpoints | 22 endpoints RESTful chuẩn | `07_API_Design.md` |
 
 ---
 
-## 2. Hình ảnh cần chụp cho báo cáo
+## 2. Hình ảnh cần đưa vào Báo cáo (Word / LaTeX)
 
-*(Chụp screenshot sau khi hoàn thành từng phần, lưu vào `../report/images/`)*
+### Chương 3 — Phân tích & Thiết kế hệ thống:
+- [ ] Sơ đồ Biên giới hệ thống: `diagrams/exports/04_Context_Diagram.png`
+- [ ] Sơ đồ Kiến trúc phân tầng: `diagrams/exports/04_System_Architecture.png`
+- [ ] Sơ đồ Mô hình nghiệp vụ (Domain Model): `diagrams/exports/05_Domain_Model.png`
+- [ ] Sơ đồ Cơ sở dữ liệu Logic (ERD 8 bảng): `diagrams/exports/06_ERD.png`
+- [ ] Ảnh thiết kế giao diện UI/UX (Figma / Mockups):
+  - [ ] Dashboard tổng quan: `diagrams/exports/wireframe-dashboard.png`
+  - [ ] Chi tiết Không gian: `diagrams/exports/wireframe-space.png`
+  - [ ] Bảng công việc Kanban: `diagrams/exports/wireframe-kanban.png`
+  - [ ] Lịch làm việc Calendar: `diagrams/exports/wireframe-calendar.png`
+  - [ ] Modal Chi tiết & Liên kết chéo: `diagrams/exports/wireframe-detail-modal.png`
+  - [ ] Giao diện Di động: `diagrams/exports/wireframe-mobile.png`
 
-**Chương 3 — Phân tích & Thiết kế:**
-- [ ] Architecture diagram (export từ `02_Architecture.drawio`)
-- [ ] Use Case diagram (export từ `03_UseCase.drawio`)
-- [ ] ERD Logic (export từ `06_ERD.drawio`)
-- [ ] Screenshot Figma prototype (Dashboard, Tasks, Calendar)
-
-**Chương 4 — Xây dựng & Triển khai:**
-- [ ] Screenshot màn hình Dashboard
-- [ ] Screenshot màn hình Tasks
-- [ ] Screenshot màn hình Learning
-- [ ] Screenshot màn hình Calendar
-- [ ] Screenshot màn hình References
-- [ ] Screenshot màn hình đăng nhập/đăng ký
-- [ ] Kết quả chạy test (Jest output)
-
----
-
-## 3. Kết quả đáng ghi nhận
-
-*(Ghi lại trong quá trình làm — sẽ dùng ở Chương 5 Kết luận)*
-
-- ...
-- ...
+### Chương 4 — Hiện thực hóa & Kết quả:
+- [ ] Ảnh chụp màn hình ứng dụng thực tế chạy trên trình duyệt.
+- [ ] Kết quả kiểm thử tự động (Jest test suite).
 
 ---
 
-## 4. Ánh xạ tài liệu → Chương báo cáo
+## 3. Điểm sáng tạo & Đột phá để thuyết trình trước Hội đồng
 
-| Tài liệu | Tương ứng chương báo cáo |
-|---|---|
-| 01_Research.md | Chương 1: Tổng quan + Chương 2: Phần đầu |
-| 02_Requirement.md | Chương 2: Phân tích yêu cầu |
-| 03_Functional_Analysis.md | Chương 2: User Story, Use Case |
-| 04_System_Architecture.md | Chương 3: Kiến trúc hệ thống |
-| 05_Domain_Model.md | Chương 3: Phân tích domain |
-| 06_Database_Design.md | Chương 3: Thiết kế CSDL |
-| 07_API_Design.md | Chương 3: Thiết kế API |
-| 08_UI_UX_Design.md | Chương 3: Thiết kế giao diện |
-| 09_Implementation.md | Chương 4: Xây dựng |
-| 10_Testing.md | Chương 4: Kiểm thử |
-| 11_Deployment.md | Chương 4: Triển khai |
-
----
-
-## 5. Hướng phát triển (cho Chương 5 — Kết luận)
-
-*(Ghi lại những tính năng muốn làm nhưng nằm ngoài phạm vi đồ án)*
-
-- Cộng tác thời gian thực (WebSocket)
-- Tích hợp Google Calendar API
-- Ứng dụng mobile (React Native)
-- Thống kê/biểu đồ tiến độ học tập
-- Nhắc nhở qua email
+1. **Kiến trúc Hạt nhân Đa hình (Hybrid Object Architecture):** Giải phóng người dùng khỏi việc phân loại cứng nhắc "học vs việc"; biến Task, Note, Event, Reference thành các thực thể độc lập có vòng đời riêng.
+2. **Cơ chế Gán đa ngữ cảnh (Contextual Placement):** Một công việc có thể hiện diện ở nhiều Không gian khác nhau mà không bị trùng lặp dữ liệu.
+3. **Mạng lưới liên kết tri thức (Bi-directional Relations):** Kết nối chéo 2 chiều giữa ghi chú, bài học và nhiệm vụ thực thi (lấy cảm hứng từ Obsidian/Capacities).
+4. **Trải nghiệm tối giản (Google Simplicity):** Bảng màu trung tính dịu mắt, giảm thiểu phân tâm, tối ưu cho học tập sâu.
 
 ---
 
