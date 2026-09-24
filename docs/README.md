@@ -22,6 +22,7 @@ Quy định về quy tắc commit, đặt tên file và quy trình làm việc c
 | [10_Testing.md](10_Testing.md)                         | Kế hoạch và kết quả kiểm thử                            | Chưa làm   |
 | [11_Deployment.md](11_Deployment.md)                   | Hướng dẫn triển khai ứng dụng                           | Chưa làm   |
 | [12_Report_Notes.md](12_Report_Notes.md)               | Tổng hợp số liệu và hình ảnh phục vụ viết báo cáo       | Chưa làm   |
+| [13_Cam_Nang_Thiet_Lap_Va_Kien_Truc_Chi_Tiet.md](13_Cam_Nang_Thiet_Lap_Va_Kien_Truc_Chi_Tiet.md) | Cẩm nang chi tiết: Khởi tạo hệ thống, Docker, CSDL 8 bảng & Scaffolding | Xong       |
 
 *Quy ước trạng thái:* Chưa làm → Đang làm → Xong
 
