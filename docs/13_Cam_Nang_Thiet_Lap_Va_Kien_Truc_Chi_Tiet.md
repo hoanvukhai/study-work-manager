@@ -20,6 +20,7 @@
 7. [Quản lý Phiên bản Git & Kiểm soát Mã nguồn](#7-quản-lý-phiên-bản-git--kiểm-soát-mã-nguồn)
 8. [Cẩm nang Tra cứu Lệnh Thực hành (Command Cheat Sheet)](#8-cẩm-nang-tra-cứu-lệnh-thực-hành-command-cheat-sheet)
 9. [Lộ trình Tuần Kế tiếp: Bắt đầu Viết Code Chức năng](#9-lộ-trình-tuần-kế-tiếp-bắt-đầu-viết-code-chức-năng)
+10. [Chi tiết Triển khai Module Xác thực & Bảo mật (Auth Module)](#10-chi-tiết-triển-khai-module-xác-thực--bảo-mật-auth-module)
 
 ---
 
@@ -668,3 +669,76 @@ Hệ thống đã dừng lại đúng tại điểm hoàn tất toàn bộ khung
    - Tích hợp gọi API từ Next.js App Router (sử dụng React Server Components hoặc TanStack Query).
    - Hiển thị danh sách Không gian thật lên Sidebar.
    - Hiển thị các công việc thật lên Dashboard và bảng Kanban.
+
+
+---
+
+## 10. CHI TIẾT TRIỂN KHAI MODULE XÁC THỰC & BẢO MẬT (AUTH MODULE)
+
+> **Mã commit cục bộ:** `b5a9532` — `[feat] Hoan thien module Xac thuc va Bao mat tai khoan (Auth) tu Backend (JWT, bcrypt, Guard) toi Frontend (Login, Register, API Client)`  
+> **Ghi chú bảo vệ mã nguồn:** Chỉ thực hiện `git commit` trên máy cục bộ, tuyệt đối không tự ý `git push` lên GitHub remote.
+
+### 10.1. Cấu trúc Module Auth ở Backend (`backend/src/auth/`)
+Module Auth được thiết kế theo đúng mô hình phân tầng của NestJS:
+```
+backend/src/auth/
+├── dto/
+│   ├── register.dto.ts            # DTO kiểm tra dữ liệu đăng ký
+│   └── login.dto.ts               # DTO kiểm tra dữ liệu đăng nhập
+├── strategies/
+│   └── jwt.strategy.ts            # Passport JWT Strategy trích xuất Bearer Token
+├── guards/
+│   └── jwt-auth.guard.ts          # Guard bảo vệ các route cần đăng nhập
+├── decorators/
+│   └── current-user.decorator.ts  # Custom Decorator @CurrentUser()
+├── auth.service.ts                # Xử lý logic nghiệp vụ: Hash mật khẩu, cấp JWT
+├── auth.controller.ts             # Định nghĩa 3 endpoints: register, login, me
+└── auth.module.ts                 # Cấu hình PassportModule & JwtModule
+```
+
+#### Phân tích chi tiết từng thành phần Backend:
+1. **Kiểm tra dữ liệu đầu vào (Data Transfer Objects - DTOs):**
+   * `RegisterDto`: Yêu cầu `email` chuẩn cú pháp RFC, `password` tối thiểu 6 ký tự, `fullName` không được rỗng.
+   * `LoginDto`: Yêu cầu `email` và `password`. Nhờ `ValidationPipe` toàn cục trong `main.ts`, nếu người dùng gửi dữ liệu sai, hệ thống sẽ trả về mã lỗi `400 Bad Request` kèm thông báo tiếng Việt rõ ràng.
+2. **Mã hóa và cấp phát token (`AuthService`):**
+   * **Bcrypt Hash:** Mật khẩu người dùng được băm qua thuật toán `bcrypt` với `saltRounds = 10`. Mật khẩu dạng văn bản gốc (plain text) tuyệt đối không bao giờ được lưu vào CSDL.
+   * **JWT Access Token:** Khi đăng nhập thành công, hệ thống cấp một `accessToken` có payload gồm `{ sub: user.id, email: user.email }` được ký bởi khóa bí mật `JWT_SECRET` với thời hạn 7 ngày (`7d`).
+3. **Chiến lược bảo vệ Route (`JwtStrategy` & `JwtAuthGuard`):**
+   * `JwtStrategy` tự động trích xuất token từ header HTTP: `Authorization: Bearer <token>`.
+   * Tự động truy vấn CSDL để xác thực người dùng còn tồn tại và nạp đối tượng `user` an toàn vào `request.user`.
+   * `JwtAuthGuard` dùng để gắn trước bất kỳ Controller/Endpoint nào cần yêu cầu đăng nhập: `@UseGuards(JwtAuthGuard)`.
+4. **Decorator `@CurrentUser()`:**
+   * Cho phép trích xuất thông tin người dùng đang gọi API chỉ với 1 dòng code ngắn gọn:
+     ```typescript
+     @UseGuards(JwtAuthGuard)
+     @Get('me')
+     async getProfile(@CurrentUser('id') userId: string) { ... }
+     ```
+
+---
+
+### 10.2. Cấu trúc Module Auth ở Frontend (`frontend/`)
+```
+frontend/
+├── lib/
+│   └── api.ts                     # Bộ gọi API tập trung (Fetch Wrapper)
+└── app/
+    └── (auth)/
+        ├── login/
+        │   └── page.tsx           # Trang Đăng nhập chuẩn Google Neutral
+        └── register/
+            └── page.tsx           # Trang Đăng ký tài khoản mới
+```
+
+#### Phân tích chi tiết từng thành phần Frontend:
+1. **Bộ gọi API tập trung (`frontend/lib/api.ts`):**
+   * Đóng gói hàm `apiRequest<T>(endpoint, options)`.
+   * Tự động lấy `accessToken` từ `localStorage` và gắn vào header `Authorization: Bearer ...` cho mọi request.
+   * Tự động bắt lỗi phản hồi từ NestJS và quăng ra thông báo lỗi tiếng Việt thân thiện với người dùng.
+2. **Trang Đăng nhập (`app/(auth)/login/page.tsx`):**
+   * Thiết kế theo phong cách **Google Neutral Design**: Bề mặt thẻ trắng `#ffffff`, viền mỏng 1px `#dadce0`, nền xám nhạt `#f8f9fa`, nút bấm Google Blue `#1a73e8`.
+   * Xử lý trạng thái tải (Loading state), hiển thị thông báo lỗi khi sai mật khẩu/email.
+   * Lưu `accessToken` và thông tin `user` vào `localStorage`, sau đó chuyển hướng tức thì về trang chủ `/`.
+3. **Trang Đăng ký (`app/(auth)/register/page.tsx`):**
+   * Form tạo tài khoản gồm: Họ và tên, Email, Mật khẩu.
+   * Tự động gán avatar mặc định từ kho Dicebear nếu người dùng chưa tải ảnh đại diện.
