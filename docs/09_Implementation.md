@@ -1,10 +1,7 @@
 # 09_Implementation.md — Ghi chú triển khai
 
-> **Tầng:** Development (Tầng 3 / 3)  
-> **Phụ thuộc vào:** [07_API_Design.md](07_API_Design.md), [08_UI_UX_Design.md](08_UI_UX_Design.md)  
-> **Tài liệu tiếp theo:** [10_Testing.md](10_Testing.md)  
-> **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hạt nhân Đa hình Object)
+> Tài liệu trước: [07_API_Design.md](07_API_Design.md) và [08_UI_UX_Design.md](08_UI_UX_Design.md)
+> Tài liệu sau: [10_Testing.md](10_Testing.md)
 
 ---
 

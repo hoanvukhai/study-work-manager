@@ -1,28 +1,11 @@
 # 07_API_Design.md — Thiết kế API
 
-> **Tầng:** Design (Tầng 2 / 3)  
-> **Phụ thuộc vào:** [06_Database_Design.md](06_Database_Design.md) — Data Dictionary & Prisma Schema, [03_Functional_Analysis.md](03_Functional_Analysis.md) — Feature Matrix  
-> **Tài liệu tiếp theo:** [08_UI_UX_Design.md](08_UI_UX_Design.md) và [09_Implementation.md](09_Implementation.md)  
-> **Trạng thái:** Hoàn thành  
-> **Cập nhật lần cuối:** 11/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hybrid Object)
+> Tài liệu trước: [06_Database_Design.md](06_Database_Design.md)
+> Tài liệu sau: [08_UI_UX_Design.md](08_UI_UX_Design.md) và [09_Implementation.md](09_Implementation.md)
 
 ---
 
-<!--
-  HƯỚNG DẪN VIẾT FILE NÀY:
-  
-  Quy trình:
-  1. Thiết kế API trong file này (Markdown) trước khi code
-  2. Khi code xong backend, dùng Swagger / Postman để test
-  3. Xuất file OpenAPI spec (openapi.json) nếu cần nộp cùng báo cáo
-  
-  Cấu trúc một endpoint chuẩn:
-  - Method + Path
-  - Auth required: Yes/No
-  - Request body (nếu POST/PATCH) + ví dụ JSON
-  - Response (status code + ví dụ JSON)
-  - Business rules / validation liên quan
--->
+
 
 ## Quy ước chung
 

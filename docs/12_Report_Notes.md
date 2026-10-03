@@ -1,10 +1,7 @@
 # 12_Report_Notes.md — Ghi chú cho báo cáo tốt nghiệp
 
-> **Tầng:** Development (Tầng 3 / 3)  
-> **Phụ thuộc vào:** Toàn bộ tài liệu trước (01–11)  
-> **Tài liệu tiếp theo:** Báo cáo luận văn tốt nghiệp trong `report/`  
-> **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3)
+> Tài liệu trước: [11_Deployment.md](11_Deployment.md)
+> Tài liệu sau: Báo cáo luận văn tốt nghiệp trong `report/`
 
 ---
 
@@ -28,12 +25,12 @@
 - [ ] Sơ đồ Mô hình nghiệp vụ (Domain Model): `diagrams/exports/05_Domain_Model.png`
 - [ ] Sơ đồ Cơ sở dữ liệu Logic (ERD 8 bảng): `diagrams/exports/06_ERD.png`
 - [ ] Ảnh thiết kế giao diện UI/UX (Figma / Mockups):
-  - [ ] Dashboard tổng quan: `diagrams/exports/wireframe-dashboard.png`
-  - [ ] Chi tiết Không gian: `diagrams/exports/wireframe-space.png`
-  - [ ] Bảng công việc Kanban: `diagrams/exports/wireframe-kanban.png`
-  - [ ] Lịch làm việc Calendar: `diagrams/exports/wireframe-calendar.png`
-  - [ ] Modal Chi tiết & Liên kết chéo: `diagrams/exports/wireframe-detail-modal.png`
-  - [ ] Giao diện Di động: `diagrams/exports/wireframe-mobile.png`
+  - [ ] Dashboard tổng quan: `design/exports/wireframe-dashboard.png`
+  - [ ] Chi tiết Không gian: `design/exports/wireframe-space.png`
+  - [ ] Bảng công việc Kanban: `design/exports/wireframe-kanban.png`
+  - [ ] Lịch làm việc Calendar: `design/exports/wireframe-calendar.png`
+  - [ ] Modal Chi tiết & Liên kết chéo: `design/exports/wireframe-detail-modal.png`
+  - [ ] Giao diện Di động: `design/exports/wireframe-mobile.png`
 
 ### Chương 4 — Hiện thực hóa & Kết quả:
 - [ ] Ảnh chụp màn hình ứng dụng thực tế chạy trên trình duyệt.
@@ -41,7 +38,7 @@
 
 ---
 
-## 3. Điểm sáng tạo & Đột phá để thuyết trình trước Hội đồng
+## 3. Các điểm nổi bật của hệ thống khi báo cáo
 
 1. **Kiến trúc Hạt nhân Đa hình (Hybrid Object Architecture):** Giải phóng người dùng khỏi việc phân loại cứng nhắc "học vs việc"; biến Task, Note, Event, Reference thành các thực thể độc lập có vòng đời riêng.
 2. **Cơ chế Gán đa ngữ cảnh (Contextual Placement):** Một công việc có thể hiện diện ở nhiều Không gian khác nhau mà không bị trùng lặp dữ liệu.

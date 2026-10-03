@@ -1,75 +1,54 @@
-# Diagrams — Sơ đồ hệ thống
+# Diagrams — Sơ đồ kỹ thuật hệ thống
 
-Thư mục này chứa toàn bộ sơ đồ vẽ bằng **draw.io** (`.drawio`).  
-Tất cả file `.drawio` đều được commit lên Git.  
-Khi cần nhúng vào tài liệu: **export ra PNG** rồi lưu vào `exports/`.
-
----
-
-## Danh sách sơ đồ
-
-| File | Mô tả | Dùng trong tài liệu |
-|---|---|---|
-| `01_Context.drawio` | Context Diagram — hệ thống kết nối với ai bên ngoài | 04_System_Architecture.md |
-| `02_Architecture.drawio` | High-Level Architecture — Browser → Next.js → NestJS → PostgreSQL | 04_System_Architecture.md |
-| `03_UseCase.drawio` | Use Case Diagram — toàn bộ actor và use case | 03_Functional_Analysis.md |
-| `04_Activity.drawio` | Activity Diagram — luồng các use case phức tạp | 03_Functional_Analysis.md |
-| `05_Sequence.drawio` | Sequence Diagram — luồng giao tiếp giữa các thành phần | 04_System_Architecture.md |
-| `06_ERD.drawio` | Entity-Relationship Diagram mức Logic | 06_Database_Design.md |
-| `07_Deployment.drawio` | Deployment Diagram — cách deploy lên server | 11_Deployment.md |
+Thư mục này chứa toàn bộ các sơ đồ phân tích và thiết kế kỹ thuật được vẽ bằng **draw.io** (`.drawio`).  
+Tất cả file ảnh PNG xuất từ sơ đồ để nhúng vào tài liệu được lưu tại thư mục con **`exports/`**.
 
 ---
 
-## Cách sử dụng
+## Danh sách Sơ đồ hệ thống (.drawio & PNG)
 
-### Mở file .drawio
+### 1. Sơ đồ Phân tích Chức năng (Tài liệu 03)
+| File .drawio | File ảnh xuất (exports/) | Mô tả nội dung |
+| --- | --- | --- |
+| `03_UseCase_00_Overview.drawio` | `03_UseCase_00_Overview.png` | Sơ đồ Use Case tổng quan toàn hệ thống |
+| `03_UseCase_01_Auth.drawio.drawio` | `03_UseCase_01_Auth.drawio.png` | Use Case phân hệ Xác thực (Đăng ký, Đăng nhập) |
+| `03_UseCase_02_Account.drawio` | `03_UseCase_02_Account.png` | Use Case Quản lý hồ sơ cá nhân |
+| `03_UseCase_03_Space.drawio` | `03_UseCase_03_Space.png` | Use Case Quản lý Không gian làm việc |
+| `03_UseCase_04_Task.drawio` | `03_UseCase_04_Task.png` | Use Case Quản lý Công việc & Trạng thái |
+| `03_UseCase_05_Object_Lifecycle.drawio` | `03_UseCase_05_Object_Lifecycle.png` | Use Case Vòng đời Hạt nhân Đa hình Object |
+| `03_UseCase_06_Placement.drawio` | `03_UseCase_06_Placement.png` | Use Case Gắn đối tượng vào nhiều Không gian |
+| `03_UseCase_07_Relation.drawio` | `03_UseCase_07_Relation.png` | Use Case Liên kết tri thức chéo hai chiều |
+| `03_UseCase_08_View_Dashboard_Notif.drawio` | `03_UseCase_08_View_Dashboard_Notif..png` | Use Case Xem dữ liệu, Dashboard và Thông báo |
+| `03_Activity_01_Register.drawio` | `03_Activity_01_Register.png` | Sơ đồ Hoạt động luồng Đăng ký tài khoản |
+| `03_Activity_02_Login.drawio` | `03_Activity_02_Login.png` | Sơ đồ Hoạt động luồng Đăng nhập và cấp phát JWT |
+| `03_Activity_03_Object_Lifecycle.drawio` | `03_Activity_03_Object_Lifecycle.png` | Sơ đồ Hoạt động Vòng đời Object (Tạo, Sửa, Thùng rác, Xóa vĩnh viễn) |
+| `03_Activity_04_Create_Task.drawio` | `03_Activity_04_Create_Task.png` | Sơ đồ Hoạt động luồng Tạo công việc và gán Không gian |
+| `03_Activity_05_Remove_Delete.drawio` | `03_Activity_05_Remove_Delete.png` | Sơ đồ Hoạt động Phân biệt "Gỡ khỏi Không gian" vs "Xóa vào Thùng rác" |
+| `03_Activity_06_Notification.drawio` | `03_Activity_06_Notification.png` | Sơ đồ Hoạt động Quét và cảnh báo hạn chót công việc |
 
-**Cách 1 — Online (không cần cài đặt):**
-1. Vào [draw.io](https://app.diagrams.net/)
-2. File → Open from → Chọn file `.drawio` trong thư mục này
+### 2. Sơ đồ Kiến trúc hệ thống (Tài liệu 04)
+| File .drawio | File ảnh xuất (exports/) | Mô tả nội dung |
+| --- | --- | --- |
+| `04_Context_Diagram.drawio` | `04_Context_Diagram.png` | Sơ đồ Ngữ cảnh hệ thống (System Context Diagram) |
+| `04_System_Architecture.drawio` | `04_System_Architecture.png` | Sơ đồ Kiến trúc phân tầng hệ thống (Browser ↔ Next.js ↔ NestJS ↔ PostgreSQL) |
 
-**Cách 2 — Desktop App:**
-1. Tải [draw.io Desktop](https://github.com/jgraph/drawio-desktop/releases)
-2. Mở file `.drawio` trực tiếp
+### 3. Sơ đồ Mô hình Nghiệp vụ (Tài liệu 05)
+| File .drawio | File ảnh xuất (exports/) | Mô tả nội dung |
+| --- | --- | --- |
+| `05_Domain_Model.drawio` | `05_Domain_Model.png` | Sơ đồ Thực thể nghiệp vụ độc lập (Domain Model) |
 
-**Cách 3 — VS Code Extension:**
-1. Cài extension `hediet.vscode-drawio`
-2. Mở file `.drawio` trong VS Code
+### 4. Sơ đồ Cơ sở dữ liệu (Tài liệu 06)
+| File .drawio | File ảnh xuất (exports/) | Mô tả nội dung |
+| --- | --- | --- |
+| `06_ERD (1).drawio` | `06_ERD.png` | Sơ đồ Thực thể Liên kết (ERD Logic) chuẩn hóa 8 bảng |
 
 ---
 
-### Export PNG để nhúng vào tài liệu
+## Quy định về thư mục `exports/`
 
-1. Mở file trong draw.io
-2. File → Export As → PNG
-3. Chọn:
-   - **Border Width:** 10px
-   - **Scale:** 2x (để ảnh sắc nét trên màn hình Retina)
-   - **Transparent Background:** Không (nền trắng dễ đọc hơn)
-4. Lưu vào `exports/` với tên kebab-case, ví dụ: `architecture-overview.png`
+- Thư mục **`diagrams/exports/`** chỉ chứa các sơ đồ kỹ thuật phân tích & thiết kế (Use Case, Activity, Architecture, Domain Model, ERD).
+- Toàn bộ ảnh thiết kế giao diện UI/UX (Wireframe, Mockup, Mobile View) được đặt tại **`design/exports/`**.
 
 ---
 
-### Nhúng vào Markdown
-
-```markdown
-![Architecture Overview](../diagrams/exports/architecture-overview.png)
-```
-
----
-
-## Thư mục exports/
-
-`exports/` chứa ảnh PNG đã export từ `.drawio`.  
-Commit cả `exports/` lên Git để tài liệu hiển thị đúng trên GitHub.
-
-```
-exports/
-├── context.png
-├── architecture-overview.png
-├── usecase-overview.png
-├── activity-[tên].png
-├── sequence-[tên].png
-├── erd-logic.png
-└── deployment.png
-```
+*Chi tiết tài liệu hệ thống: [docs/README.md](../docs/README.md)*

@@ -1,10 +1,7 @@
 # 10_Testing.md — Kiểm thử
 
-> **Tầng:** Development (Tầng 3 / 3)  
-> **Phụ thuộc vào:** [09_Implementation.md](09_Implementation.md), [03_Functional_Analysis.md](03_Functional_Analysis.md) — Use Cases  
-> **Tài liệu tiếp theo:** [11_Deployment.md](11_Deployment.md)  
-> **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hạt nhân Đa hình Object)
+> Tài liệu trước: [09_Implementation.md](09_Implementation.md)
+> Tài liệu sau: [11_Deployment.md](11_Deployment.md)
 
 ---
 

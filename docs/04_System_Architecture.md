@@ -1,7 +1,7 @@
 # 04_System_Architecture.md — Kiến trúc hệ thống
 
 > Tài liệu trước: [03_Functional_Analysis.md](03_Functional_Analysis.md)
-> Tài liệu sau: [05_Domain_Model.md](05_Domain_Model.md) và  [06_Database_Design.md](06_Database_Design.md)
+> Tài liệu sau: [05_Domain_Model.md](05_Domain_Model.md) và [06_Database_Design.md](06_Database_Design.md)
 
 ---
 
@@ -82,7 +82,7 @@ Export: ../diagrams/exports/04_System_Architecture.png
 | Quyết định | Lựa chọn | Thay thế đã xem xét | Lý do |
 |---|---|---|---|
 | **Mô hình Dữ liệu Lõi** | **Hybrid Object Model (Lần 3)** | Chia bảng rời rạc (Lần 1) / Space chứa Item cứng (Lần 2) | Giải quyết triệt để bài toán: Một nội dung vừa là học tập vừa là công việc; một Object có thể nằm ở nhiều Space hoặc đứng độc lập; liên kết chéo tự do không phá vỡ quan hệ. |
-| **Database** | **PostgreSQL** | MongoDB, MySQL | Dữ liệu có tính liên kết quan hệ chặt chẽ (Object ↔ SpaceObject ↔ Relation). PostgreSQL vượt trội ở tính ACID, hỗ trợ JSONB cho metadata và độ ổn định cao. |
+| **Database** | **PostgreSQL** | MongoDB, MySQL | Dữ liệu có tính liên kết quan hệ chặt chẽ (Object ↔ SpaceObject ↔ Relation). PostgreSQL đảm bảo tính tuân thủ ACID chặt chẽ, hỗ trợ JSONB cho metadata và độ ổn định cao. |
 | **ORM** | **Prisma** | TypeORM, Sequelize | Type-safe 100% từ Database Schema tới TypeScript Client, migration tường minh, schema dễ đọc, cú pháp query ngắn gọn và ít lỗi runtime hơn TypeORM. |
 | **Backend framework** | **NestJS** | Express.js thuần, Fastify | Cấu trúc module chuẩn mực, tích hợp sẵn Dependency Injection (IoC), Guards, Pipes, Filters. Phù hợp phát triển hệ thống nhiều module liên kết chặt chẽ. |
 | **Frontend framework** | **Next.js (App Router)** | Create React App, Vite SPA | App Router cung cấp layout lồng nhau tối ưu cho giao diện có sidebar cố định, hỗ trợ tối ưu hóa routing và bảo vệ phân quyền ở tầng middleware. |

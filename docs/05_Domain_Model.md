@@ -1,26 +1,9 @@
 # 05_Domain_Model.md — Mô hình nghiệp vụ
 
-> **Tầng:** Design (Tầng 2 / 3)  
-> **Phụ thuộc vào:** [03_Functional_Analysis.md](03_Functional_Analysis.md) — Feature Matrix, Use Cases  
-> **Tài liệu tiếp theo:** [06_Database_Design.md](06_Database_Design.md)  
-> **Trạng thái:** Hoàn thành  
-> **Cập nhật lần cuối:** 11/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hybrid Object)
+> Tài liệu trước: [03_Functional_Analysis.md](03_Functional_Analysis.md) và [04_System_Architecture.md](04_System_Architecture.md)
+> Tài liệu sau: [06_Database_Design.md](06_Database_Design.md)
 
 ---
-
-<!--
-  HƯỚNG DẪN VIẾT FILE NÀY:
-  
-  Domain Model = mô hình thực thể nghiệp vụ, THUẦN NGHIỆP VỤ.
-  KHÔNG nghĩ đến database, bảng, cột, khóa ngoại ở đây.
-  Câu hỏi cần trả lời:
-  - Hệ thống có những "thứ" (entities) nào?
-  - Mỗi entity có thuộc tính gì?
-  - Chúng liên quan đến nhau như thế nào?
-  - Trạng thái của từng entity thay đổi ra sao?
-  
-  Sơ đồ Domain Model: ../diagrams/05_Domain.drawio
--->
 
 ## 1. Danh sách Domain Entities
 

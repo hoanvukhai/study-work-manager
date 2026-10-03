@@ -1,10 +1,7 @@
 # 08_UI_UX_Design.md — Thiết kế giao diện
 
-> **Tầng:** Design (Tầng 2 / 3)  
-> **Phụ thuộc vào:** [07_API_Design.md](07_API_Design.md) — Danh sách endpoint & dữ liệu trả về  
-> **Tài liệu tiếp theo:** [09_Implementation.md](09_Implementation.md)  
-> **Trạng thái:** 🟡 Đang hoàn thiện (Chờ nhúng ảnh Wireframe/Mockup)  
-> **Cập nhật lần cuối:** 24/09/2026 (Chuẩn hóa toàn diện theo Kiến trúc Lần 3: Google Simplicity × Obsidian Workspace)
+> Tài liệu trước: [07_API_Design.md](07_API_Design.md)
+> Tài liệu sau: [09_Implementation.md](09_Implementation.md)
 
 ---
 

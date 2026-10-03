@@ -8,23 +8,20 @@ Quy định về quy tắc commit, đặt tên file và quy trình làm việc c
 
 ## 1. Bảng tiến độ tài liệu
 
-| File                                                   | Nội dung chính                                          | Trạng thái |
-| ------------------------------------------------------ | ------------------------------------------------------- | ---------- |
-| [01_Research.md](01_Research.md)                       | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế    | Xong       |
-| [02_Requirement.md](02_Requirement.md)                 | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Xong       |
-| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix         | Đang làm   |
-| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, danh sách module, Decision Log      | Chưa làm   |
-| [05_Domain_Model.md](05_Domain_Model.md)               | Các thực thể nghiệp vụ (Entities) và Domain Glossary    | Chưa làm   |
-| [06_Database_Design.md](06_Database_Design.md)         | Sơ đồ ERD, Từ điển dữ liệu (Data Dictionary)            | Chưa làm   |
-| [07_API_Design.md](07_API_Design.md)                   | Danh sách API Endpoints và Quy tắc nghiệp vụ            | Chưa làm   |
-| [08_UI_UX_Design.md](08_UI_UX_Design.md)               | Sitemap, User Flow, Link Figma & Design System          | Chưa làm   |
-| [09_Implementation.md](09_Implementation.md)           | Ghi chú kỹ thuật triển khai mã nguồn                    | Chưa làm   |
-| [10_Testing.md](10_Testing.md)                         | Kế hoạch và kết quả kiểm thử                            | Chưa làm   |
-| [11_Deployment.md](11_Deployment.md)                   | Hướng dẫn triển khai ứng dụng                           | Chưa làm   |
-| [12_Report_Notes.md](12_Report_Notes.md)               | Tổng hợp số liệu và hình ảnh phục vụ viết báo cáo       | Chưa làm   |
-| [13_Cam_Nang_Thiet_Lap_Va_Kien_Truc_Chi_Tiet.md](13_Cam_Nang_Thiet_Lap_Va_Kien_Truc_Chi_Tiet.md) | Cẩm nang chi tiết: Khởi tạo hệ thống, Docker, CSDL 8 bảng & Scaffolding | Xong       |
-
-*Quy ước trạng thái:* Chưa làm → Đang làm → Xong
+| File | Nội dung chính | Trạng thái |
+| --- | --- | --- |
+| [01_Research.md](01_Research.md) | Khảo sát bài toán, đối tượng sử dụng, vấn đề thực tế | Hoàn thành |
+| [02_Requirement.md](02_Requirement.md) | Danh sách yêu cầu chức năng (FR) và phi chức năng (NFR) | Hoàn thành |
+| [03_Functional_Analysis.md](03_Functional_Analysis.md) | User Stories, chi tiết Use Case, Feature Matrix | Hoàn thành |
+| [04_System_Architecture.md](04_System_Architecture.md) | Kiến trúc hệ thống, sơ đồ phân tầng, Decision Log | Hoàn thành |
+| [05_Domain_Model.md](05_Domain_Model.md) | Các thực thể nghiệp vụ (Entities) và Domain Glossary | Hoàn thành |
+| [06_Database_Design.md](06_Database_Design.md) | Sơ đồ ERD chuẩn hóa 8 bảng, Từ điển dữ liệu | Hoàn thành |
+| [07_API_Design.md](07_API_Design.md) | Danh sách API Endpoints RESTful và Quy tắc nghiệp vụ | Hoàn thành |
+| [08_UI_UX_Design.md](08_UI_UX_Design.md) | Sitemap, User Flow, Link Figma & Design System | Hoàn thành |
+| [09_Implementation.md](09_Implementation.md) | Ghi chú kỹ thuật triển khai mã nguồn | Hoàn thành |
+| [10_Testing.md](10_Testing.md) | Kế hoạch và kịch bản kiểm thử hệ thống | Hoàn thành |
+| [11_Deployment.md](11_Deployment.md) | Hướng dẫn cấu hình môi trường và triển khai ứng dụng | Hoàn thành |
+| [12_Report_Notes.md](12_Report_Notes.md) | Tổng hợp số liệu và hình ảnh phục vụ viết báo cáo | Hoàn thành |
 
 ---
 
@@ -50,18 +47,18 @@ graph TD
 
 ## 3. Tóm tắt nội dung từng tài liệu
 
-- **01_Research**: Xác định bối cảnh, đối tượng sử dụng, khó khăn thực tế (Pain Points) và mục tiêu đề tài. Kiến trúc mới: người dùng tự tạo **Space** theo chủ đề riêng thay vì bị ép phân loại Học/Việc.
-- **02_Requirement**: Định nghĩa các yêu cầu chức năng (FR) và phi chức năng (NFR) kèm mã định danh (ID). Chia theo 10 nhóm: Auth / Space / Task / Note / Event / Reference / Relation / View / Dashboard / Notification.
-- **03_Functional_Analysis**: Chuyển đổi yêu cầu thành User Stories, mô tả chi tiết Use Cases và xây dựng Feature Matrix theo kiến trúc Space/Item/Relation.
-- **04_System_Architecture**: Thiết kế sơ đồ kiến trúc tổng quan (Context Diagram, High-Level Architecture), phân chia module và Decision Log giải thích lý do lựa chọn công nghệ.
-- **05_Domain_Model**: Xây dựng mô hình nghiệp vụ theo kiến trúc Space/Item/Relation — gồm Space, Item (Task/Note/Event/Reference), Relation và View — kèm Domain Glossary, độc lập với cơ sở dữ liệu.
-- **06_Database_Design**: Chuyển đổi Domain Model thành ERD (Logic & Physical) theo mẫu Class Table Inheritance, xây dựng Data Dictionary cho từng bảng.
-- **07_API_Design**: Thiết kế các API endpoints theo nhóm Space/Task/Note/Event/Reference/Relation/View/Dashboard, kèm Business Rules chi tiết cho từng endpoint.
-- **08_UI_UX_Design**: Xây dựng Sitemap, User Flow, danh sách UI components và liên kết tới thiết kế Figma.
-- **09_Implementation**: Ghi nhận các pattern lập trình, cấu trúc thư mục code thực tế và ghi chú kỹ thuật.
-- **10_Testing**: Xây dựng kịch bản kiểm thử (Unit test, Integration test, Manual test) và ghi nhận kết quả.
-- **11_Deployment**: Hướng dẫn cấu hình môi trường và triển khai ứng dụng.
-- **12_Report_Notes**: Tổng hợp số liệu, danh sách hình ảnh cần chụp để chuẩn bị viết báo cáo tốt nghiệp.
+- **01_Research:** Khảo sát bài toán quản lý cá nhân, xác định các khó khăn thực tế (Pain Points) và mục tiêu đề tài. Định hình mô hình Không gian linh hoạt (Spaces).
+- **02_Requirement:** Định nghĩa 11 nhóm yêu cầu chức năng (FR) và phi chức năng (NFR) kèm mã định danh chi tiết.
+- **03_Functional_Analysis:** Chuyển đổi yêu cầu thành User Stories, 18 Use Cases và 6 sơ đồ hoạt động (Activity Diagrams).
+- **04_System_Architecture:** Thiết kế kiến trúc tổng quan (Context Diagram, Kiến trúc phân tầng Layered), phân chia module và Decision Log giải thích lựa chọn công nghệ.
+- **05_Domain_Model:** Xây dựng mô hình nghiệp vụ gồm User, Space, Object (Task/Note/Event/Reference), Placement, Relation kèm Domain Glossary độc lập với CSDL.
+- **06_Database_Design:** Sơ đồ CSDL quan hệ chuẩn hóa 8 bảng (PostgreSQL & Prisma), ràng buộc toàn vẹn và Data Dictionary chi tiết từng trường.
+- **07_API_Design:** Danh sách 22 endpoints RESTful chuẩn mực cho Auth, Space, Object, Placement, Relation, View kèm Business Rules kiểm soát dữ liệu.
+- **08_UI_UX_Design:** Triết lý thiết kế tối giản, Sitemap, User Flow, liên kết Figma và 13 ảnh wireframe giao diện thực tế.
+- **09_Implementation:** Hướng dẫn cấu trúc mã nguồn Backend (NestJS), Frontend (Next.js 14) và các quy chuẩn lập trình thực tế.
+- **10_Testing:** Chiến lược và kịch bản kiểm thử (Unit test Jest, Integration test, E2E test).
+- **11_Deployment:** Hướng dẫn cấu hình môi trường Docker, biến môi trường và quy trình đóng gói triển khai.
+- **12_Report_Notes:** Tổng hợp số liệu cốt lõi, danh sách ảnh chụp giao diện và các điểm nổi bật để bảo vệ đồ án tốt nghiệp.
 
 ---
 

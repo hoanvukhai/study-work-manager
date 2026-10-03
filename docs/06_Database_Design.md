@@ -1,25 +1,11 @@
 # 06_Database_Design.md — Thiết kế cơ sở dữ liệu
 
-> **Tầng:** Design (Tầng 2 / 3)  
-> **Phụ thuộc vào:** [05_Domain_Model.md](05_Domain_Model.md) — Domain Entities & Relations, [04_System_Architecture.md](04_System_Architecture.md) — Decision Log (PostgreSQL & Prisma)  
-> **Tài liệu tiếp theo:** [07_API_Design.md](07_API_Design.md)  
-> **Trạng thái:** Hoàn thành (ERD Logic)  
-> **Cập nhật lần cuối:** 11/09/2026 (Đồng bộ theo Kiến trúc Lần 3 — Hybrid Object)
+> Tài liệu trước: [04_System_Architecture.md](04_System_Architecture.md) và [05_Domain_Model.md](05_Domain_Model.md)
+> Tài liệu sau: [07_API_Design.md](07_API_Design.md)
 
 ---
 
-<!--
-  HƯỚNG DẪN VIẾT FILE NÀY:
-  
-  Quy trình chuẩn:
-  1. Vẽ ERD Logic (draw.io) — từ Domain Model → chuyển sang bảng DB
-  2. Viết schema.prisma trong backend/prisma/
-  3. Prisma ERD Generator tự sinh ERD Physical
-  4. Viết Data Dictionary (từng field) ở đây
-  
-  ERD Logic: ../diagrams/06_ERD.drawio
-  Prisma schema: ../backend/prisma/schema.prisma
--->
+
 
 ## 1. ERD mức Logic
 
@@ -52,7 +38,7 @@ npm install -D prisma-erd-generator @mermaid-js/mermaid-cli
 npx prisma generate
 ```
 
-<!-- ![ERD Physical](../backend/prisma/ERD.svg) -->
+
 
 ---
 

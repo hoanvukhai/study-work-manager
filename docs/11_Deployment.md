@@ -1,10 +1,7 @@
 # 11_Deployment.md — Triển khai
 
-> **Tầng:** Development (Tầng 3 / 3)  
-> **Phụ thuộc vào:** [10_Testing.md](10_Testing.md)  
-> **Tài liệu tiếp theo:** [12_Report_Notes.md](12_Report_Notes.md)  
-> **Trạng thái:** ⬜ Chưa bắt đầu  
-> **Cập nhật lần cuối:** 24/09/2026 (Đồng bộ theo Kiến trúc Lần 3)
+> Tài liệu trước: [10_Testing.md](10_Testing.md)
+> Tài liệu sau: [12_Report_Notes.md](12_Report_Notes.md)
 
 ---
 
