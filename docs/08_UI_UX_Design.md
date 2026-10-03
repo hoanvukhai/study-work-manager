@@ -144,40 +144,40 @@ Thẻ Object → Mở chi tiết → Mục "Liên kết liên quan" → Nhấn "
 
 > **Link Figma Dự án:** [Figma Design StudyWork](https://www.figma.com/design/tkGn1vGAX1TZdhFxrCbuDa/StudyWork?node-id=0-1&t=9jEdzPWdy33IReqi-1)  
 
-### Ảnh chụp màn hình giao diện thực tế (Đã kết xuất vào `diagrams/exports/`):
+### Ảnh chụp màn hình giao diện thực tế (Đã kết xuất vào `design/exports/`):
 
 1. **Dashboard tổng quan (Bento Grid):**  
-   ![Wireframe Dashboard](../diagrams/exports/wireframe-dashboard.png)
+   ![Wireframe Dashboard](../design/exports/wireframe-dashboard.png)
 
 2. **Chi tiết Không gian (Unified Stream & Tabs):**  
-   ![Wireframe Space](../diagrams/exports/wireframe-space.png)
+   ![Wireframe Space](../design/exports/wireframe-space.png)
 
 3. **Bảng công việc Kanban (Side-peek Drawer):**  
-   ![Wireframe Kanban](../diagrams/exports/wireframe-kanban.png)
+   ![Wireframe Kanban](../design/exports/wireframe-kanban.png)
 
 4. **Lịch trình & Thời khóa biểu (Weekly Calendar):**  
-   ![Wireframe Calendar](../diagrams/exports/wireframe-calendar.png)
+   ![Wireframe Calendar](../design/exports/wireframe-calendar.png)
 
 5. **Mặt phẳng tư duy vô cực (Zen Canvas):**  
-   ![Wireframe Canvas](../diagrams/exports/wireframe-canvas.png)
+   ![Wireframe Canvas](../design/exports/wireframe-canvas.png)
 
 6. **Hộp thoại Chi tiết Object & Liên kết chéo:**  
-   ![Wireframe Detail Modal](../diagrams/exports/wireframe-detail-modal.png)
+   ![Wireframe Detail Modal](../design/exports/wireframe-detail-modal.png)
 
 7. **Hộp nhận tự do (Unassigned Inbox):**  
-   ![Wireframe Inbox](../diagrams/exports/wireframe-inbox.png)
+   ![Wireframe Inbox](../design/exports/wireframe-inbox.png)
 
 8. **Giao diện Di động (Mobile View):**  
-   ![Wireframe Mobile](../diagrams/exports/wireframe-mobile.png)
+   ![Wireframe Mobile](../design/exports/wireframe-mobile.png)
 
 9. **Chế độ tập trung sâu (Zen Focus Mode):**  
-   ![Wireframe Zen](../diagrams/exports/wireframe-zen.png)
+   ![Wireframe Zen](../design/exports/wireframe-zen.png)
 
 10. **Thùng rác & Lưu trữ (Trash):**  
-    ![Wireframe Trash](../diagrams/exports/wireframe-trash.png)
+    ![Wireframe Trash](../design/exports/wireframe-trash.png)
 
 11. **Màn hình Đăng nhập (Google Neutral Auth):**  
-    ![Wireframe Login](../diagrams/exports/wireframe-login.png)
+    ![Wireframe Login](../design/exports/wireframe-login.png)
 
 ---
 

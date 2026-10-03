@@ -48,8 +48,8 @@ main/references
 ## Export ảnh cho báo cáo
 
 Khi cần ảnh màn hình cho báo cáo:
-1. Trong Figma: chọn Frame → Right Click → Copy as PNG
-2. Lưu vào `../report/images/ch3/` hoặc `../report/images/ch4/`
+1. Trong Figma: Lưu ảnh màn hình giao diện thực tế vào `design/exports/`
+2. Lưu vào `design/exports/`
 3. Tham chiếu trong tài liệu: `../docs/08_UI_UX_Design.md`
 
 ---
