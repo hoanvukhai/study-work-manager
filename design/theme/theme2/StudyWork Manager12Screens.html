@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study & Work Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f9fa; --surface:#ffffff; --border:#dadce0;
+  --text:#202124; --text2:#5f6368;
+  --blue:#1a73e8;
+  --task-bg:#e8f0fe; --task-text:#1967d2;
+  --note-bg:#fef7e0; --note-text:#b06000;
+  --event-bg:#e6f4ea; --event-text:#137333;
+  --ref-bg:#f3e8fd; --ref-text:#7b1fa2;
+  --urgent-bg:#fce8e6; --urgent-text:#c5221f;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',sans-serif;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px}
+.p-task{background:var(--task-bg);color:var(--task-text)}
+.p-note{background:var(--note-bg);color:var(--note-text)}
+.p-event{background:var(--event-bg);color:var(--event-text)}
+.p-ref{background:var(--ref-bg);color:var(--ref-text)}
+.p-urgent{background:var(--urgent-bg);color:var(--urgent-text)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px}
+.btn{background:var(--text);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}
+.btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.muted{color:var(--text2);font-size:12px}
+h1,h2,h3{margin:0;font-weight:700}
+
+/* switcher */
+.switcher{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;background:#202124;border-radius:24px;padding:5px;display:flex;gap:2px;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.switcher button{background:transparent;border:none;color:#9aa0a6;font-family:inherit;font-size:12px;font-weight:600;padding:7px 12px;border-radius:20px;cursor:pointer}
+.switcher button.active{background:#fff;color:#202124}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* shell (sidebar+header) */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--border);padding:20px 12px;flex-shrink:0}
+.sb-logo{font-weight:700;font-size:14px;padding:0 8px 20px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13px;color:var(--text2);margin-bottom:2px;cursor:pointer}
+.sb-item.active{background:var(--task-bg);color:var(--task-text);font-weight:600}
+.sb-label{font-size:11px;color:#9aa0a6;text-transform:uppercase;margin:16px 8px 6px;font-weight:600}
+.main{flex:1;min-width:0;padding:60px 32px 32px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;gap:16px}
+.search{flex:1;max-width:420px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--text2)}
+
+/* dashboard */
+.quickcapture{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:var(--text2)}
+.bento{display:grid;grid-template-columns:1.6fr 1fr 0.7fr;gap:16px}
+.bento .full{grid-column:1/-1}
+.box{padding:18px}
+.box h3{font-size:14px;margin-bottom:14px}
+.task-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f3f4;font-size:13px}
+.task-row:last-child{border:none}
+.circ{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
+.space-row{display:flex;align-items:center;gap:14px}
+.ring{width:44px;height:44px;border-radius:50%;background:conic-gradient(var(--blue) var(--pct,65%),#e8eaed 0);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.ring::after{content:attr(data-pct);background:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.space-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.space-card{border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;gap:12px;align-items:center}
+
+/* space detail */
+.sd-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.progress{width:120px;height:6px;background:#e8eaed;border-radius:4px;overflow:hidden}
+.progress i{display:block;height:100%;width:65%;background:var(--blue)}
+.toolbar{display:flex;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.tabs{display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:3px}
+.tabs button{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--text2)}
+.tabs button.active{background:var(--bg);color:var(--text)}
+.filters{display:flex;gap:6px}
+.filters .pill{background:#fff;border:1px solid var(--border);color:var(--text2)}
+.stream-item{padding:14px;margin-bottom:10px;display:flex;gap:12px}
+.pin-section{margin-bottom:20px}
+.pin-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.rel-badge{font-size:11px;color:var(--text2);background:#f1f3f4;padding:2px 8px;border-radius:5px}
+
+/* canvas */
+.canvas-wrap{position:relative;height:100vh;background:radial-gradient(circle,#dadce0 1px,transparent 1px) 0 0/20px 20px,var(--bg);overflow:hidden}
+.c-toolbar{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 14px;display:flex;gap:14px;align-items:center;font-size:12px;z-index:5}
+.c-card{position:absolute;width:230px;padding:14px;z-index:2}
+.c-mini{position:absolute;bottom:16px;right:16px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center;z-index:5}
+
+/* kanban */
+.kb-cols{display:flex;gap:16px;align-items:flex-start}
+.kb-col{flex:1;min-width:0}
+.kb-col h4{font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:700}
+.kb-card{padding:12px;margin-bottom:10px;font-size:13px;cursor:pointer}
+.kb-card .meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.study-pill{font-size:11px;background:#f1f3f4;color:var(--text2);padding:2px 7px;border-radius:5px}
+.drawer{position:fixed;top:0;right:-400px;width:400px;height:100%;background:#fff;border-left:1px solid var(--border);padding:24px;transition:right .25s;z-index:50}
+.drawer.open{right:0}
+.drawer-close{float:right;cursor:pointer;color:var(--text2)}
+
+/* inbox */
+.masonry{columns:3;gap:14px}
+.m-card{break-inside:avoid;padding:14px;margin-bottom:14px}
+
+/* zen */
+.zen{background:#fafafa;min-height:100vh;padding:20px 20px 100px}
+.zen-top{display:flex;justify-content:space-between;color:#9aa0a6;font-size:12px;margin-bottom:40px}
+.zen-col{max-width:800px;margin:0 auto}
+.zen-editor{border:1px solid #eee;border-radius:8px;padding:20px;margin-bottom:24px;min-height:180px}
+.zen-check{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px}
+.zen-check.done{color:#9aa0a6;text-decoration:line-through}
+.pomodoro{position:fixed;bottom:24px;right:24px;background:#fff;border:1px solid var(--border);border-radius:30px;padding:10px 18px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+
+/* mobile */
+.mobile-wrap{display:flex;justify-content:center;padding:30px;background:#eceff1;min-height:100vh}
+.phone{width:390px;height:844px;background:#fff;border-radius:36px;border:8px solid #202124;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.m-top{padding:16px;display:flex;justify-content:space-between;align-items:center}
+.m-body{flex:1;padding:0 16px;overflow-y:auto}
+.m-nav{display:flex;border-top:1px solid var(--border);padding:10px 0 20px}
+.m-nav div{flex:1;text-align:center;font-size:10px;color:var(--text2)}
+.fab{position:absolute;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;box-shadow:0 4px 12px rgba(26,115,232,.4)}
+.h-carousel{display:flex;gap:10px;overflow-x:auto;padding:4px 0}
+.h-card{min-width:150px;padding:12px}
+
+/* calendar */
+.cal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.cal-nav{display:flex;align-items:center;gap:12px;font-size:13px}
+.nav-arrow{width:28px;height:28px;border:1px solid var(--border);border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:12px}
+.cal-week-label{font-weight:600}
+.cal-body{display:flex;gap:20px}
+.cal-mini{width:212px;flex-shrink:0}
+.cal-mini .card{padding:14px}
+.mini-month-label{font-size:12px;font-weight:700;margin-bottom:10px}
+.mini-month{display:grid;grid-template-columns:repeat(7,1fr);row-gap:6px;text-align:center}
+.mini-month span{font-size:10px;color:#9aa0a6;font-weight:600}
+.mini-month em{font-style:normal;font-size:11px;color:var(--text);width:22px;height:22px;line-height:22px;border-radius:50%;display:inline-block}
+.mini-month b{font-style:normal;font-weight:700;font-size:11px;background:var(--blue);color:#fff;width:22px;height:22px;line-height:22px;border-radius:50%;display:inline-block}
+.pin-title{font-size:11px;font-weight:700;color:#9aa0a6;letter-spacing:.03em;margin:20px 0 10px}
+.chk-row{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:6px 0;color:var(--text)}
+.ckbox{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff}
+.ckbox.on{background:var(--blue);border-color:var(--blue);color:#fff;font-size:10px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.unsch-item{font-size:12px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;margin-bottom:7px;cursor:grab;background:#fff;display:flex;align-items:center;gap:8px;color:var(--text2)}
+.unsch-item span{color:#c4c7cc}
+.grid-wrap{flex:1;overflow-x:auto;background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 14px 0}
+.grid-deadline{display:flex;margin-bottom:10px;padding-left:54px}
+.deadline-pin{background:var(--urgent-bg);color:var(--urgent-text);font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:6px}
+.grid-head{display:flex;padding-left:54px}
+.grid-head div{flex:1;text-align:center;font-size:11.5px;font-weight:700;color:var(--text2);padding:0 0 10px}
+.time-body{display:flex}
+.time-col{width:54px;flex-shrink:0;position:relative}
+.time-col div{position:absolute;left:0;right:8px;text-align:right;font-size:10px;color:#9aa0a6;transform:translateY(-50%)}
+.day-col{flex:1;position:relative;border-left:1px solid #f1f3f4;background-image:repeating-linear-gradient(to bottom,transparent,transparent 39px,#f1f3f4 40px);height:600px}
+.ev{position:absolute;left:3px;right:3px;border-radius:7px;padding:6px 8px;font-size:10.5px;font-weight:600;overflow:hidden;line-height:1.35;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.now-line{position:absolute;left:-1px;right:0;height:2px;background:#ea4335;z-index:3}
+.now-line::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#ea4335}
+
+/* modals */
+.backdrop{min-height:100vh;background:rgba(32,33,36,.55);backdrop-filter:blur(2px);display:flex;align-items:flex-start;justify-content:center;padding:80px 20px}
+.modal{background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.25);width:640px;max-width:100%;overflow:hidden}
+.modal-search{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)}
+.modal-search .ic{color:#9aa0a6;font-size:16px}
+.modal-search input{border:none;outline:none;flex:1;font-size:15px;font-family:inherit;color:var(--text)}
+.modal-search input::placeholder{color:#9aa0a6}
+.esc-badge{font-size:10px;color:var(--text2);border:1px solid var(--border);padding:3px 7px;border-radius:5px;font-weight:600}
+.chip-row{display:flex;gap:8px;padding:12px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.chip{font-size:12px;padding:5px 12px;border-radius:14px;border:1px solid var(--border);color:var(--text2);font-weight:500}
+.chip.active{background:var(--text);color:#fff;border-color:var(--text)}
+.res-group{padding:12px 22px 16px}
+.res-label{font-size:10.5px;font-weight:700;color:#9aa0a6;letter-spacing:.04em;margin:10px 0 6px}
+.res-item{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:8px;font-size:13px;cursor:pointer;gap:10px}
+.res-item:hover,.res-item.hi{background:var(--bg)}
+.res-item .ri-sub{display:block;font-weight:400;color:var(--text2);font-size:11.5px;margin-top:2px}
+.res-item .shortcut{font-size:10px;color:var(--text2);border:1px solid var(--border);padding:2px 6px;border-radius:5px;flex-shrink:0}
+.modal-footer{display:flex;gap:18px;padding:11px 22px;border-top:1px solid var(--border);font-size:11px;color:var(--text2);background:#fafbfc}
+.modal-footer b{color:var(--text2);font-weight:600}
+
+.qc-modal{width:520px}
+.qc-type{display:flex;border-bottom:1px solid var(--border);padding:6px}
+.qc-type div{flex:1;text-align:center;padding:9px 0;font-size:12.5px;font-weight:600;color:var(--text2);cursor:pointer;border-radius:8px}
+.qc-type div.active{color:var(--blue);background:var(--task-bg)}
+.qc-body{padding:22px}
+.qc-title{width:100%;border:none;outline:none;font-size:17px;font-weight:700;font-family:inherit;margin-bottom:16px;color:var(--text)}
+.qc-title::placeholder{color:#9aa0a6;font-weight:600}
+.qc-row{display:flex;gap:10px;margin-bottom:10px}
+.qc-field{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12.5px;color:var(--text2);background:#fafbfc}
+.qc-footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--border);background:#fafbfc}
+
+/* trash */
+.tr-list{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tr-head{display:flex;padding:11px 18px;font-size:11px;font-weight:700;color:#9aa0a6;letter-spacing:.03em;border-bottom:1px solid var(--border)}
+.tr-row{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #f1f3f4;font-size:13px}
+.tr-row:last-child{border:none}
+.tr-c1{flex:2.6;display:flex;align-items:center;gap:10px;font-weight:500}
+.tr-c2{flex:1}
+.tr-c3{flex:1.4;color:var(--text2)}
+.tr-c4{flex:1;color:var(--text2);font-size:12px}
+.tr-c5{flex:1.6;text-align:right}
+.link-btn{font-size:12px;color:var(--blue);cursor:pointer;font-weight:600;margin-left:14px}
+.link-btn.danger{color:var(--urgent-text)}
+
+/* auth */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.auth-card{width:440px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:44px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.auth-logo{display:flex;align-items:center;gap:7px;font-weight:700;margin-bottom:28px;font-size:16px}
+.auth-dot{width:9px;height:9px;border-radius:50%;background:var(--blue)}
+.auth-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.auth-input{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-size:13.5px;margin-bottom:16px;font-family:inherit;color:var(--text)}
+.auth-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+.auth-divider{text-align:center;font-size:11.5px;color:var(--text2);margin:22px 0;position:relative}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:32%;height:1px;background:var(--border)}
+.auth-divider::before{left:0}.auth-divider::after{right:0}
+.auth-social{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px;background:#fff;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:8px}
+.gicon{width:16px;height:16px;border-radius:50%;background:conic-gradient(#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%)}
+</style>
+</head>
+<body>
+
+<div class="switcher" id="switcher"></div>
+
+<!-- SCREEN 1: DASHBOARD -->
+<div class="screen active" data-name="Dashboard" id="s1">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sb-logo">📚 Study & Work</div>
+      <div class="sb-item active">🏠 Trang chủ</div>
+      <div class="sb-item">📥 Unassigned Inbox</div>
+      <div class="sb-label">Spaces</div>
+      <div class="sb-item">🎓 Đồ án tốt nghiệp</div>
+      <div class="sb-item">💼 Việc Freelance</div>
+      <div class="sb-label">Views</div>
+      <div class="sb-item">📋 Kanban</div>
+      <div class="sb-item">📅 Calendar</div>
+      <div class="sb-item">🗑️ Trash</div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <h2>Xin chào Hoàn 👋</h2>
+        <div class="search">🔍 Tìm kiếm... <span class="muted">Ctrl+K</span></div>
+      </div>
+      <div class="quickcapture">✏️ Gõ nhanh việc hoặc ý tưởng mới... Nhấn Enter để lưu vào Inbox</div>
+      <div class="bento">
+        <div class="card box">
+          <h3>Tiếp tục bài học & Dự án đang dở</h3>
+          <span class="pill p-task">🎓 Đồ án tốt nghiệp</span>
+          <p class="muted" style="margin:10px 0">Ghi chú gần đây: "Kiến trúc Hybrid Object" — cập nhật 2 giờ trước</p>
+          <p style="font-size:13px;margin:10px 0">Việc tiếp theo: <b>Viết mã nguồn Prisma Schema</b></p>
+          <button class="btn">Tiếp tục học →</button>
+        </div>
+        <div class="card box">
+          <h3>Việc khẩn cấp hôm nay</h3>
+          <div class="task-row"><div class="circ"></div>Nộp đề cương tuần 4 <span class="pill p-urgent" style="margin-left:auto">14:00</span></div>
+          <div class="task-row"><div class="circ"></div>Review code API <span class="pill p-task" style="margin-left:auto">HIGH</span></div>
+          <div class="task-row"><div class="circ"></div>Đọc slide chương 4 <span class="muted" style="margin-left:auto">18:00</span></div>
+        </div>
+        <div class="card box">
+          <h3>Lịch trình hôm nay</h3>
+          <div class="task-row"><span class="pill p-event">08:00</span></div>
+          <p style="font-size:12px;margin:2px 0 12px">Tiết học Kiến trúc Phần mềm</p>
+          <div class="task-row"><span class="pill p-event">15:00</span></div>
+          <p style="font-size:12px;margin:2px 0">Gặp GVHD</p>
+        </div>
+        <div class="card box full">
+          <h3>Mạng lưới Không gian học tập</h3>
+          <div class="space-grid">
+            <div class="space-card"><div class="ring" data-pct="65%" style="--pct:65%"></div><div><b style="font-size:13px">🎓 Đồ án tốt nghiệp</b><div class="muted">18 việc · 9 ghi chú · 4 tài liệu</div></div></div>
+            <div class="space-card"><div class="ring" data-pct="40%" style="--pct:40%"></div><div><b style="font-size:13px">💼 Việc Freelance</b><div class="muted">6 việc · 3 ghi chú · 1 tài liệu</div></div></div>
+            <div class="space-card"><div class="ring" data-pct="90%" style="--pct:90%"></div><div><b style="font-size:13px">📖 Tự học React</b><div class="muted">10 việc · 12 ghi chú · 2 tài liệu</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: SPACE DETAIL -->
+<div class="screen" data-name="Space Detail" id="s2">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sb-logo">📚 Study & Work</div>
+      <div class="sb-item">🏠 Trang chủ</div>
+      <div class="sb-label">Spaces</div>
+      <div class="sb-item active">🎓 Đồ án tốt nghiệp</div>
+      <div class="sb-item">💼 Việc Freelance</div>
+    </div>
+    <div class="main">
+      <div class="sd-header">
+        <div><h2>🎓 Đồ án tốt nghiệp</h2><div class="progress" style="margin-top:6px"><i></i></div><span class="muted">65% hoàn thành</span></div>
+        <button class="btn">+ Tạo mới</button>
+      </div>
+      <div class="toolbar">
+        <div class="tabs"><button class="active">☰ Danh sách</button><button>📋 Bảng Kanban</button><button>🌌 Bản đồ Canvas</button><button>📅 Lịch trình</button></div>
+        <div class="filters"><span class="pill">Tất cả (20)</span><span class="pill">☑️ Việc cần làm</span><span class="pill">📝 Ghi chú</span><span class="pill">🔗 Tài liệu</span></div>
+      </div>
+      <div class="pin-section">
+        <div class="pin-title">📌 GHIM TRÊN CÙNG</div>
+        <div class="card stream-item"><span class="pill p-note">NOTE</span><div><b>Tài liệu kiến trúc hệ thống</b><div class="muted">Nghiên cứu Hybrid Object model</div></div></div>
+        <div class="card stream-item"><div class="circ"></div><span class="pill p-urgent">URGENT</span><div><b>Nộp đề cương tuần 4</b><div class="muted">Hạn: 28/09</div></div></div>
+      </div>
+      <div class="pin-title">DÒNG CHẢY NỘI DUNG</div>
+      <div class="card stream-item"><div class="circ"></div><div style="flex:1"><b>Viết mã nguồn Prisma</b> <span class="pill p-task">28/09</span><div class="muted">#Backend</div></div></div>
+      <div class="card stream-item"><span class="pill p-note">NOTE</span><div><b>Ghi chú buổi gặp GVHD</b><div class="muted">Đề xuất chỉnh sửa chương 3, cần bổ sung sơ đồ ERD...</div></div></div>
+      <div class="card stream-item"><span class="pill p-ref">🔗</span><div><b>Prisma Docs</b><div class="muted">prisma.io/docs</div></div></div>
+      <div class="card stream-item"><div class="circ"></div><div><b>Kiểm thử API</b> <span class="rel-badge">🔗 Liên kết với: Ghi chú buổi gặp GVHD</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: CANVAS -->
+<div class="screen" data-name="Canvas" id="s3">
+  <div class="canvas-wrap">
+    <div class="c-toolbar"><b>🎓 Đồ án tốt nghiệp</b><span>✋</span><span>▭</span><span>↗</span><span>T</span><span class="btn" style="padding:4px 10px">+ Add Object</span><span class="muted">100%</span></div>
+    <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:1">
+      <path d="M310,220 C400,220 400,150 460,140" stroke="#9aa0a6" fill="none" stroke-width="1.5"/>
+      <text x="330" y="205" font-size="10" fill="#9aa0a6" font-family="Inter">DEPENDS_ON</text>
+      <line x1="200" y1="260" x2="200" y2="330" stroke="#9aa0a6" stroke-width="1.5"/>
+      <text x="210" y="300" font-size="10" fill="#9aa0a6" font-family="Inter">REFERENCES</text>
+    </svg>
+    <div class="c-card card" style="top:120px;left:80px"><span class="pill p-note">📝 Kiến trúc Hybrid Object</span><p class="muted" style="margin:8px 0">Mô hình dữ liệu hợp nhất Task/Note/Event...</p><span class="pill p-ref">#Architecture</span></div>
+    <div class="c-card card" style="top:100px;left:460px"><div class="task-row" style="border:none;padding:0"><div class="circ"></div><b>Viết mã nguồn Prisma Schema</b></div><div style="margin-top:8px"><span class="pill p-note">HIGH</span> <span class="muted">28/09</span></div></div>
+    <div class="c-card card" style="top:330px;left:80px"><span class="pill p-ref">🔗</span><b style="display:block;margin-top:6px">NestJS Official Documentation</b></div>
+    <div class="c-mini"><div style="width:70px;height:50px;background:#f1f3f4;border-radius:4px"></div><div style="display:flex;gap:6px"><span class="btn secondary" style="padding:2px 8px">-</span><span class="btn secondary" style="padding:2px 8px">+</span></div></div>
+  </div>
+</div>
+
+<!-- SCREEN 4: KANBAN -->
+<div class="screen" data-name="Kanban" id="s4">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sb-logo">📚 Study & Work</div>
+      <div class="sb-item active">🎓 Đồ án tốt nghiệp</div>
+    </div>
+    <div class="main">
+      <div class="topbar"><h2>🎓 Đồ án tốt nghiệp</h2><button class="btn">+ Thêm công việc</button></div>
+      <div class="kb-cols">
+        <div class="kb-col"><h4>CẦN LÀM (4)</h4>
+          <div class="card kb-card" onclick="document.getElementById('drawer').classList.add('open')">⠿ Viết mã nguồn Prisma <div class="meta"><span class="pill p-note">HIGH</span><span class="study-pill">📝 2 Ghi chú</span></div></div>
+          <div class="card kb-card">⠿ Thiết kế ERD <div class="meta"><span class="pill p-urgent">URGENT</span></div></div>
+        </div>
+        <div class="kb-col"><h4>ĐANG LÀM (2)</h4>
+          <div class="card kb-card">⠿ Xây dựng API Auth <div class="meta"><span class="study-pill">🔗 1 Link tài liệu</span></div></div>
+        </div>
+        <div class="kb-col"><h4>ĐÃ XONG (8)</h4>
+          <div class="card kb-card" style="opacity:.6">⠿ Research đề tài</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer" id="drawer"><span class="drawer-close" onclick="document.getElementById('drawer').classList.remove('open')">✕</span><h3>Ghi chú liên kết</h3><div class="card stream-item" style="margin-top:14px"><span class="pill p-note">NOTE</span><div><b>Prisma schema design tips</b></div></div></div>
+</div>
+
+<!-- SCREEN 5: INBOX -->
+<div class="screen" data-name="Inbox" id="s5">
+  <div class="shell">
+    <div class="sidebar"><div class="sb-logo">📚 Study & Work</div><div class="sb-item active">📥 Unassigned Inbox</div></div>
+    <div class="main">
+      <h2>📥 Hộp Nhận Tự Do (Unassigned Inbox)</h2>
+      <p class="muted">Nơi lưu nhanh mọi ý tưởng, tài liệu trước khi phân loại vào Space</p>
+      <div class="filters" style="margin:16px 0"><span class="pill">Tất cả (24)</span><span class="pill">📝 Ghi chú (8)</span><span class="pill">☑️ Công việc (12)</span><span class="pill">🔗 Tài liệu (4)</span></div>
+      <div class="masonry">
+        <div class="card m-card"><div class="circ"></div><b style="display:block;margin:6px 0">Đọc trước slide chương 4</b><span class="pill p-urgent">Hạn: Ngày mai</span></div>
+        <div class="card m-card"><span class="pill p-note">NOTE</span><b style="display:block;margin:6px 0">Ý tưởng thuật toán gợi ý</b><p class="muted">Dùng collaborative filtering kết hợp...</p></div>
+        <div class="card m-card"><span class="pill p-ref">🔗</span><b style="display:block;margin:6px 0">Prisma Schema Docs</b><p class="muted">prisma.io — hướng dẫn schema chuẩn</p></div>
+        <div class="card m-card"><span class="pill p-event">EVENT</span><b style="display:block;margin:6px 0">Hẹn phỏng vấn thực tập</b><span class="pill p-event">15:00</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 6: ZEN -->
+<div class="screen" data-name="Zen Mode" id="s6">
+  <div class="zen">
+    <div class="zen-top"><span>Đồ án tốt nghiệp / Chương 3: Thiết kế API</span><span class="btn secondary" style="padding:4px 10px">Thoát Zen Mode (Esc)</span></div>
+    <div class="zen-col">
+      <div class="zen-editor"><h3 style="margin-bottom:12px">Chi tiết kiến trúc Hybrid Object</h3><p class="muted">Hybrid Object là mô hình dữ liệu hợp nhất giữa Task, Note, Event và Reference, cho phép người dùng tổ chức không gian làm việc một cách tự do...</p></div>
+      <div class="zen-check done"><span>✓</span> Đọc tài liệu tham khảo</div>
+      <div class="zen-check"><div class="circ"></div> Viết sơ đồ ERD</div>
+      <div class="zen-check"><div class="circ"></div> Review với GVHD</div>
+    </div>
+    <div class="pomodoro">▶ 25:00</div>
+  </div>
+</div>
+
+<!-- SCREEN 7: MOBILE -->
+<div class="screen" data-name="Mobile" id="s7">
+  <div class="mobile-wrap"><div class="phone">
+    <div class="m-top"><b>Xin chào Hoàn</b><div style="display:flex;gap:10px"><span>🔍</span><span>👤</span></div></div>
+    <div class="m-body">
+      <h4 style="font-size:13px">Hôm nay làm gì?</h4>
+      <div class="task-row"><div class="circ"></div>Nộp đề cương tuần 4 <span class="pill p-urgent" style="margin-left:auto">14:00</span></div>
+      <div class="task-row"><div class="circ"></div>Review code API <span class="pill p-task" style="margin-left:auto">HIGH</span></div>
+      <div class="card" style="padding:12px;margin:14px 0"><span class="pill p-event">còn 45 phút</span><b style="display:block;margin-top:6px;font-size:13px">Tiết học Kiến trúc Phần mềm</b></div>
+      <h4 style="font-size:13px">Ghi chú nhanh</h4>
+      <div class="h-carousel">
+        <div class="card h-card"><span class="pill p-note">NOTE</span><b style="display:block;font-size:12px;margin-top:6px">Kiến trúc Hybrid Object</b></div>
+        <div class="card h-card"><span class="pill p-note">NOTE</span><b style="display:block;font-size:12px;margin-top:6px">Buổi gặp GVHD</b></div>
+      </div>
+    </div>
+    <div class="fab">+</div>
+    <div class="m-nav"><div>🏠<br>Trang chủ</div><div>🗂️<br>Không gian</div><div>📅<br>Lịch</div><div>👤<br>Cá nhân</div></div>
+  </div></div>
+</div>
+
+<!-- SCREEN 8: CALENDAR TIME-GRID -->
+<div class="screen" data-name="Calendar" id="s8">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sb-logo">📚 Study & Work</div>
+      <div class="sb-item">🏠 Trang chủ</div>
+      <div class="sb-item">📅 Lịch</div>
+      <div class="sb-label">Spaces</div>
+      <div class="sb-item">🎓 Đồ án tốt nghiệp</div>
+      <div class="sb-item">💼 Việc Freelance</div>
+    </div>
+    <div class="main">
+      <div class="cal-top">
+        <div class="tabs"><button>Tháng</button><button class="active">Tuần</button><button>Ngày</button><button>Dòng thời gian</button></div>
+        <div class="cal-nav"><span class="nav-arrow">‹</span><span class="btn secondary" style="padding:6px 12px">Hôm nay</span><span class="nav-arrow">›</span><span class="cal-week-label">Tuần 39 · 21 – 27/09/2026</span></div>
+        <div style="display:flex;gap:8px"><button class="btn secondary">Lọc theo Không gian</button><button class="btn">+ Thêm lịch / sự kiện</button></div>
+      </div>
+      <div class="cal-body">
+        <div class="cal-mini">
+          <div class="card" style="margin-bottom:0">
+            <div class="mini-month-label">Tháng 9, 2026</div>
+            <div class="mini-month">
+              <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+              <em>20</em><em>21</em><em>22</em><em>23</em><em>24</em><b>25</b><em>26</em>
+            </div>
+          </div>
+          <div class="pin-title">KHÔNG GIAN HIỂN THỊ</div>
+          <div class="chk-row"><span class="ckbox on">✓</span><span class="dot" style="background:#1a73e8"></span>🎓 Đồ án tốt nghiệp</div>
+          <div class="chk-row"><span class="ckbox on">✓</span><span class="dot" style="background:#f59e0b"></span>💼 Việc Freelance</div>
+          <div class="chk-row"><span class="ckbox on">✓</span><span class="dot" style="background:#10b981"></span>🇬🇧 Tiếng Anh TOEIC</div>
+          <div class="chk-row"><span class="ckbox on">✓</span><span class="dot" style="background:#7b1fa2"></span>👤 Việc cá nhân</div>
+          <div class="pin-title">LỊCH CHỜ PHÂN BỔ</div>
+          <div class="unsch-item"><span>⠿</span>Ôn tập chương 5</div>
+          <div class="unsch-item"><span>⠿</span>Gửi báo giá freelance</div>
+          <div class="unsch-item"><span>⠿</span>Đọc tài liệu NestJS</div>
+        </div>
+        <div class="grid-wrap">
+          <div class="grid-deadline"><span class="deadline-pin">🔴 23:59 — Hạn nộp Báo cáo Tuần 01 (Đồ án)</span></div>
+          <div class="grid-head"><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div></div>
+          <div class="time-body">
+            <div class="time-col"><div style="top:0">07:00</div><div style="top:40px">08:00</div><div style="top:80px">09:00</div><div style="top:120px">10:00</div><div style="top:160px">11:00</div><div style="top:200px">12:00</div><div style="top:240px">13:00</div><div style="top:280px">14:00</div><div style="top:320px">15:00</div><div style="top:360px">16:00</div><div style="top:400px">17:00</div><div style="top:440px">18:00</div><div style="top:480px">19:00</div><div style="top:520px">20:00</div><div style="top:560px">21:00</div></div>
+            <div style="display:flex;flex:1">
+              <div class="day-col"><div class="ev" style="top:40px;height:140px;background:var(--event-bg);color:var(--event-text)">📍 Chuyên đề tốt nghiệp<br>Phòng B204 · 08:00–11:30</div></div>
+              <div class="day-col"></div>
+              <div class="day-col"><div class="ev" style="top:280px;height:60px;background:var(--task-bg);color:var(--task-text)">🎥 Họp tiến độ – Thầy Cường<br>Google Meet · 14:00–15:30</div></div>
+              <div class="day-col"><div class="ev" style="top:500px;height:60px;background:var(--note-bg);color:var(--note-text)">🇬🇧 Luyện đề TOEIC Listening<br>19:30–21:00</div></div>
+              <div class="day-col">
+                <div class="ev" style="top:320px;height:120px;background:var(--ref-bg);color:var(--ref-text)">☐ Deep Work: Viết Prisma Schema<br><span class="pill p-urgent" style="margin-top:5px">URGENT</span></div>
+                <div class="now-line" style="top:400px"></div>
+              </div>
+              <div class="day-col"></div>
+              <div class="day-col"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 9: COMMAND PALETTE -->
+<div class="screen" data-name="Command Palette" id="s9">
+  <div class="backdrop">
+    <div class="modal">
+      <div class="modal-search"><span class="ic">🔍</span><input placeholder="Tìm kiếm bài học, việc cần làm, tài liệu, hoặc nhập lệnh..."><span class="esc-badge">ESC</span></div>
+      <div class="chip-row"><span class="chip active">Tất cả</span><span class="chip">🎓 Đồ án</span><span class="chip">📝 Ghi chú</span><span class="chip">☑️ Nhiệm vụ</span><span class="chip">🔗 Tài liệu</span></div>
+      <div class="res-group">
+        <div class="res-label">XEM GẦN ĐÂY</div>
+        <div class="res-item hi"><span>📝 Ghi chú góp ý của Thầy Cường<span class="ri-sub">🎓 Đồ án tốt nghiệp • Đã mở 20 phút trước</span></span></div>
+        <div class="res-item"><span>☑️ Hoàn thiện Prisma Schema<span class="ri-sub">🎓 Đồ án tốt nghiệp • Hạn: Hôm nay</span></span></div>
+        <div class="res-label">LỆNH NHANH</div>
+        <div class="res-item"><span>⚡ Tạo ghi chú mới trong Đồ án tốt nghiệp</span><span class="shortcut">Alt + N</span></div>
+        <div class="res-item"><span>⚡ Mở bảng việc Kanban</span><span class="shortcut">G then K</span></div>
+        <div class="res-item"><span>⚡ Bật chế độ Zen Focus</span><span class="shortcut">F</span></div>
+      </div>
+      <div class="modal-footer"><span><b>↑↓</b> Di chuyển</span><span><b>Enter</b> Chọn</span><span><b>Esc</b> Đóng</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 10: QUICK CAPTURE -->
+<div class="screen" data-name="Quick Capture" id="s10">
+  <div class="backdrop">
+    <div class="modal qc-modal">
+      <div class="qc-type"><div class="active">☑️ Nhiệm vụ</div><div>📝 Ghi chú</div><div>📅 Lịch hẹn</div><div>🔗 Tài liệu</div></div>
+      <div class="qc-body">
+        <input class="qc-title" placeholder="Tiêu đề công việc hoặc ý tưởng...">
+        <div class="qc-row"><div class="qc-field">📅 Hạn chót...</div><div class="qc-field">⚑ Mức độ ưu tiên: Cao</div></div>
+        <div class="qc-row"><div class="qc-field">📂 Không gian: 🎓 Đồ án tốt nghiệp</div></div>
+      </div>
+      <div class="qc-footer"><button class="btn secondary">Hủy</button><button class="btn">Lưu ngay (Enter)</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 11: TRASH -->
+<div class="screen" data-name="Trash" id="s11">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sb-logo">📚 Study & Work</div>
+      <div class="sb-item">🏠 Trang chủ</div>
+      <div class="sb-item active">🗑️ Trash</div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div><h2>🗑️ Thùng rác (Trash)</h2><p class="muted">Các mục trong thùng rác sẽ được tự động xóa vĩnh viễn sau 30 ngày</p></div>
+        <div style="display:flex;gap:8px"><div class="search" style="max-width:200px">🔍 Tìm kiếm</div><button class="btn secondary">Dọn sạch thùng rác</button></div>
+      </div>
+      <div class="tr-list">
+        <div class="tr-head"><div class="tr-c1">TÊN ĐỐI TƯỢNG</div><div class="tr-c2">LOẠI</div><div class="tr-c3">KHÔNG GIAN GỐC</div><div class="tr-c4">NGÀY XÓA</div><div class="tr-c5">HÀNH ĐỘNG</div></div>
+        <div class="tr-row"><div class="tr-c1"><div class="circ"></div>Nghiên cứu thư viện D3.js</div><div class="tr-c2"><span class="pill p-task">Task</span></div><div class="tr-c3">🎓 Đồ án tốt nghiệp</div><div class="tr-c4">2 ngày trước</div><div class="tr-c5"><span class="link-btn">↩️ Khôi phục</span><span class="link-btn danger">🗑️ Xóa vĩnh viễn</span></div></div>
+        <div class="tr-row"><div class="tr-c1"><span class="pill p-note">📝</span>Ý tưởng giao diện cũ v1</div><div class="tr-c2"><span class="pill p-note">Note</span></div><div class="tr-c3">💼 Việc Freelance</div><div class="tr-c4">5 ngày trước</div><div class="tr-c5"><span class="link-btn">↩️ Khôi phục</span><span class="link-btn danger">🗑️ Xóa vĩnh viễn</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 12: AUTH -->
+<div class="screen" data-name="Auth" id="s12">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo"><span class="auth-dot"></span>StudyWork</div>
+      <h2 style="font-size:21px;letter-spacing:-.01em">Đăng nhập tài khoản</h2>
+      <p class="muted" style="margin:6px 0 24px;font-size:13px">Hệ sinh thái quản lý học tập và công việc cá nhân</p>
+      <button class="auth-social"><span class="gicon"></span>Tiếp tục với Google</button>
+      <div class="auth-divider">Hoặc đăng nhập bằng Email</div>
+      <label class="auth-label">Email</label>
+      <input class="auth-input" placeholder="hoan@example.com">
+      <label class="auth-label">Mật khẩu</label>
+      <input class="auth-input" type="password" placeholder="Mật khẩu" value="••••••••" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:22px">
+        <span class="chk-row" style="padding:0"><span class="ckbox"></span>Ghi nhớ đăng nhập</span><span style="color:var(--blue);font-weight:600">Quên mật khẩu?</span>
+      </div>
+      <button class="btn" style="width:100%;background:var(--blue);padding:12px;font-size:14px">Đăng nhập</button>
+      <p class="muted" style="text-align:center;margin-top:18px">Chưa có tài khoản? <span style="color:var(--blue);font-weight:600">Đăng ký ngay</span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+const screens=[...document.querySelectorAll('.screen')];
+const sw=document.getElementById('switcher');
+screens.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.textContent=s.dataset.name;
+  if(i===0)b.classList.add('active');
+  b.onclick=()=>{
+    screens.forEach(x=>x.classList.remove('active'));
+    [...sw.children].forEach(x=>x.classList.remove('active'));
+    s.classList.add('active'); b.classList.add('active');
+  };
+  sw.appendChild(b);
+});
+</script>
+</body>
+</html>

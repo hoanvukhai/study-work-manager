@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Space Detail · Đồ án tốt nghiệp</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f8f9fa;--dot:#c4c7cc;--card:#fff;--bd:#dadce0;--tx:#202124;--tx2:#5f6368;--blue:#1a73e8;--blue-bg:#e8f0fe;--amber:#b06000;--amber-bg:#fef7e0;--green:#188038;--sh:0 1px 2px rgba(60,64,67,.1);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#202124;--dot:#4a4d51;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--blue-bg:#283142;--amber:#fdd663;--amber-bg:#3d3520;--green:#81c995;--sh:0 1px 3px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#202124;--dot:#4a4d51;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--blue-bg:#283142;--amber:#fdd663;--amber-bg:#3d3520;--green:#81c995;--sh:0 1px 3px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:14px/1.5 Inter,Roboto,Arial,sans-serif;display:flex;overflow:hidden}
+button{font:inherit;color:inherit}
+/* sidebar */
+aside{width:240px;flex:none;background:var(--card);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:16px 12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;padding:2px 8px 18px}
+.logo{width:28px;height:28px;border-radius:8px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:15px}
+.sec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);padding:8px 8px 6px;display:flex;justify-content:space-between}
+.item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--tx);cursor:pointer;font-size:13.5px}
+.item:hover{background:var(--bg)}
+.item.on{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.item small{margin-left:auto;color:var(--tx2);font-weight:500}
+.grow{flex:1}
+/* main */
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{background:var(--card);border-bottom:1px solid var(--bd);padding:14px 24px 0}
+.row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-size:20px;font-weight:700}
+.prog{display:flex;align-items:center;gap:10px;margin-left:auto;font-size:12.5px;color:var(--tx2)}
+.bar{width:180px;height:6px;border-radius:99px;background:var(--bd);overflow:hidden}
+.bar i{display:block;height:100%;width:65%;background:var(--blue);border-radius:99px}
+.tabs{display:flex;gap:4px;margin-top:12px;overflow-x:auto}
+.tab{border:0;background:transparent;padding:9px 14px;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-weight:500}
+.tab:hover{color:var(--tx)}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.view{flex:1;min-height:0;display:none}
+.view.on{display:flex}
+/* unified feed */
+.feed{max-width:760px;margin:0 auto;padding:20px 24px 60px;overflow-y:auto;width:100%;flex:1;min-height:0}
+.fsec{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin:0 0 10px;display:flex;align-items:center;gap:6px}
+.chips{display:flex;gap:8px;margin:22px 0 16px;flex-wrap:wrap}
+.chipf{border:1px solid var(--bd);background:var(--card);border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:500;color:var(--tx2);cursor:pointer}
+.chipf:hover{background:var(--bg)}
+.chipf.on{background:var(--blue-bg);border-color:var(--blue-bg);color:var(--blue);font-weight:600}
+.card.pin{position:relative;border-left:3px solid var(--amber);background:var(--amber-bg)}
+.card.pin.note{background:var(--card);border-left:3px solid var(--amber)}
+.card.pin:before{content:"📌";position:absolute;top:10px;right:12px;font-size:12px;opacity:.7}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);padding:12px 14px;margin-bottom:10px;transition:border-color .15s,box-shadow .15s}
+.note.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 2px 8px rgba(26,115,232,.15)}
+.nh{display:flex;align-items:center;gap:8px}
+.nh b{font-weight:600;font-size:14px;flex:1}
+.exp{border:0;background:transparent;cursor:pointer;color:var(--tx2);width:26px;height:26px;border-radius:6px;font-size:12px}
+.exp:hover{background:var(--bg)}
+.exp i{display:inline-block;transition:transform .15s;font-style:normal}
+.note.open .exp i{transform:rotate(180deg)}
+.chip{display:none;font-size:11.5px;font-weight:500;color:var(--blue);background:var(--blue-bg);border-radius:99px;padding:1px 9px;white-space:nowrap}
+.note.active .chip{display:inline-block}
+.tag{font-size:12px;color:var(--blue);background:var(--blue-bg);border-radius:99px;padding:0 9px;font-weight:500}
+.meta{display:flex;gap:8px;align-items:center;margin-top:6px;color:var(--tx2);font-size:12px}
+.md{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--bd);font-size:13px;color:var(--tx2)}
+.note.open .md{display:block}
+.md p{margin:0 0 6px}.md ul{margin:0;padding-left:18px}.md li{margin-bottom:2px}.md b{color:var(--tx)}
+code{font:12px ui-monospace,Menlo,monospace;background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:0 4px;color:var(--tx)}
+.ref{display:flex;align-items:center;gap:12px;cursor:pointer}
+.ref:hover{border-color:var(--blue)}
+.ico{flex:none;width:36px;height:36px;border-radius:8px;background:var(--blue-bg);display:grid;place-items:center}
+.ref .t{flex:1;min-width:0}.ref b{display:block;font-weight:600;font-size:13.5px}
+.ref .u{font-size:12px;color:var(--tx2)}
+.ext{color:var(--tx2);flex:none}
+.task{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.task:hover{border-color:#aecbfa}
+.task.sel{border-color:var(--blue);background:var(--blue-bg)}
+.chk{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #80868b;margin-top:1px;background:transparent;cursor:pointer;padding:0;display:grid;place-items:center;color:#fff;font-size:10px;line-height:1}
+.task.done .chk{background:var(--green);border-color:var(--green)}
+.task.done .tt{text-decoration:line-through;color:var(--tx2)}
+.tt{font-weight:500;font-size:14px}
+.badges{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;align-items:center}
+.pill{font-size:11px;font-weight:600;letter-spacing:.04em;border-radius:99px;padding:1px 9px;display:inline-flex;align-items:center;gap:5px}
+.pill:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.h{color:var(--amber);background:var(--amber-bg)}.m{color:var(--blue);background:var(--blue-bg)}.l{color:var(--tx2);background:var(--bg);border:1px solid var(--bd)}
+.due{font-size:12px;color:var(--tx2);border:1px solid var(--bd);border-radius:6px;padding:0 7px}
+.rel{font-size:12px;color:var(--tx2)}
+.empty{margin:auto;text-align:center;color:var(--tx2)}
+.empty b{display:block;font-size:16px;color:var(--tx);margin-bottom:4px}
+/* canvas */
+.cv{position:relative;flex:1;overflow:hidden;background-color:var(--bg);background-image:radial-gradient(circle,var(--dot) 1px,transparent 1.2px);background-size:24px 24px}
+.world{position:absolute;left:30px;top:90px;width:900px;height:520px;transform-origin:0 0;transition:transform .2s}
+.world svg{position:absolute;left:0;top:0;width:900px;height:520px;overflow:visible;pointer-events:none}
+.cc{position:absolute;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);padding:14px 16px}
+.cc:hover{border-color:var(--blue)}
+.bd{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.bd i{width:8px;height:8px;border-radius:50%}
+.cc h3{margin:0 0 6px;font-size:15px;font-weight:600}
+.cc .mdc{font-size:13px;color:var(--tx2);line-height:1.55}.mdc p{margin:0 0 3px}
+.lbl{position:absolute;transform:translate(-50%,-50%);background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:1px 9px;font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--tx2);white-space:nowrap}
+.tb{position:absolute;top:16px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px 8px;box-shadow:var(--sh);overflow-x:auto;z-index:3}
+.tool{width:34px;height:34px;border:0;background:transparent;border-radius:8px;color:var(--tx2);display:grid;place-items:center;cursor:pointer;flex:none}
+.tool:hover{background:var(--bg)}.tool.on{background:var(--blue-bg);color:var(--blue)}
+.sep{width:1px;height:22px;background:var(--bd);margin:0 4px;flex:none}
+.add{border:0;background:var(--blue);color:#fff;font-weight:600;font-size:13px;border-radius:8px;padding:0 14px;height:34px;cursor:pointer;white-space:nowrap;flex:none}
+:root[data-theme="dark"] .add{color:#202124}
+.zl{font-size:13px;color:var(--tx2);min-width:46px;text-align:center;flex:none}
+.br{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:3}
+.mini{position:relative;width:168px;height:100px;background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);overflow:hidden}
+.mini b{position:absolute;border-radius:2px}
+.mini .vp{border:1.5px solid var(--blue);background:rgba(26,115,232,.06);border-radius:3px}
+.zc{display:flex;background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);overflow:hidden}
+.zc button{width:36px;height:34px;border:0;background:transparent;font-size:18px;cursor:pointer}
+.zc button:hover{background:var(--bg)}.zc span{width:1px;background:var(--bd)}
+@media (max-width:860px){aside{display:none}.split{grid-template-columns:1fr;overflow-y:auto}.panel{overflow:visible}.panel+.panel{border-left:0;border-top:1px solid var(--bd)}.prog{margin-left:0}.top{padding:12px 16px 0}}
+/* app shell header */
+header{height:56px;flex:none;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:14px;padding:0 18px}
+.crumb{font-size:13px;color:var(--tx2);white-space:nowrap}
+.crumb b{color:var(--tx);font-weight:600}
+.omni{margin:0 auto;width:380px;max-width:32vw;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;height:36px;padding:0 10px}
+.omni input{border:0;background:transparent;outline:0;flex:1;min-width:0;font:inherit;color:inherit}
+kbd{font-size:11px;color:var(--tx2);border:1px solid var(--bd);border-radius:5px;padding:1px 6px;background:var(--card)}
+.hr{display:flex;align-items:center;gap:10px;flex:none}
+.qc{height:34px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;padding:0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;font-size:13px}
+:root[data-theme="dark"] .qc{color:#202124}
+.qc kbd{background:rgba(255,255,255,.18);border-color:transparent;color:inherit}
+.ibtn{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--tx2);cursor:pointer;flex:none;border:0;background:transparent}
+.ibtn:hover{background:var(--bg)}
+.dotr{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ea4335;border:1.5px solid var(--card)}
+.avwrap{position:relative;flex:none}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8ab4f8,#1a73e8);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+.onl{position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#34a853;border:2px solid var(--card)}
+.storage{padding:10px 10px 4px}
+.storage .lb{display:flex;justify-content:space-between;font-size:12px;color:var(--tx2);margin-bottom:6px}
+.sbar{height:5px;border-radius:99px;background:var(--bd);overflow:hidden}
+.sbar i{display:block;height:100%;width:68%;background:var(--blue);border-radius:99px}
+.appmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+@media (max-width:1000px){.omni{max-width:none;width:auto;flex:1}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><span class="logo">✦</span>StudyWork</div>
+  <div class="item">🏠 Tổng quan</div>
+  <div class="item">📥 Hộp nhận tự do<small>24</small></div>
+  <div class="sec"><span>Không gian của tôi</span><span>＋</span></div>
+  <div class="item on">🎓 Đồ án tốt nghiệp<small>12</small></div>
+  <div class="item">💼 Việc Freelance<small>7</small></div>
+  <div class="item">🇬🇧 Tiếng Anh TOEIC<small>4</small></div>
+  <div class="sec">Chế độ xem</div>
+  <div class="item">📋 Bảng việc Kanban</div>
+  <div class="item">📅 Lịch &amp; Thời khoá biểu</div>
+  <div class="item">🗺️ Bản đồ tư duy</div>
+  <div class="grow"></div>
+  <div class="storage"><div class="lb"><span>Bộ nhớ</span><span>68%</span></div><div class="sbar"><i></i></div></div>
+  <div class="item">🗑️ Thùng rác<small>2</small></div>
+</aside>
+
+<main class="appmain">
+  <header>
+    <div class="crumb">Trang chủ <span style="opacity:.5">/</span> <b>🎓 Đồ án tốt nghiệp</b></div>
+    <label class="omni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="Tìm kiếm bài học, việc cần làm, tài liệu..." aria-label="Tìm kiếm"><kbd>Ctrl K</kbd></label>
+    <div class="hr">
+      <button class="qc">+ Tạo nhanh<kbd>C</kbd></button>
+      <button class="ibtn" aria-label="Thông báo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dotr"></span></button>
+      <div class="avwrap"><div class="av">VH</div><span class="onl"></span></div>
+    </div>
+  </header>
+  <div class="top">
+    <div class="row">
+      <h1>🎓 Đồ án tốt nghiệp</h1>
+      <div class="prog"><span>Tiến độ</span><div class="bar"><i></i></div><b style="color:var(--tx)">65%</b></div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-v="all">📑 Tất cả</button>
+      <button class="tab" data-v="kanban">📋 Bảng Kanban</button>
+      <button class="tab" data-v="canvas">🌌 Bản đồ Canvas</button>
+      <button class="tab" data-v="cal">📅 Lịch trình</button>
+    </div>
+  </div>
+
+  <!-- UNIFIED FEED -->
+  <section class="view on" id="v-all">
+    <div class="feed">
+      <div class="fsec">📌 Đã ghim</div>
+      <article class="card note pin" id="n4">
+        <div class="nh"><span>📝</span><b>Góp ý của Thầy Cường</b><span class="chip">🔗 Dựa trên tài liệu này</span><button class="exp" aria-label="Mở rộng"><i>▼</i></button></div>
+        <div class="meta"><span class="tag">#Feedback</span><span>Cập nhật hôm nay</span></div>
+        <div class="md"><p>Cân nhắc đánh <b>index GIN</b> cho cột JSONB khi truy vấn thường xuyên theo trường lồng nhau.</p>
+          <ul><li>Xem lại chuẩn hoá bảng <code>relations</code></li><li>Bổ sung ví dụ truy vấn trong tài liệu</li></ul></div>
+      </article>
+      <div class="card task pin" data-n="n2"><button class="chk" aria-label="Hoàn thành"></button><div><div class="tt">Khởi tạo CSDL</div><div class="badges"><span class="pill m">MEDIUM</span><span class="due">📅 20/09</span><span class="rel">→ Kiến trúc Hybrid Object</span></div></div></div>
+
+      <div class="chips" id="chips">
+        <button class="chipf on" data-f="all">Tất cả (12)</button>
+        <button class="chipf" data-f="note">📝 Ghi chú (3)</button>
+        <button class="chipf" data-f="task">☑️ Nhiệm vụ (5)</button>
+        <button class="chipf" data-f="ref">🔗 Tài liệu (4)</button>
+      </div>
+
+      <div class="stream" id="stream">
+        <article class="card note" id="n2" data-type="note">
+          <div class="nh"><span>📝</span><b>Kiến trúc Hybrid Object</b><span class="chip">🔗 Dựa trên tài liệu này</span><button class="exp" aria-label="Mở rộng"><i>▼</i></button></div>
+          <div class="meta"><span class="tag">#Architecture</span><span>Cập nhật hôm qua</span></div>
+          <div class="md"><p>Mọi thực thể dùng chung một bảng <code>objects</code>.</p>
+            <ul><li>Quan hệ lưu ở bảng <code>relations</code> theo kiểu có nhãn</li><li>Thuộc tính riêng của từng loại nằm trong cột JSONB</li></ul></div>
+        </article>
+
+        <div class="card task" data-type="task"><button class="chk" aria-label="Hoàn thành"></button><div><div class="tt">Viết 22 API endpoints NestJS</div><div class="badges"><span class="pill h">HIGH</span><span class="due">📅 28/09</span></div></div></div>
+
+        <div class="card ref" data-type="ref"><div class="ico">🔗</div><div class="t"><b>NestJS Official Documentation</b><span class="u">docs.nestjs.com</span></div>
+          <svg class="ext" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></div>
+
+        <div class="card task" data-type="task" data-n="n4"><button class="chk" aria-label="Hoàn thành"></button><div><div class="tt">Kiểm thử API</div><div class="badges"><span class="pill m">MEDIUM</span><span class="due">📅 01/10</span><span class="rel">🔗 Phụ thuộc: Góp ý của Thầy Cường</span></div></div></div>
+
+        <article class="card note" id="n1" data-type="note">
+          <div class="nh"><span>📝</span><b>Tóm tắt chương 2 - Lý thuyết ORM</b><span class="chip">🔗 Dựa trên tài liệu này</span><button class="exp" aria-label="Mở rộng"><i>▼</i></button></div>
+          <div class="meta"><span class="tag">#ORM</span><span>Cập nhật hôm nay</span></div>
+          <div class="md"><p><b>Object-Relational Mapping</b> ánh xạ bảng CSDL sang đối tượng trong code.</p>
+            <ul><li>Ưu điểm: ít SQL thủ công, an toàn kiểu dữ liệu</li><li>Nhược điểm: truy vấn phức tạp khó tối ưu</li><li>Prisma dùng file <code>schema.prisma</code> và tự sinh client</li></ul></div>
+        </article>
+
+        <div class="card task" data-type="task" data-n="n1"><button class="chk" aria-label="Hoàn thành"></button><div><div class="tt">Hoàn thiện chương 2 - Cơ sở lý thuyết</div><div class="badges"><span class="pill m">MEDIUM</span><span class="due">📅 02/10</span><span class="rel">→ Lý thuyết ORM</span></div></div></div>
+
+        <div class="card ref" data-type="ref"><div class="ico">🔗</div><div class="t"><b>Prisma Docs - Data Modeling</b><span class="u">prisma.io/docs</span></div>
+          <svg class="ext" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></div>
+
+        <div class="card task" data-type="task" data-n="n2"><button class="chk" aria-label="Hoàn thành"></button><div><div class="tt">Vẽ ERD cho tài liệu thiết kế</div><div class="badges"><span class="pill l">LOW</span><span class="due">📅 05/10</span><span class="rel">→ Kiến trúc Hybrid Object</span></div></div></div>
+
+        <div class="card ref" data-type="ref"><div class="ico">🔗</div><div class="t"><b>PostgreSQL: JSONB Indexing</b><span class="u">postgresql.org/docs</span></div>
+          <svg class="ext" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></div>
+
+        <div class="card ref" data-type="ref"><div class="ico">🔗</div><div class="t"><b>Figma Community: Material Design Kit</b><span class="u">figma.com</span></div>
+          <svg class="ext" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-kanban"><div class="empty"><b>📋 Bảng Kanban</b>Màn hình này sẽ được thiết kế riêng.</div></section>
+
+  <!-- CANVAS -->
+  <section class="view" id="v-canvas">
+    <div class="cv" id="cv">
+      <div class="world" id="world">
+        <svg viewBox="0 0 900 520"><defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#80868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+          <path d="M520 185 C430 185 450 110 360 110" fill="none" stroke="#80868b" stroke-width="1.5" marker-end="url(#ar)"/>
+          <path d="M200 240 L200 330" fill="none" stroke="#80868b" stroke-width="1.5" marker-end="url(#ar)"/></svg>
+        <div class="lbl" style="left:440px;top:148px">DEPENDS_ON</div>
+        <div class="lbl" style="left:200px;top:285px">REFERENCES</div>
+        <div class="cc" style="left:40px;top:40px;width:320px;height:200px"><div class="bd"><i style="background:#1a73e8"></i>Note</div><h3>📝 Kiến trúc Hybrid Object</h3>
+          <div class="mdc"><p>Mọi thực thể dùng chung một bảng <code>objects</code>.</p><p>Quan hệ lưu ở bảng <code>relations</code> theo kiểu có nhãn.</p><p>– Thuộc tính riêng nằm trong cột JSONB.</p></div><span class="tag" style="display:inline-block;margin-top:8px">#Architecture</span></div>
+        <div class="cc" style="left:520px;top:120px;width:300px;height:130px"><div class="bd"><i style="background:#f9ab00"></i>Task</div>
+          <div style="display:flex;gap:10px"><span class="chk" style="margin-top:2px"></span><h3 style="margin:0">☑️ Viết mã nguồn Prisma Schema</h3></div>
+          <div class="badges" style="margin:12px 0 0 28px"><span class="pill h">HIGH</span><span class="due">📅 28/09</span></div></div>
+        <div class="cc" style="left:40px;top:330px;width:320px;height:112px"><div class="bd"><i style="background:#34a853"></i>Reference</div>
+          <div style="display:flex;gap:12px;align-items:center"><div class="ico" style="width:44px;height:44px;font-size:20px">🔗</div><div style="flex:1;min-width:0"><h3 style="margin:0;font-size:14px">🔗 NestJS Official Documentation</h3><div style="font-size:12px;color:var(--tx2)">docs.nestjs.com</div></div>
+          <svg class="ext" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></div></div>
+      </div>
+      <div class="tb">
+        <button class="tool on" title="Hand" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-4.5a1.5 1.5 0 0 1 3 0V13m0-3.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.8-2.4L4 14.5a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg></button>
+        <button class="tool" title="Card selector" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 8-6 2-2 6z"/></svg></button>
+        <button class="tool" title="Arrow connector" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5M9 5h10v10"/></svg></button>
+        <button class="tool" title="Text note" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></button>
+        <span class="sep"></span><button class="add">+ Add Object</button><span class="sep"></span><span class="zl" id="zl">100%</span>
+      </div>
+      <div class="br">
+        <div class="mini"><b style="left:8px;top:8px;width:60px;height:38px;background:#aecbfa"></b><b style="left:97px;top:23px;width:56px;height:24px;background:#fde293"></b><b style="left:8px;top:62px;width:60px;height:21px;background:#a8dab5"></b><b class="vp" style="left:2px;top:3px;width:150px;height:88px"></b></div>
+        <div class="zc"><button id="zo" aria-label="Zoom out">−</button><span></span><button id="zi" aria-label="Zoom in">+</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-cal"><div class="empty"><b>📅 Lịch trình</b>Màn hình này sẽ được thiết kế riêng.</div></section>
+</main>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var z=100;
+  function fit(){var c=$('#cv');return Math.min(1,Math.max(.4,(c.clientWidth-60)/900))}
+  function zoom(){$('#world').style.transform='scale('+(fit()*z/100)+')';$('#zl').textContent=z+'%'}
+  $$('#tabs .tab').forEach(function(t){t.onclick=function(){
+    $$('#tabs .tab').forEach(function(x){x.classList.toggle('on',x===t)});
+    $$('.view').forEach(function(v){v.classList.toggle('on',v.id==='v-'+t.dataset.v)});
+    if(t.dataset.v==='canvas')zoom();
+  }});
+  $$('.note').forEach(function(n){$('.exp',n).onclick=function(e){e.stopPropagation();n.classList.toggle('open')}});
+  $$('.task').forEach(function(t){
+    t.onclick=function(){
+      if(!t.dataset.n)return;
+      var same=t.classList.contains('sel');
+      $$('.task').forEach(function(x){x.classList.remove('sel')});
+      $$('.note').forEach(function(x){x.classList.remove('active')});
+      if(same)return;
+      t.classList.add('sel');
+      var n=document.getElementById(t.dataset.n);
+      if(!n)return;
+      n.classList.add('active','open');
+      n.scrollIntoView({behavior:'smooth',block:'nearest'});
+    };
+    $('.chk',t).onclick=function(e){e.stopPropagation();var d=t.classList.toggle('done');this.textContent=d?'✓':''};
+  });
+  $$('#chips .chipf').forEach(function(c){c.onclick=function(){
+    $$('#chips .chipf').forEach(function(x){x.classList.remove('on')});c.classList.add('on');
+    var f=c.dataset.f;
+    $$('#stream > [data-type]').forEach(function(el){el.style.display=(f==='all'||el.dataset.type===f)?'':'none'});
+  }});
+  $$('[data-t]').forEach(function(b){b.onclick=function(){$$('[data-t]').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}});
+  $('#zi').onclick=function(){z=Math.min(200,z+10);zoom()};
+  $('#zo').onclick=function(){z=Math.max(40,z-10);zoom()};
+  window.addEventListener('resize',zoom);
+})();
+</script>
+</body>
+</html>

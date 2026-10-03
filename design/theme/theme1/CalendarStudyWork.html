@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lịch · StudyWork</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f8f9fa;--card:#fff;--bd:#dadce0;--tx:#202124;--tx2:#5f6368;--blue:#1a73e8;--tb:#e8f0fe;--tbt:#1967d2;--nb:#fef7e0;--nbt:#b06000;--eb:#e6f4ea;--ebt:#137333;--rb:#f3e8fd;--rbt:#7b1fa2;--ub:#fce8e6;--ubt:#c5221f;--sh:0 1px 2px rgba(60,64,67,.12);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#202124;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--tb:#283142;--tbt:#8ab4f8;--nb:#3d3520;--nbt:#fdd663;--eb:#25332a;--ebt:#81c995;--rb:#332942;--rbt:#d7aefb;--ub:#42282a;--ubt:#f28b82}}
+:root[data-theme="dark"]{--bg:#202124;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--tb:#283142;--tbt:#8ab4f8;--nb:#3d3520;--nbt:#fdd663;--eb:#25332a;--ebt:#81c995;--rb:#332942;--rbt:#d7aefb;--ub:#42282a;--ubt:#f28b82}
+*{box-sizing:border-box}html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:13.5px/1.4 Inter,Roboto,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button,input{font:inherit;color:inherit}
+/* top controls */
+.top{flex:none;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap}
+h1{margin:0;font-size:17px;font-weight:700;white-space:nowrap}
+.sw{display:flex;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:2px}
+.sw button{border:0;background:transparent;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--tx2);font-size:12.5px;font-weight:500}
+.sw button.on{background:var(--card);color:var(--tx);box-shadow:var(--sh);font-weight:600}
+.nav{display:flex;align-items:center;gap:8px}
+.navb{width:28px;height:28px;border:1px solid var(--bd);background:var(--card);border-radius:7px;cursor:pointer;display:grid;place-items:center;color:var(--tx2)}
+.navb:hover{background:var(--bg)}
+.range{font-size:13px;font-weight:600;white-space:nowrap}
+.add{margin-left:auto;height:34px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;padding:0 14px;cursor:pointer;white-space:nowrap}
+:root[data-theme="dark"] .add{color:#202124}
+/* layout */
+.body{flex:1;display:flex;min-height:0}
+.mini{width:220px;flex:none;background:var(--card);border-right:1px solid var(--bd);padding:16px 14px;overflow-y:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;margin-bottom:10px}
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:11px}
+.mgrid .d{color:var(--tx2);padding-bottom:4px}
+.mgrid .n{padding:4px 0;border-radius:50%;cursor:pointer}
+.mgrid .n:hover{background:var(--bg)}
+.mgrid .n.sel{background:var(--blue);color:#fff}
+.mgrid .n.today{font-weight:700;color:var(--blue)}
+.sec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin:18px 0 8px}
+.cb{display:flex;align-items:center;gap:9px;padding:5px 2px;font-size:13px}
+.cb input{accent-color:var(--blue);width:14px;height:14px}
+.cb i{width:8px;height:8px;border-radius:50%}
+.bl{border:1px solid var(--bd);border-radius:8px;padding:7px 9px;margin-bottom:7px;font-size:12.5px;cursor:grab;background:var(--card)}
+.bl b{display:block;font-size:12.5px;font-weight:500;margin-bottom:4px}
+.bl .p{display:inline-block;font-size:10px;font-weight:700;border-radius:99px;padding:1px 7px;background:var(--ub);color:var(--ubt)}
+/* grid */
+.gridwrap{flex:1;overflow:auto;position:relative}
+.grid{display:grid;grid-template-columns:56px repeat(7,1fr);min-width:860px}
+.corner{border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);background:var(--card);position:sticky;top:0;left:0;z-index:3}
+.dh{border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);background:var(--card);position:sticky;top:0;z-index:2;padding:8px 6px;text-align:center}
+.dh .dn{font-size:11px;color:var(--tx2);font-weight:500}
+.dh .dnum{font-size:16px;font-weight:600;margin-top:2px}
+.dh.today .dnum{color:#fff;background:var(--blue);border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center}
+.allday{grid-column:1/2;border-right:1px solid var(--bd);background:var(--card);position:sticky;left:0;z-index:2}
+.adcell{border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);background:var(--card);min-height:34px;padding:4px 5px}
+.pin{font-size:11px;font-weight:600;background:var(--ub);color:var(--ubt);border-radius:6px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.times{border-right:1px solid var(--bd);background:var(--card);position:sticky;left:0;z-index:1}
+.tslot{height:56px;border-bottom:1px solid var(--bd);text-align:right;padding:0 8px;font-size:11px;color:var(--tx2);transform:translateY(-6px)}
+.daycol{position:relative;border-right:1px solid var(--bd)}
+.hcell{height:56px;border-bottom:1px solid var(--bd)}
+.ev{position:absolute;left:3px;right:3px;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:500;overflow:hidden;cursor:pointer;box-shadow:var(--sh)}
+.ev small{display:block;font-weight:400;opacity:.8;font-size:10.5px;margin-top:1px}
+.now{position:absolute;left:0;right:0;height:0;border-top:2px solid #ea4335;z-index:2}
+.now:before{content:"";position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:#ea4335}
+@media (max-width:820px){.mini{display:none}}
+/* app shell */
+body{flex-direction:row}
+aside{width:240px;flex:none;background:var(--card);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:14px 10px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;padding:4px 8px 16px}
+.dot2{width:9px;height:9px;border-radius:50%;background:var(--blue)}
+.sec2{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);padding:14px 10px 6px;display:flex;justify-content:space-between}
+.item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.item:hover{background:var(--bg)}
+.item.on{background:var(--tb);color:var(--tbt);font-weight:600}
+.grow{flex:1}
+.storage{padding:10px 10px 4px}
+.storage .lb{display:flex;justify-content:space-between;font-size:12px;color:var(--tx2);margin-bottom:6px}
+.sbar{height:5px;border-radius:99px;background:var(--bd);overflow:hidden}
+.sbar i{display:block;height:100%;width:68%;background:var(--blue);border-radius:99px}
+.appmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.apphead{height:56px;flex:none;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:14px;padding:0 18px}
+.crumb{font-size:13px;color:var(--tx2);white-space:nowrap}
+.crumb b{color:var(--tx);font-weight:600}
+.omni{margin:0 auto;width:380px;max-width:32vw;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;height:36px;padding:0 10px}
+.omni input{border:0;background:transparent;outline:0;flex:1;min-width:0;font:inherit;color:inherit}
+kbd{font-size:11px;color:var(--tx2);border:1px solid var(--bd);border-radius:5px;padding:1px 6px;background:var(--card)}
+.hrw{display:flex;align-items:center;gap:10px;flex:none}
+.qc{height:34px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;padding:0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;font-size:13px}
+:root[data-theme="dark"] .qc{color:#202124}
+.qc kbd{background:rgba(255,255,255,.18);border-color:transparent;color:inherit}
+.ibtn{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--tx2);cursor:pointer;flex:none;border:0;background:transparent}
+.ibtn:hover{background:var(--bg)}
+.dotr{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ea4335;border:1.5px solid var(--card)}
+.avwrap{position:relative;flex:none}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8ab4f8,#1a73e8);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+.onl{position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#34a853;border:2px solid var(--card)}
+@media (max-width:1000px){aside{display:none}.omni{max-width:none;width:auto;flex:1}}
+</style></head>
+<body>
+<aside>
+  <div class="brand"><span class="dot2"></span>StudyWork</div>
+  <div class="item">🏠 Tổng quan</div>
+  <div class="item">📥 Hộp nhận tự do<small>24</small></div>
+  <div class="sec2"><span>Không gian của tôi</span><span>＋</span></div>
+  <div class="item">🎓 Đồ án tốt nghiệp</div>
+  <div class="item">💼 Việc Freelance</div>
+  <div class="item">🇬🇧 Tiếng Anh TOEIC</div>
+  <div class="sec2">Chế độ xem</div>
+  <div class="item">📋 Bảng việc Kanban</div>
+  <div class="item on">📅 Lịch &amp; Thời khoá biểu</div>
+  <div class="item">🗺️ Bản đồ tư duy</div>
+  <div class="grow"></div>
+  <div class="storage"><div class="lb"><span>Bộ nhớ</span><span>68%</span></div><div class="sbar"><i></i></div></div>
+  <div class="item">🗑️ Thùng rác</div>
+</aside>
+<main class="appmain">
+  <header class="apphead">
+    <div class="crumb">Trang chủ <span style="opacity:.5">/</span> <b>Lịch &amp; Thời khoá biểu</b></div>
+    <label class="omni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="Tìm kiếm bài học, việc cần làm, tài liệu..." aria-label="Tìm kiếm"><kbd>Ctrl K</kbd></label>
+    <div class="hrw">
+      <button class="qc">+ Tạo nhanh<kbd>C</kbd></button>
+      <button class="ibtn" aria-label="Thông báo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dotr"></span></button>
+      <div class="avwrap"><div class="av">VH</div><span class="onl"></span></div>
+    </div>
+  </header>
+<div class="top">
+  <h1>📅 Lịch trình</h1>
+  <div class="sw"><button>Tháng</button><button class="on">Tuần</button><button>Ngày</button><button>Dòng thời gian</button></div>
+  <div class="nav"><button class="navb">‹</button><span class="range">Tuần 39: 21/09 – 27/09/2026</span><button class="navb">›</button></div>
+  <button class="add">+ Thêm lịch / sự kiện</button>
+</div>
+
+<div class="body">
+  <div class="mini">
+    <div class="mh"><span>Tháng 9, 2026</span></div>
+    <div class="mgrid">
+      <span class="d">T2</span><span class="d">T3</span><span class="d">T4</span><span class="d">T5</span><span class="d">T6</span><span class="d">T7</span><span class="d">CN</span>
+      <span></span><span></span><span class="n">1</span><span class="n">2</span><span class="n">3</span><span class="n">4</span><span class="n">5</span>
+      <span class="n">6</span><span class="n">7</span><span class="n">8</span><span class="n">9</span><span class="n">10</span><span class="n">11</span><span class="n">12</span>
+      <span class="n">13</span><span class="n">14</span><span class="n">15</span><span class="n">16</span><span class="n">17</span><span class="n">18</span><span class="n">19</span>
+      <span class="n">20</span><span class="n sel">21</span><span class="n">22</span><span class="n">23</span><span class="n">24</span><span class="n">25</span><span class="n today">26</span>
+      <span class="n">27</span><span class="n">28</span><span class="n">29</span><span class="n">30</span><span></span><span></span><span></span>
+    </div>
+    <div class="sec">Hiển thị Không gian</div>
+    <label class="cb"><input type="checkbox" checked><i style="background:#1a73e8"></i>🎓 Đồ án tốt nghiệp</label>
+    <label class="cb"><input type="checkbox" checked><i style="background:#f59e0b"></i>💼 Việc Freelance</label>
+    <label class="cb"><input type="checkbox" checked><i style="background:#10b981"></i>🇬🇧 Tiếng Anh TOEIC</label>
+    <div class="sec">Việc chưa xếp lịch</div>
+    <div class="bl" draggable="true"><b>Viết 22 API endpoints NestJS</b><span class="p">HIGH</span></div>
+    <div class="bl" draggable="true"><b>Ôn tập Part 5 TOEIC</b><span class="p" style="background:var(--tb);color:var(--tbt)">MEDIUM</span></div>
+  </div>
+
+  <div class="gridwrap">
+    <div class="grid" id="grid">
+      <div class="corner"></div>
+      <div class="dh"><div class="dn">Thứ Hai</div><div class="dnum">21</div></div>
+      <div class="dh"><div class="dn">Thứ Ba</div><div class="dnum">22</div></div>
+      <div class="dh"><div class="dn">Thứ Tư</div><div class="dnum">23</div></div>
+      <div class="dh"><div class="dn">Thứ Năm</div><div class="dnum">24</div></div>
+      <div class="dh"><div class="dn">Thứ Sáu</div><div class="dnum">25</div></div>
+      <div class="dh"><div class="dn">Thứ Bảy</div><div class="dnum">26</div></div>
+      <div class="dh"><div class="dn">Chủ Nhật</div><div class="dnum">27</div></div>
+
+      <div class="allday">&nbsp;</div>
+      <div class="adcell"></div><div class="adcell"></div><div class="adcell"></div><div class="adcell"></div>
+      <div class="adcell"><span class="pin">🔴 23:59: Hạn nộp Báo cáo Tuần 01</span></div>
+      <div class="adcell"></div><div class="adcell"></div>
+
+      <div class="times" id="times"></div>
+      <div class="daycol" id="c1"></div>
+      <div class="daycol" id="c2"></div>
+      <div class="daycol" id="c3"></div>
+      <div class="daycol" id="c4"></div>
+      <div class="daycol" id="c5"></div>
+      <div class="daycol" id="c6"></div>
+      <div class="daycol" id="c7"></div>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+(function(){
+var H0=7,H1=22,HH=56,N=H1-H0;
+var times=document.getElementById('times');
+for(var h=H0;h<=H1;h++){var d=document.createElement('div');d.className='tslot';d.textContent=(h<10?'0':'')+h+':00';times.appendChild(d)}
+for(var i=1;i<=7;i++){var c=document.getElementById('c'+i);for(var h=H0;h<H1;h++){var cell=document.createElement('div');cell.className='hcell';c.appendChild(cell)}}
+function evEl(col,startH,endH,title,sub,bg,fg,pill){
+  var top=(startH-H0)*HH,h=(endH-startH)*HH;
+  var e=document.createElement('div');e.className='ev';e.style.top=top+'px';e.style.height=h+'px';e.style.background=bg;e.style.color=fg;
+  e.innerHTML='<b>'+title+'</b>'+(pill?' <span style="font-size:9.5px;font-weight:700;background:rgba(0,0,0,.08);border-radius:99px;padding:0 6px;margin-left:2px">KHẨN</span>':'')+'<small>'+sub+'</small>';
+  col.appendChild(e);
+}
+var vartb=getComputedStyle(document.documentElement);
+function cv(n){return vartb.getPropertyValue(n).trim()}
+evEl(document.getElementById('c1'),8,11.5,'Tiết học: Chuyên đề tốt nghiệp (B204)','08:00–11:30',cv('--eb'),cv('--ebt'));
+evEl(document.getElementById('c3'),14,15.5,'Họp tiến độ với Thầy Cường (Meet)','14:00–15:30',cv('--tb'),cv('--tbt'));
+evEl(document.getElementById('c4'),19.5,21,'Luyện đề TOEIC Listening','19:30–21:00',cv('--nb'),cv('--nbt'));
+evEl(document.getElementById('c5'),15,18,'Deep Work: Viết mã nguồn Prisma Schema','15:00–18:00',cv('--rb'),cv('--rbt'),true);
+/* current time line - Friday 17:00 per mock */
+var now=document.createElement('div');now.className='now';now.style.top=((17-H0)*HH)+'px';
+document.getElementById('c5').appendChild(now);
+document.querySelectorAll('.dh')[4].classList.add('today');
+document.getElementById('grid').scrollTop=0;
+document.querySelector('.gridwrap').scrollTop=(15-H0)*HH-60;
+document.querySelectorAll('.sw button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.sw button').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}});
+document.querySelectorAll('.mgrid .n').forEach(function(n){n.onclick=function(){document.querySelectorAll('.mgrid .n').forEach(function(x){x.classList.remove('sel')});n.classList.add('sel')}});
+})();
+</script>
+</body></html>

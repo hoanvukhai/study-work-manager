@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StudyWork — Quản lý Học tập & Công việc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-canvas:#f8f9fa; --surface:#ffffff; --border:#dadce0;
+  --text-primary:#202124; --text-secondary:#5f6368;
+  --accent:#1a73e8; --accent-hover:#1557b0; --dark-accent:#202124;
+  --badge-task-bg:#e8f0fe; --badge-task-text:#1967d2;
+  --badge-note-bg:#fef7e0; --badge-note-text:#b06000;
+  --badge-event-bg:#e6f4ea; --badge-event-text:#137333;
+  --badge-ref-bg:#f3e8fd; --badge-ref-text:#7b1fa2;
+  --badge-danger-bg:#fce8e6; --badge-danger-text:#c5221f;
+  --radius-sm:8px; --radius-lg:12px;
+  --shadow-sm:0 1px 3px rgba(60,64,67,0.08);
+  --sidebar-w:240px; --header-h:56px;
+  color-scheme: light;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --bg-canvas:#131416; --surface:#1e1f22; --border:#3c4043;
+    --text-primary:#e8eaed; --text-secondary:#9aa0a6;
+    --badge-task-bg:#1f2b45; --badge-task-text:#8ab4f8;
+    --badge-note-bg:#3a2f10; --badge-note-text:#fdd663;
+    --badge-event-bg:#173629; --badge-event-text:#81c995;
+    --badge-ref-bg:#2c1f3d; --badge-ref-text:#d7aefb;
+    --badge-danger-bg:#3c1f1e; --badge-danger-text:#f28b82;
+  }
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg-canvas); color:var(--text-primary);
+  font-family:'Inter',-apple-system,Roboto,sans-serif; font-size:14px; line-height:1.5;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  -webkit-font-smoothing:antialiased;
+}
+h1{font-size:24px; font-weight:700; margin:0;}
+h2{font-size:18px; font-weight:600; margin:0;}
+.meta{font-size:12px; font-weight:500; color:var(--text-secondary);}
+button{font-family:inherit; cursor:pointer;}
+a{color:inherit;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
+
+/* ---------- SHELL ---------- */
+#shell{display:flex; min-height:100vh;}
+#sidebar{
+  width:var(--sidebar-w); flex:0 0 var(--sidebar-w); background:var(--surface);
+  border-right:1px solid var(--border); display:flex; flex-direction:column;
+  height:100vh; position:sticky; top:0; padding-top:env(safe-area-inset-top,0px);
+}
+.sb-header{display:flex; align-items:center; gap:8px; padding:18px 16px; font-weight:700; font-size:16px;}
+.sb-dot{width:9px;height:9px;border-radius:50%;background:var(--accent); flex:0 0 auto;}
+.sb-section{padding:14px 16px 6px; display:flex; align-items:center; justify-content:space-between;}
+.sb-section .meta{letter-spacing:.02em;}
+.sb-add{background:none;border:none;color:var(--text-secondary);font-size:16px;border-radius:6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+.sb-add:hover{background:var(--bg-canvas);}
+.nav-item{
+  display:flex; align-items:center; gap:10px; padding:8px 16px; margin:1px 8px; border-radius:var(--radius-sm);
+  color:var(--text-primary); text-decoration:none; font-size:14px; position:relative; border:none; background:none; width:calc(100% - 16px); text-align:left;
+}
+.nav-item:hover{background:var(--bg-canvas);}
+.nav-item.active{background:var(--badge-task-bg); color:var(--accent); font-weight:600;}
+.nav-item .nav-badge{margin-left:auto; font-size:11px; background:var(--bg-canvas); color:var(--text-secondary); padding:1px 7px; border-radius:10px;}
+.nav-item.active .nav-badge{background:#fff; color:var(--accent);}
+.space-dot{width:8px;height:8px;border-radius:50%; flex:0 0 auto;}
+.sb-spacer{flex:1;}
+.sb-storage{margin:8px 16px; padding:12px; background:var(--bg-canvas); border-radius:var(--radius-sm);}
+.sb-storage .bar{height:5px; background:var(--border); border-radius:4px; margin-top:6px; overflow:hidden;}
+.sb-storage .bar>i{display:block; height:100%; width:68%; background:var(--accent);}
+.sb-settings{padding:12px 16px 16px; border-top:1px solid var(--border); margin-top:6px;}
+
+#main-col{flex:1; min-width:0; display:flex; flex-direction:column;}
+#topheader{
+  height:var(--header-h); flex:0 0 var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; gap:16px; position:sticky; top:0; z-index:30;
+}
+.crumb{font-size:13px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.crumb b{color:var(--text-primary); font-weight:600;}
+.search-wrap{flex:1; display:flex; justify-content:center;}
+.search-box{
+  width:380px; max-width:100%; display:flex; align-items:center; gap:8px; background:var(--bg-canvas);
+  border:1px solid var(--border); border-radius:20px; padding:7px 14px; color:var(--text-secondary); font-size:13px;
+}
+.search-box input{border:none;background:none;outline:none;flex:1;font-family:inherit;font-size:13px;color:var(--text-primary);}
+.kbd{font-size:11px; border:1px solid var(--border); border-radius:5px; padding:1px 5px; background:var(--surface); color:var(--text-secondary);}
+.header-right{display:flex; align-items:center; gap:12px; margin-left:auto;}
+.btn-primary{
+  background:var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:var(--radius-sm);
+  font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;
+}
+.btn-primary:hover{background:var(--accent-hover);}
+.icon-btn{
+  position:relative; width:34px; height:34px; border-radius:50%; border:none; background:none;
+  display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--text-secondary);
+}
+.icon-btn:hover{background:var(--bg-canvas);}
+.dot-badge{position:absolute; top:4px; right:5px; width:8px; height:8px; border-radius:50%; background:var(--badge-danger-text); border:1.5px solid var(--surface);}
+.avatar{width:32px;height:32px;border-radius:50%; background:linear-gradient(135deg,#1a73e8,#7b1fa2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; position:relative;}
+.avatar .online{position:absolute; bottom:-1px; right:-1px; width:9px;height:9px;border-radius:50%;background:#137333; border:2px solid var(--surface);}
+
+#views{flex:1; overflow-y:auto; padding:28px 32px 80px;}
+.view{display:none; max-width:1100px; margin:0 auto;}
+.view.active{display:block;}
+
+/* ---------- CARDS / BADGES ---------- */
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);}
+.badge{display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:500; padding:2px 9px; border-radius:var(--radius-sm);}
+.badge-task{background:var(--badge-task-bg); color:var(--badge-task-text);}
+.badge-note{background:var(--badge-note-bg); color:var(--badge-note-text);}
+.badge-event{background:var(--badge-event-bg); color:var(--badge-event-text);}
+.badge-reference{background:var(--badge-ref-bg); color:var(--badge-ref-text);}
+.badge-danger{background:var(--badge-danger-bg); color:var(--badge-danger-text);}
+.badge-amber{background:var(--badge-note-bg); color:var(--badge-note-text);}
+.chip{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; padding:3px 10px; border-radius:14px; background:var(--bg-canvas); color:var(--text-secondary); border:1px solid var(--border);}
+.tag{font-size:12px; color:var(--accent);}
+
+/* ---------- DASHBOARD ---------- */
+.greet{margin-bottom:16px;}
+.greet .meta{margin-top:4px;}
+.capture-bar{
+  display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:12px 16px; margin:16px 0 24px; box-shadow:var(--shadow-sm);
+}
+.capture-bar input{flex:1; border:none; outline:none; font-family:inherit; font-size:14px; background:none; color:var(--text-primary);}
+.hero-card{
+  background:linear-gradient(135deg,#eef4fe,var(--surface)); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:20px 22px; margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.hero-card .meta{color:var(--accent); font-weight:600; margin-bottom:8px;}
+.hero-card h2{margin-bottom:4px;}
+.hero-row{display:flex; align-items:center; justify-content:space-between; margin-top:14px; flex-wrap:wrap; gap:10px;}
+.grid2{display:grid; grid-template-columns:65fr 35fr; gap:20px; align-items:start;}
+@media (max-width:800px){.grid2{grid-template-columns:1fr;}}
+.section-title{margin-bottom:12px;}
+.task-row{display:flex; align-items:flex-start; gap:12px; padding:14px; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); margin-bottom:10px; box-shadow:var(--shadow-sm); cursor:pointer;}
+.task-row:hover{border-color:var(--accent);}
+.check{width:18px;height:18px;border-radius:50%; border:2px solid var(--border); flex:0 0 auto; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:11px; color:transparent;}
+.check.done{background:var(--accent); border-color:var(--accent); color:#fff;}
+.task-title{font-weight:500; margin-bottom:6px;}
+.task-title.strike{text-decoration:line-through; color:var(--text-secondary);}
+.row-chips{display:flex; gap:6px; flex-wrap:wrap;}
+.mini-block{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px; margin-bottom:14px; box-shadow:var(--shadow-sm);}
+.mini-timeline-item{display:flex; align-items:center; gap:10px;}
+.note-mini{padding:8px 0; border-top:1px solid var(--border);}
+.note-mini:first-child{border-top:none; padding-top:0;}
+.note-mini .snippet{color:var(--text-secondary); font-size:12.5px; margin-top:2px;}
+
+/* ---------- SPACE DETAIL ---------- */
+.space-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:18px;}
+.space-icon{font-size:28px; width:48px;height:48px; background:var(--bg-canvas); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center;}
+.progress-bar{height:6px; background:var(--bg-canvas); border-radius:6px; overflow:hidden; width:220px; margin-top:8px;}
+.progress-bar>i{display:block; height:100%; background:var(--accent);}
+.tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:18px; overflow-x:auto;}
+.tab-btn{padding:9px 14px; border:none; background:none; color:var(--text-secondary); font-size:13.5px; font-weight:500; border-bottom:2px solid transparent; white-space:nowrap;}
+.tab-btn:hover{color:var(--text-primary);}
+.tab-btn.active{color:var(--accent); border-color:var(--accent); font-weight:600;}
+.pin-tint{background:#fffdf5; border-color:#f3e8b8;}
+.stream-item{display:flex; align-items:flex-start; gap:12px; padding:13px 14px; border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:9px; background:var(--surface); box-shadow:var(--shadow-sm); cursor:pointer;}
+.stream-item:hover{border-color:var(--accent);}
+.stream-icon{font-size:16px; margin-top:1px;}
+.stream-body{flex:1; min-width:0;}
+.stream-title{font-weight:500;}
+.stream-preview{color:var(--text-secondary); font-size:12.5px; margin-top:3px;}
+.rel-chip{display:inline-flex; align-items:center; gap:4px; font-size:11.5px; background:var(--bg-canvas); border:1px solid var(--border); padding:2px 8px; border-radius:10px; margin-top:6px; color:var(--text-secondary);}
+.empty-inline{color:var(--text-secondary); font-size:13px; padding:20px 0; text-align:center;}
+
+/* ---------- KANBAN ---------- */
+.kanban-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+.select-mini{border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); padding:6px 10px; font-size:12.5px; color:var(--text-secondary);}
+.kanban-cols{display:flex; gap:16px; align-items:flex-start; overflow-x:auto; padding-bottom:8px;}
+.kcol{flex:1 0 260px; min-width:260px; background:var(--bg-canvas); border-radius:var(--radius-lg); padding:12px;}
+.kcol-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12.5px; font-weight:600; color:var(--text-secondary); letter-spacing:.02em;}
+.kcard{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:12px; margin-bottom:10px; box-shadow:var(--shadow-sm); cursor:grab;}
+.kcard:hover{border-color:var(--accent);}
+.kcard.dragging{opacity:.4;}
+.kcard-title{font-weight:500; margin-bottom:8px; font-size:13.5px;}
+.kcol.dragover{outline:2px dashed var(--accent); outline-offset:-4px;}
+.kcard-foot{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
+.attach-pill{font-size:11px; color:var(--text-secondary); background:var(--bg-canvas); border:1px solid var(--border); border-radius:8px; padding:2px 7px;}
+
+/* Side-peek drawer */
+#drawer-overlay{position:fixed; inset:0; background:rgba(32,33,36,.15); display:none; z-index:60;}
+#drawer{
+  position:fixed; top:0; right:-440px; width:420px; max-width:92vw; height:100%; background:var(--surface);
+  box-shadow:-4px 0 24px rgba(60,64,67,.16); z-index:61; transition:right .28s ease; display:flex; flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+#drawer.open{right:0;}
+.drawer-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border);}
+.drawer-body{padding:18px; overflow-y:auto; flex:1;}
+.close-x{border:none; background:none; font-size:18px; color:var(--text-secondary); width:30px;height:30px;border-radius:50%;}
+.close-x:hover{background:var(--bg-canvas);}
+
+/* ---------- CALENDAR ---------- */
+.cal-toolbar{display:flex; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap;}
+.seg{display:flex; border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden;}
+.seg button{border:none; background:var(--surface); padding:6px 14px; font-size:13px; color:var(--text-secondary);}
+.seg button.active{background:var(--badge-task-bg); color:var(--accent); font-weight:600;}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--border); border-left:1px solid var(--border); background:var(--surface); border-radius:var(--radius-lg); overflow:hidden;}
+.cal-dow{padding:8px; text-align:center; font-size:11.5px; font-weight:600; color:var(--text-secondary); border-right:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--bg-canvas);}
+.cal-cell{min-height:96px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:6px; font-size:12px; color:var(--text-secondary); position:relative;}
+.cal-cell.other{background:#fbfbfb; color:#c9ccd1;}
+.cal-daynum{display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-weight:600; color:var(--text-primary);}
+.cal-cell.today .cal-daynum{background:var(--accent); color:#fff;}
+.cal-chip{display:block; font-size:10.5px; padding:2px 6px; border-radius:6px; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;}
+.cal-chip.ev{background:var(--badge-event-bg); color:var(--badge-event-text);}
+.cal-chip.tk{background:var(--badge-task-bg); color:var(--badge-task-text);}
+.cal-chip.overdue{background:var(--badge-danger-bg); color:var(--badge-danger-text);}
+
+/* ---------- CANVAS ---------- */
+.canvas-wrap{position:relative; height:560px; border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;
+  background-color:var(--bg-canvas);
+  background-image:radial-gradient(var(--border) 1px, transparent 1px); background-size:22px 22px;}
+.canvas-toolbar{position:absolute; top:12px; left:50%; transform:translateX(-50%); display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:5px; box-shadow:var(--shadow-sm); z-index:5;}
+.canvas-toolbar button{border:none; background:none; width:32px;height:32px; border-radius:7px; font-size:14px; color:var(--text-secondary);}
+.canvas-toolbar button.active{background:var(--badge-task-bg); color:var(--accent);}
+.canvas-zoom{position:absolute; bottom:14px; right:14px; background:var(--surface); border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; box-shadow:var(--shadow-sm); z-index:5;}
+.canvas-zoom button{border:none;background:none;width:30px;height:30px;color:var(--text-secondary);font-size:14px;}
+.canvas-zoom span{font-size:11.5px; color:var(--text-secondary); padding:0 6px;}
+.cv-node{position:absolute; width:210px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:11px; cursor:grab; font-size:12.5px; z-index:2;}
+.cv-node:active{cursor:grabbing;}
+.cv-node .stream-title{font-size:13px;}
+.cv-svg{position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;}
+
+/* ---------- INBOX ---------- */
+.filter-row{display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;}
+.filter-chip{border:1px solid var(--border); background:var(--surface); border-radius:16px; padding:6px 13px; font-size:12.5px; color:var(--text-secondary);}
+.filter-chip.active{background:var(--dark-accent); color:#fff; border-color:var(--dark-accent);}
+.masonry{columns:3 260px; column-gap:14px;}
+@media (max-width:760px){.masonry{columns:1;}}
+.masonry .stream-item{break-inside:avoid; display:block;}
+.masonry .stream-item .flexline{display:flex; gap:10px;}
+.assign-btn{display:none; margin-top:10px; border:1px solid var(--border); background:var(--bg-canvas); border-radius:7px; padding:5px 10px; font-size:11.5px; color:var(--text-secondary);}
+.masonry .stream-item:hover .assign-btn{display:inline-block;}
+
+/* ---------- MODAL ---------- */
+#modal-overlay{position:fixed; inset:0; background:rgba(32,33,36,.32); display:none; align-items:flex-start; justify-content:center; z-index:80; padding:6vh 16px; overflow-y:auto;}
+#modal{width:680px; max-width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:0 12px 40px rgba(0,0,0,.18);}
+.modal-topbar{display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--border);}
+.type-select{border:1px solid var(--border); border-radius:var(--radius-sm); padding:6px 10px; font-size:12.5px; font-weight:600; background:var(--bg-canvas);}
+.modal-body{padding:20px;}
+.title-input{width:100%; border:none; outline:none; font-size:20px; font-weight:700; font-family:inherit; color:var(--text-primary); margin-bottom:16px; background:none;}
+.props-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+.field label{display:block; font-size:11.5px; color:var(--text-secondary); margin-bottom:5px; font-weight:600;}
+.field select, .field input[type="date"]{width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; font-size:13px; font-family:inherit; background:var(--surface); color:var(--text-primary);}
+.space-multiselect{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+.chip-x{margin-left:2px; cursor:pointer; color:var(--text-secondary);}
+.add-space-chip{border:1px dashed var(--border); background:none; border-radius:14px; padding:3px 10px; font-size:12px; color:var(--text-secondary);}
+.md-editor{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+@media (max-width:600px){.md-editor{grid-template-columns:1fr;} .props-grid{grid-template-columns:1fr;}}
+.md-editor textarea{width:100%; min-height:140px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px; font-family:inherit; font-size:13px; resize:vertical; color:var(--text-primary); background:var(--surface);}
+.md-preview{border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px; font-size:13px; overflow-y:auto; max-height:200px; color:var(--text-primary);}
+.md-preview h1,.md-preview h2,.md-preview h3{font-size:14px; margin:8px 0 4px;}
+.md-preview code{background:var(--bg-canvas); padding:1px 4px; border-radius:4px;}
+.rel-section{border-top:1px solid var(--border); padding-top:14px;}
+.rel-section .meta{margin-bottom:10px; letter-spacing:.03em; font-weight:700;}
+.backlink-chip{display:inline-flex; align-items:center; gap:6px; background:var(--bg-canvas); border:1px solid var(--border); border-radius:14px; padding:5px 11px; font-size:12.5px; margin:0 6px 6px 0;}
+.add-link-btn{border:1px dashed var(--border); background:none; border-radius:var(--radius-sm); padding:6px 12px; font-size:12.5px; color:var(--text-secondary);}
+.modal-actions{display:flex; justify-content:flex-end; gap:8px; padding:14px 20px; border-top:1px solid var(--border);}
+.btn-ghost{background:none; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 14px; font-size:13px; color:var(--text-primary);}
+
+/* ---------- QUICK CAPTURE POPOVER ---------- */
+#qc-pop{position:fixed; top:60px; right:20px; width:340px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:0 8px 28px rgba(0,0,0,.16); z-index:70; display:none; padding:14px;}
+#qc-pop input{width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 11px; font-family:inherit; font-size:13px; outline:none;}
+#qc-pop .meta{margin-top:8px;}
+
+/* ---------- ZEN MODE ---------- */
+#zen{position:fixed; inset:0; background:var(--bg-canvas); z-index:90; display:none; overflow-y:auto;}
+.zen-top{display:flex; justify-content:space-between; align-items:center; padding:18px 26px; opacity:.65;}
+.zen-exit{border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); padding:6px 12px; font-size:12.5px;}
+.zen-col{max-width:780px; margin:10px auto 100px; padding:0 20px;}
+.zen-col h1{margin-bottom:14px;}
+.zen-doc{font-size:15.5px; line-height:1.75; color:var(--text-primary);}
+.zen-doc p{margin:0 0 14px;}
+.zen-checklist{margin-top:26px; border-top:1px solid var(--border); padding-top:16px;}
+.zen-check-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-size:14px;}
+.pomo{position:fixed; bottom:22px; right:22px; background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-sm); padding:10px 16px; display:flex; align-items:center; gap:10px; font-weight:600; z-index:95;}
+.pomo button{border:none; background:var(--dark-accent); color:#fff; width:28px;height:28px; border-radius:50%; font-size:12px;}
+
+/* ---------- TOAST ---------- */
+#toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--dark-accent); color:#fff; padding:10px 18px; border-radius:24px; font-size:13px; opacity:0; pointer-events:none; transition:all .25s ease; z-index:99;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ---------- MOBILE ---------- */
+#mobile-bottomnav{display:none;}
+@media (max-width:760px){
+  #sidebar{display:none;}
+  .search-wrap{display:none;}
+  .crumb{display:none;}
+  #topheader{padding:0 14px;}
+  #views{padding:16px 14px 90px;}
+  .grid2{grid-template-columns:1fr;}
+  .props-grid{grid-template-columns:1fr;}
+  #mobile-bottomnav{
+    display:flex; position:fixed; bottom:0; left:0; right:0; height:60px; background:var(--surface);
+    border-top:1px solid var(--border); z-index:50; padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  #mobile-bottomnav button{flex:1; border:none; background:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10.5px; color:var(--text-secondary);}
+  #mobile-bottomnav button.active{color:var(--accent); font-weight:600;}
+  #mobile-bottomnav .mi{font-size:17px;}
+  #fab{position:fixed; bottom:76px; right:18px; width:52px; height:52px; border-radius:50%; background:var(--accent); color:#fff; border:none; font-size:24px; box-shadow:0 4px 14px rgba(26,115,232,.4); z-index:55;}
+}
+</style>
+</head>
+<body>
+
+<div id="shell">
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sb-header"><span class="sb-dot"></span> StudyWork</div>
+
+    <button class="nav-item" data-nav="dashboard">🏠 Tổng quan</button>
+    <button class="nav-item" data-nav="unassigned">📥 Hộp nhận tự do <span class="nav-badge" id="inbox-count">24</span></button>
+    <button class="nav-item" data-nav="trash">🗑️ Thùng rác</button>
+
+    <div class="sb-section"><span class="meta">KHÔNG GIAN CỦA TÔI</span><button class="sb-add" title="Thêm không gian">＋</button></div>
+    <div id="space-nav-list"></div>
+
+    <div class="sb-section"><span class="meta">CHẾ ĐỘ XEM</span></div>
+    <button class="nav-item" data-nav="views-kanban">📋 Bảng việc Kanban</button>
+    <button class="nav-item" data-nav="views-calendar">📅 Lịch thời gian</button>
+    <button class="nav-item" data-nav="views-canvas">🗺️ Bản đồ tư duy</button>
+
+    <div class="sb-spacer"></div>
+    <div class="sb-storage">
+      <div class="meta">Dung lượng lưu trữ</div>
+      <div class="bar"><i></i></div>
+      <div class="meta" style="margin-top:4px;">68% đã sử dụng</div>
+    </div>
+    <div class="sb-settings">
+      <button class="nav-item" data-nav="settings" style="margin:0; width:100%;">⚙️ Cài đặt</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main-col">
+    <header id="topheader">
+      <div class="crumb" id="crumb">Trang chủ</div>
+      <div class="search-wrap">
+        <div class="search-box"><span>🔍</span><input id="search-input" placeholder="Tìm kiếm bài học, công việc, tài liệu..."><span class="kbd">Ctrl K</span></div>
+      </div>
+      <div class="header-right">
+        <button class="btn-primary" id="quickcapture-btn">＋ Tạo nhanh <span class="kbd" style="background:rgba(255,255,255,.18); border-color:transparent; color:#fff;">C</span></button>
+        <button class="icon-btn" id="bell-btn">🔔<span class="dot-badge"></span></button>
+        <div class="avatar" title="Vũ Khải Hoàn">VH<span class="online"></span></div>
+      </div>
+    </header>
+
+    <div id="views">
+
+      <!-- DASHBOARD -->
+      <section class="view" id="view-dashboard">
+        <div class="greet">
+          <h1>Xin chào Hoàn 👋</h1>
+          <div class="meta">Thứ Sáu, 25 tháng 9, 2026</div>
+        </div>
+        <div class="capture-bar">
+          <span>✏️</span>
+          <input id="dash-capture" placeholder="Nhập nhanh ý tưởng hoặc việc cần làm... nhấn Enter để lưu vào Hộp nhận">
+        </div>
+
+        <div class="hero-card" id="hero-card">
+          <div class="meta">TIẾP TỤC VIỆC DỞ DANG</div>
+          <h2>🎓 Đồ án tốt nghiệp / 📝 Ghi chú: Phân tích kiến trúc Hybrid Object</h2>
+          <div class="hero-row">
+            <span class="meta">Đã sửa 35 phút trước</span>
+            <button class="btn-primary" id="hero-continue">Tiếp tục học →</button>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <h2 class="section-title">Ưu tiên & cận hạn hôm nay</h2>
+            <div id="dash-priority-list"></div>
+          </div>
+          <div>
+            <h2 class="section-title">Lịch trình & ghi chú gần đây</h2>
+            <div class="mini-block">
+              <div class="meta" style="margin-bottom:8px;">LỊCH TRÌNH TIẾP THEO</div>
+              <div class="mini-timeline-item"><span class="badge badge-event">15:00</span><span>Họp tiến độ với Thầy Cường (Google Meet)</span></div>
+            </div>
+            <div class="mini-block" id="dash-recent-notes">
+              <div class="meta" style="margin-bottom:6px;">GHI CHÚ GẦN ĐÂY</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SPACES LIST (mobile "Không gian" tab) -->
+      <section class="view" id="view-spaceslist">
+        <h1 style="margin-bottom:16px;">Không gian của tôi</h1>
+        <div id="spaceslist-cards"></div>
+      </section>
+
+      <!-- SPACE DETAIL -->
+      <section class="view" id="view-space">
+        <div class="space-head">
+          <div class="space-icon" id="sp-icon">🎓</div>
+          <div style="flex:1;">
+            <h1 id="sp-title">Đồ án tốt nghiệp</h1>
+            <div class="meta" id="sp-desc">Hệ thống Quản lý Học tập và Công việc Cá nhân</div>
+            <div class="progress-bar"><i id="sp-progress" style="width:65%"></i></div>
+            <div class="meta" style="margin-top:4px;"><span id="sp-progress-txt">Tiến độ: 65% hoàn thành</span></div>
+          </div>
+        </div>
+        <div class="tabs" id="sp-tabs">
+          <button class="tab-btn" data-tab="all">📑 Tất cả</button>
+          <button class="tab-btn" data-tab="kanban">📋 Bảng Kanban</button>
+          <button class="tab-btn" data-tab="notes">📝 Ghi chú & Tài liệu</button>
+          <button class="tab-btn" data-tab="calendar">📅 Lịch trình</button>
+          <button class="tab-btn" data-tab="canvas">🗺️ Bản đồ Canvas</button>
+        </div>
+        <div id="sp-tab-content"></div>
+      </section>
+
+      <!-- UNASSIGNED INBOX -->
+      <section class="view" id="view-unassigned">
+        <h1>📥 Hộp Nhận Tự Do (Unassigned Inbox)</h1>
+        <div class="meta" style="margin:6px 0 18px;" id="inbox-subtitle">24 đối tượng chưa phân loại vào Không gian</div>
+        <div class="filter-row" id="inbox-filters"></div>
+        <div class="masonry" id="inbox-stream"></div>
+      </section>
+
+      <!-- TRASH -->
+      <section class="view" id="view-trash">
+        <h1 style="margin-bottom:16px;">🗑️ Thùng rác</h1>
+        <div id="trash-list"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <h1 style="margin-bottom:10px;">⚙️ Cài đặt</h1>
+        <p class="meta">Trang cài đặt đang được phát triển.</p>
+      </section>
+
+    </div>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <div id="mobile-bottomnav">
+      <button class="mnav-item active" data-mnav="dashboard"><span class="mi">🏠</span>Trang chủ</button>
+      <button class="mnav-item" data-mnav="spaceslist"><span class="mi">📁</span>Không gian</button>
+      <button class="mnav-item" data-mnav="views-calendar"><span class="mi">📅</span>Lịch</button>
+      <button class="mnav-item" data-mnav="settings"><span class="mi">👤</span>Cá nhân</button>
+    </div>
+    <button id="fab">＋</button>
+  </div>
+</div>
+
+<!-- SIDE-PEEK DRAWER -->
+<div id="drawer-overlay"></div>
+<aside id="drawer">
+  <div class="drawer-head"><h2 id="drawer-title">Ghi chú đính kèm</h2><button class="close-x" id="drawer-close">✕</button></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<!-- OBJECT DETAIL MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-topbar">
+      <select class="type-select" id="m-type">
+        <option value="TASK">☑️ Task</option>
+        <option value="NOTE">📝 Note</option>
+        <option value="EVENT">📅 Event</option>
+        <option value="REFERENCE">🔗 Reference</option>
+      </select>
+      <button class="close-x" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <input class="title-input" id="m-title" placeholder="Tiêu đề...">
+      <div class="props-grid">
+        <div class="field"><label>Trạng thái</label>
+          <select id="m-status"><option value="TODO">TODO</option><option value="IN_PROGRESS">IN_PROGRESS</option><option value="DONE">DONE</option></select>
+        </div>
+        <div class="field"><label>Mức ưu tiên</label>
+          <select id="m-priority"><option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option><option value="HIGH">HIGH</option><option value="URGENT">URGENT</option></select>
+        </div>
+        <div class="field"><label>Hạn chót</label><input type="date" id="m-due"></div>
+        <div class="field"><label>Không gian</label>
+          <div class="space-multiselect" id="m-spaces"></div>
+        </div>
+      </div>
+      <div class="md-editor">
+        <textarea id="m-body" placeholder="Viết nội dung markdown..."></textarea>
+        <div class="md-preview" id="m-preview"></div>
+      </div>
+      <div class="rel-section">
+        <div class="meta">LIÊN KẾT LIÊN QUAN (CROSS-RELATIONS)</div>
+        <div id="m-relations"></div>
+        <button class="add-link-btn" id="m-addlink">+ Thêm liên kết chéo...</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="m-delete">Xoá</button>
+      <button class="btn-primary" id="m-save">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK CAPTURE POPOVER -->
+<div id="qc-pop">
+  <input id="qc-input" placeholder="Nhập việc cần làm hoặc ý tưởng...">
+  <div class="meta">Enter để lưu vào Hộp nhận tự do</div>
+</div>
+
+<!-- ZEN FOCUS MODE -->
+<div id="zen">
+  <div class="zen-top">
+    <div class="crumb">🎓 Đồ án tốt nghiệp / Chi tiết kiến trúc</div>
+    <button class="zen-exit" id="zen-exit">Thoát Zen Mode (Esc)</button>
+  </div>
+  <div class="zen-col">
+    <h1>Kiến trúc Hybrid Object</h1>
+    <div class="zen-doc">
+      <p>Mỗi đối tượng dữ liệu trong hệ thống đều là một "Object" đa hình, mang một trong bốn kiểu: TASK, NOTE, EVENT, REFERENCE. Cách tiếp cận này giúp tránh việc chia tách cứng nhắc giữa không gian học tập và công việc.</p>
+      <p>Một đối tượng có thể thuộc về nhiều Không gian cùng lúc (quan hệ N:M), hoặc tạm thời nằm trong Hộp nhận tự do trước khi được phân loại. Các đối tượng cũng có thể liên kết hai chiều với nhau — ví dụ một Task "Code Prisma Schema" có quan hệ DEPENDS_ON tới Note "Góp ý của Thầy Cường".</p>
+      <p>Thiết kế Google Neutral ưu tiên sự yên tĩnh thị giác, giảm mỏi mắt trong các phiên làm việc sâu kéo dài 8 tiếng trở lên, với bảng màu trung tính và các điểm nhấn xanh dương tiết chế.</p>
+    </div>
+    <div class="zen-checklist">
+      <div class="meta" style="margin-bottom:6px;">VIỆC LIÊN QUAN</div>
+      <div class="zen-check-item"><span class="check" id="zc0">✓</span> Hoàn thiện Prisma Schema và nạp 8 bảng CSDL</div>
+      <div class="zen-check-item"><span class="check done" id="zc1">✓</span> Khởi tạo CSDL</div>
+      <div class="zen-check-item"><span class="check" id="zc2">✓</span> Viết 22 API endpoints NestJS</div>
+    </div>
+  </div>
+  <div class="pomo"><span id="pomo-time">25:00</span><button id="pomo-btn">▶</button></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ DATA ============ */
+const SPACES = [
+  {id:'s1', icon:'🎓', name:'Đồ án tốt nghiệp', color:'#1a73e8', desc:'Hệ thống Quản lý Học tập và Công việc Cá nhân', progress:65},
+  {id:'s2', icon:'💼', name:'Việc Freelance', color:'#f59e0b', desc:'Các dự án khách hàng đang triển khai', progress:40},
+  {id:'s3', icon:'🇬🇧', name:'Tiếng Anh TOEIC', color:'#10b981', desc:'Ôn luyện thi TOEIC mục tiêu 850+', progress:22},
+];
+
+const today = new Date(2026,8,25);
+function iso(d){ const dt = new Date(d); return dt.toISOString().slice(0,10); }
+function fmtDate(d){ if(!d) return ''; const dt=new Date(d); return dt.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}); }
+
+let OBJ_SEQ = 1;
+function mkId(){ return 'o'+(OBJ_SEQ++); }
+
+let objects = [
+  {id:mkId(), type:'TASK', title:'Hoàn thiện Prisma Schema và nạp 8 bảng CSDL', status:'TODO', priority:'URGENT', due:iso(today), spaces:['s1'], tags:['#Architecture'], body:'Thiết kế 8 bảng: User, Space, ObjectItem, Relation, Tag, Attachment, Session, Notification.', relations:[], pinned:false, updated:new Date(today-35*60000)},
+  {id:mkId(), type:'TASK', title:'Review API hợp đồng Freelance', status:'TODO', priority:'MEDIUM', due:iso(new Date(2026,8,26)), spaces:['s2'], tags:[], body:'', relations:[], pinned:false, updated:new Date(today-2*3600000)},
+  {id:mkId(), type:'NOTE', title:'Góp ý của Thầy Cường', status:null, priority:null, due:null, spaces:['s1'], tags:['#Feedback'], body:'Thầy Cường góp ý nên tách rõ lớp Relation ra khỏi ObjectItem để tránh phình bảng. Cân nhắc chuẩn hoá theo mô hình EAV nhẹ.', relations:[], pinned:true, updated:new Date(today-3*3600000)},
+  {id:mkId(), type:'TASK', title:'Khởi tạo CSDL', status:'DONE', priority:'MEDIUM', due:iso(new Date(2026,8,20)), spaces:['s1'], tags:[], body:'', relations:[], pinned:true, updated:new Date(today-5*3600000)},
+  {id:mkId(), type:'NOTE', title:'Ý tưởng thiết kế UI Google Neutral', status:null, priority:null, due:null, spaces:['s1'], tags:['#UIUX'], body:'Dùng nền #f8f9fa, card trắng, bo góc 12px, shadow rất nhẹ. Tránh mọi hiệu ứng gradient nặng.', relations:[], pinned:false, updated:new Date(today-6*3600000)},
+  {id:mkId(), type:'TASK', title:'Viết 22 API endpoints NestJS', status:'IN_PROGRESS', priority:'HIGH', due:iso(new Date(2026,8,28)), spaces:['s1'], tags:['#Backend'], body:'', relations:[], pinned:false, updated:new Date(today-7*3600000)},
+  {id:mkId(), type:'REFERENCE', title:'NestJS Documentation', status:null, priority:null, due:null, spaces:['s1'], tags:[], url:'docs.nestjs.com', body:'', relations:[], pinned:false, updated:new Date(today-8*3600000)},
+  {id:mkId(), type:'TASK', title:'Kiểm thử API', status:'TODO', priority:'MEDIUM', due:iso(new Date(2026,8,29)), spaces:['s1'], tags:[], body:'', relations:[], pinned:false, updated:new Date(today-9*3600000)},
+  {id:mkId(), type:'EVENT', title:'Họp tiến độ với Thầy Cường (Google Meet)', status:null, priority:null, due:iso(today), time:'15:00', spaces:['s1'], tags:[], body:'', relations:[], pinned:false, updated:today},
+  {id:mkId(), type:'EVENT', title:'Họp Thầy Cường', status:null, priority:null, due:iso(today), time:'14:00', spaces:['s1'], tags:[], body:'', relations:[], pinned:false, updated:today},
+  {id:mkId(), type:'TASK', title:'Nộp Báo cáo Tuần', status:'TODO', priority:'URGENT', due:iso(today), time:'23:59', spaces:['s1'], tags:[], body:'', relations:[], pinned:false, updated:today},
+  {id:mkId(), type:'NOTE', title:'Kiến trúc Hybrid Object', status:null, priority:null, due:null, spaces:['s1'], tags:['#Architecture'], body:'Mỗi đối tượng dữ liệu đều là một Object đa hình mang một trong bốn kiểu: TASK, NOTE, EVENT, REFERENCE.', relations:[], pinned:false, updated:new Date(today-35*60000)},
+];
+
+// extra kanban filler for TODO(4) IN_PROGRESS(2) DONE(8)
+const kanbanFiller = [
+  ['TASK','Chuẩn hoá bảng Relation','TODO','HIGH'],
+  ['TASK','Viết tài liệu API Swagger','TODO','LOW'],
+  ['TASK','Thiết kế màn hình Canvas','IN_PROGRESS','HIGH'],
+  ['TASK','Deploy staging server','DONE','MEDIUM'],
+  ['TASK','Setup CI/CD Github Actions','DONE','MEDIUM'],
+  ['TASK','Viết unit test module Auth','DONE','LOW'],
+  ['TASK','Thiết kế ERD tổng thể','DONE','HIGH'],
+  ['TASK','Chọn thư viện Markdown Editor','DONE','LOW'],
+  ['TASK','Khảo sát người dùng thử nghiệm','DONE','MEDIUM'],
+  ['TASK','Viết proposal đồ án','DONE','HIGH'],
+];
+kanbanFiller.forEach(f=>{
+  objects.push({id:mkId(), type:f[0], title:f[1], status:f[2], priority:f[3], due:null, spaces:['s1'], tags:[], body:'', relations:[], pinned:false, updated:new Date(today-Math.random()*8*86400000)});
+});
+
+// relations wiring (after all objects created)
+function findByTitle(t){ return objects.find(o=>o.title===t); }
+const noteFeedback = findByTitle('Góp ý của Thầy Cường');
+const taskPrisma = findByTitle('Hoàn thiện Prisma Schema và nạp 8 bảng CSDL');
+const taskKiemThu = findByTitle('Kiểm thử API');
+const noteHybrid = findByTitle('Kiến trúc Hybrid Object');
+const refNestjs = findByTitle('NestJS Documentation');
+if(taskPrisma && noteFeedback) taskPrisma.relations.push({type:'DEPENDS_ON', targetId:noteFeedback.id});
+if(taskKiemThu && noteFeedback) taskKiemThu.relations.push({type:'DEPENDS_ON', targetId:noteFeedback.id});
+if(noteHybrid && refNestjs) noteHybrid.relations.push({type:'REFERENCES', targetId:refNestjs.id});
+
+// Unassigned inbox seed (24 items, spaces:[])
+const inboxSeed = [
+  ['NOTE','Ý tưởng landing page freelance'],['NOTE','Ghi chú buổi học Grammar TOEIC Part 5'],
+  ['NOTE','Tóm tắt chương 3 - Chủ nghĩa xã hội khoa học'],['NOTE','Ý tưởng đặt tên biến quán nhất'],
+  ['NOTE','Checklist trước khi bảo vệ đồ án'],['NOTE','Ghi chú cuộc gọi với khách hàng ABC'],
+  ['NOTE','Từ vựng chủ đề Business TOEIC'],['NOTE','Draft email xin gia hạn deadline'],
+  ['TASK','Trả lời email giảng viên hướng dẫn'],['TASK','Đặt lịch khám răng định kỳ'],
+  ['TASK','Mua thêm ổ SSD backup dữ liệu'],['TASK','Sửa lỗi responsive trang chủ'],
+  ['TASK','Thanh toán hoá đơn Internet tháng 9'],['TASK','Luyện đề TOEIC Practice Test 5'],
+  ['TASK','Gửi invoice cho khách Freelance B'],['TASK','Cập nhật CV cá nhân'],
+  ['TASK','Dọn dẹp thư mục Google Drive'],['TASK','Chuẩn bị slide thuyết trình tuần sau'],
+  ['TASK','Backup mã nguồn lên GitHub'],['TASK','Lên kế hoạch ôn tập cuối kỳ'],
+  ['REFERENCE','Prisma ORM Docs'],['REFERENCE','Figma Community - Dashboard UI Kit'],
+  ['REFERENCE','Bài báo về Bi-directional Linking'],['REFERENCE','TOEIC Official Practice Set 2026'],
+];
+inboxSeed.forEach(([type,title])=>{
+  objects.push({id:mkId(), type, title, status: type==='TASK'?'TODO':null, priority: type==='TASK'?'LOW':null, due:null, spaces:[], tags:[], url: type==='REFERENCE'? title.toLowerCase().replace(/[^a-z0-9]+/g,'')+'.com':undefined, body:'', relations:[], pinned:false, updated:new Date(today-Math.random()*4*86400000)});
+});
+
+let trashed = [
+  {id:'tr1', type:'TASK', title:'Nháp cũ: Kế hoạch đồ án v1', deletedAt:new Date(today-2*86400000)},
+  {id:'tr2', type:'NOTE', title:'Ghi chú trùng lặp buổi họp 10/09', deletedAt:new Date(today-5*86400000)},
+];
+
+/* ============ HELPERS ============ */
+const TYPE_LABEL = {TASK:'Việc cần làm', NOTE:'Ghi chú', EVENT:'Sự kiện', REFERENCE:'Tài liệu'};
+const TYPE_ICON = {TASK:'☑️', NOTE:'📝', EVENT:'📅', REFERENCE:'🔗'};
+function badgeHtml(type){ return `<span class="badge badge-${type.toLowerCase()}">${TYPE_ICON[type]} ${TYPE_LABEL[type]}</span>`; }
+function priorityPill(p){
+  if(!p) return '';
+  const map = {URGENT:'badge-danger', HIGH:'badge-amber', MEDIUM:'badge-task', LOW:'chip'};
+  const cls = map[p]||'chip';
+  return `<span class="badge ${cls}">${p}</span>`;
+}
+function spaceOf(id){ return SPACES.find(s=>s.id===id); }
+function spaceChips(spaces){
+  return (spaces||[]).map(sid=>{ const sp=spaceOf(sid); if(!sp) return ''; return `<span class="chip"><span class="space-dot" style="background:${sp.color}"></span>${sp.icon} ${sp.name}</span>`; }).join('');
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function mdToHtml(md){
+  if(!md) return '<span class="meta">Chưa có nội dung.</span>';
+  let h = escapeHtml(md);
+  h = h.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>');
+  h = h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>').replace(/`(.+?)`/g,'<code>$1</code>');
+  h = h.replace(/^- (.*)$/gm,'<li>$1</li>');
+  h = h.split(/\n{2,}/).map(p=> p.match(/^<h\d|^<li/)? p : `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+  return h;
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function relLabel(t){ return {DEPENDS_ON:'Phụ thuộc', RELATES_TO:'Liên quan', REFERENCES:'Tham chiếu'}[t]||t; }
+
+/* ============ STATE ============ */
+let state = { view:'dashboard', spaceId:'s1', spaceTab:'all', inboxFilter:'all', editingId:null };
+
+/* ============ NAV RENDER ============ */
+function renderSidebarSpaces(){
+  const el = document.getElementById('space-nav-list');
+  el.innerHTML = SPACES.map(s=>`<button class="nav-item" data-nav="space" data-space="${s.id}"><span class="space-dot" style="background:${s.color}"></span>${s.icon} ${s.name}</button>`).join('');
+}
+function updateNavActive(){
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    let match = false;
+    if(b.dataset.nav===state.view){
+      if(b.dataset.nav==='space') match = b.dataset.space===state.spaceId;
+      else match = true;
+    }
+    b.classList.toggle('active', match);
+  });
+  document.querySelectorAll('.mnav-item').forEach(b=>{
+    const map = {dashboard:'dashboard', spaceslist:'spaceslist', 'views-calendar':'views-calendar', settings:'settings'};
+    b.classList.toggle('active', state.mobileTab===b.dataset.mnav);
+  });
+}
+function crumbFor(){
+  if(state.view==='dashboard') return 'Trang chủ';
+  if(state.view==='unassigned') return 'Trang chủ / Hộp nhận tự do';
+  if(state.view==='trash') return 'Trang chủ / Thùng rác';
+  if(state.view==='settings') return 'Trang chủ / Cài đặt';
+  if(state.view==='spaceslist') return 'Trang chủ / Không gian';
+  if(state.view==='space'){ const sp=spaceOf(state.spaceId); return `Trang chủ / <b>${sp.icon} ${sp.name}</b>`; }
+  return 'Trang chủ';
+}
+
+function showView(view, opts={}){
+  state.view = view;
+  if(opts.spaceId) state.spaceId = opts.spaceId;
+  if(opts.spaceTab) state.spaceTab = opts.spaceTab;
+  if(view.startsWith('views-')){
+    state.view='space'; state.spaceId = state.spaceId||'s1'; state.spaceTab = view.replace('views-','');
+    if(state.spaceTab==='kanban') state.spaceTab='kanban';
+  }
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const map = {dashboard:'view-dashboard', unassigned:'view-unassigned', trash:'view-trash', settings:'view-settings', space:'view-space', spaceslist:'view-spaceslist'};
+  const el = document.getElementById(map[state.view]||'view-dashboard');
+  el.classList.add('active');
+  document.getElementById('crumb').innerHTML = crumbFor();
+  if(state.view==='dashboard') renderDashboard();
+  if(state.view==='unassigned') renderInbox();
+  if(state.view==='trash') renderTrash();
+  if(state.view==='space') renderSpace();
+  if(state.view==='spaceslist') renderSpacesList();
+  updateNavActive();
+  window.scrollTo(0,0); document.getElementById('views').scrollTop=0;
+}
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(){
+  const list = objects.filter(o=>o.type==='TASK' && o.status!=='DONE' && (o.due===iso(today) || o.due===iso(new Date(2026,8,26)))).slice(0,4);
+  document.getElementById('dash-priority-list').innerHTML = list.map(o=>{
+    const overdue = o.due===iso(today);
+    return `<div class="task-row" data-id="${o.id}">
+      <span class="check ${o.status==='DONE'?'done':''}" data-toggle="${o.id}">✓</span>
+      <div style="flex:1;">
+        <div class="task-title">${escapeHtml(o.title)}</div>
+        <div class="row-chips">
+          <span class="badge ${overdue?'badge-danger':'badge-amber'}">${overdue? 'Hôm nay 23:59':'Ngày mai'}</span>
+          ${spaceChips(o.spaces)}
+          ${(o.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-inline">Không có việc ưu tiên nào 🎉</div>';
+
+  const notes = objects.filter(o=>o.type==='NOTE').sort((a,b)=>b.updated-a.updated).slice(0,2);
+  document.getElementById('dash-recent-notes').innerHTML = `<div class="meta" style="margin-bottom:6px;">GHI CHÚ GẦN ĐÂY</div>` +
+    notes.map(n=>`<div class="note-mini" data-id="${n.id}" style="cursor:pointer;"><div class="task-title" style="font-size:13px;">📝 ${escapeHtml(n.title)}</div><div class="snippet">${escapeHtml((n.body||'').slice(0,70))}${n.body&&n.body.length>70?'…':''}</div></div>`).join('');
+}
+
+/* ============ SPACES LIST (mobile) ============ */
+function renderSpacesList(){
+  document.getElementById('spaceslist-cards').innerHTML = SPACES.map(s=>`
+    <div class="card" style="padding:16px; margin-bottom:12px; cursor:pointer;" data-openspace="${s.id}">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="space-icon">${s.icon}</div>
+        <div style="flex:1;">
+          <div style="font-weight:600;">${s.name}</div>
+          <div class="meta">${s.desc}</div>
+          <div class="progress-bar" style="width:100%; margin-top:8px;"><i style="width:${s.progress}%"></i></div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ============ SPACE DETAIL ============ */
+function renderSpace(){
+  const sp = spaceOf(state.spaceId);
+  document.getElementById('sp-icon').textContent = sp.icon;
+  document.getElementById('sp-title').textContent = sp.name;
+  document.getElementById('sp-desc').textContent = sp.desc;
+  document.getElementById('sp-progress').style.width = sp.progress+'%';
+  document.getElementById('sp-progress-txt').textContent = `Tiến độ: ${sp.progress}% hoàn thành`;
+  document.querySelectorAll('#sp-tabs .tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===state.spaceTab));
+  const content = document.getElementById('sp-tab-content');
+  if(state.spaceTab==='all') content.innerHTML = renderSpaceAll(sp);
+  else if(state.spaceTab==='kanban') content.innerHTML = renderKanban(sp);
+  else if(state.spaceTab==='notes') content.innerHTML = renderSpaceNotes(sp);
+  else if(state.spaceTab==='calendar') content.innerHTML = renderCalendar(sp);
+  else if(state.spaceTab==='canvas') content.innerHTML = renderCanvas(sp);
+  if(state.spaceTab==='kanban') wireKanban();
+  if(state.spaceTab==='canvas') wireCanvas();
+  if(state.spaceTab==='calendar') wireCalendar();
+}
+
+function objectsInSpace(spId){ return objects.filter(o=>o.spaces && o.spaces.includes(spId)); }
+
+function streamItemHtml(o){
+  const preview = o.type==='NOTE'? escapeHtml((o.body||'').slice(0,90)) : (o.type==='REFERENCE'? `<span class="chip">${o.url}</span>` : '');
+  const rel = (o.relations||[]).map(r=>{ const t=objects.find(x=>x.id===r.targetId); return t? `<div class="rel-chip">🔗 ${relLabel(r.type)}: ${escapeHtml(t.title)}</div>` : ''; }).join('');
+  return `<div class="stream-item ${o.pinned?'pin-tint':''}" data-id="${o.id}">
+    <span class="stream-icon">${TYPE_ICON[o.type]}</span>
+    <div class="stream-body">
+      <div class="stream-title">${escapeHtml(o.title)}</div>
+      ${preview? `<div class="stream-preview">${preview}</div>`:''}
+      <div class="row-chips" style="margin-top:6px;">
+        ${o.priority? priorityPill(o.priority):''}
+        ${o.due? `<span class="chip">📆 ${fmtDate(o.due)}</span>`:''}
+        ${(o.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+      </div>
+      ${rel}
+    </div>
+  </div>`;
+}
+
+function renderSpaceAll(sp){
+  const items = objectsInSpace(sp.id);
+  const pinned = items.filter(o=>o.pinned);
+  const rest = items.filter(o=>!o.pinned);
+  let html = '';
+  if(pinned.length){ html += `<div class="meta" style="margin-bottom:8px;">ĐÃ GHIM</div>` + pinned.map(streamItemHtml).join(''); html += `<div style="height:14px;"></div>`; }
+  html += rest.map(streamItemHtml).join('') || '<div class="empty-inline">Chưa có nội dung trong không gian này.</div>';
+  return html;
+}
+function renderSpaceNotes(sp){
+  const items = objectsInSpace(sp.id).filter(o=>o.type==='NOTE'||o.type==='REFERENCE');
+  return items.map(streamItemHtml).join('') || '<div class="empty-inline">Chưa có ghi chú hoặc tài liệu nào.</div>';
+}
+
+/* ============ KANBAN ============ */
+function renderKanban(sp){
+  const items = objectsInSpace(sp.id).filter(o=>o.type==='TASK');
+  const cols = [['TODO','CẦN LÀM'],['IN_PROGRESS','ĐANG LÀM'],['DONE','ĐÃ XONG']];
+  return `<div class="kanban-toolbar">
+      <select class="select-mini"><option>Lọc theo thẻ</option></select>
+      <select class="select-mini"><option>Lọc theo ưu tiên</option></select>
+      <button class="btn-primary" id="kb-add" style="margin-left:auto;">+ Thêm công việc</button>
+    </div>
+    <div class="kanban-cols">
+      ${cols.map(([key,label])=>{
+        const colItems = items.filter(o=>o.status===key);
+        return `<div class="kcol" data-status="${key}">
+          <div class="kcol-head"><span>${label}</span><span>${colItems.length}</span></div>
+          <div class="kcol-body">
+            ${colItems.map(o=>`<div class="kcard" draggable="true" data-id="${o.id}">
+              <div class="kcard-title">${escapeHtml(o.title)}</div>
+              <div class="row-chips">${priorityPill(o.priority)}</div>
+              <div class="kcard-foot">
+                ${o.relations && o.relations.length? `<span class="attach-pill">📝 ${o.relations.length} Ghi chú đính kèm</span>`:''}
+                ${o.type==='TASK' && Math.random()>0.7? `<span class="attach-pill">🔗 1 Link tài liệu</span>`:''}
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+let dragId = null;
+function wireKanban(){
+  document.getElementById('kb-add')?.addEventListener('click', ()=>openModal(null,{spaceId:state.spaceId, type:'TASK'}));
+  document.querySelectorAll('.kcard').forEach(card=>{
+    card.addEventListener('dragstart', e=>{ dragId=card.dataset.id; card.classList.add('dragging'); });
+    card.addEventListener('dragend', e=>{ card.classList.remove('dragging'); });
+    card.addEventListener('click', e=>{ openDrawerOrModal(card.dataset.id); });
+  });
+  document.querySelectorAll('.kcol').forEach(col=>{
+    col.addEventListener('dragover', e=>{ e.preventDefault(); col.classList.add('dragover'); });
+    col.addEventListener('dragleave', ()=>col.classList.remove('dragover'));
+    col.addEventListener('drop', e=>{
+      e.preventDefault(); col.classList.remove('dragover');
+      const obj = objects.find(o=>o.id===dragId);
+      if(obj){ obj.status = col.dataset.status; renderSpace(); toast('Đã cập nhật trạng thái'); }
+    });
+  });
+}
+function openDrawerOrModal(id){
+  const obj = objects.find(o=>o.id===id);
+  if(!obj) return;
+  const relNote = (obj.relations||[]).map(r=>objects.find(x=>x.id===r.targetId)).find(t=>t && t.type==='NOTE');
+  if(relNote){
+    document.getElementById('drawer-title').textContent = relNote.title;
+    document.getElementById('drawer-body').innerHTML = `
+      <div class="row-chips" style="margin-bottom:12px;">${badgeHtml('NOTE')}</div>
+      <div style="font-size:14px; line-height:1.7;">${mdToHtml(relNote.body)}</div>
+      <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:14px;">
+        <button class="btn-ghost" data-editfromdrawer="${obj.id}">Chỉnh sửa công việc gốc</button>
+      </div>`;
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawer-overlay').style.display='block';
+    document.querySelector('[data-editfromdrawer]')?.addEventListener('click', ()=>{ closeDrawer(); openModal(obj.id); });
+  } else {
+    openModal(id);
+  }
+}
+function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('drawer-overlay').style.display='none'; }
+
+/* ============ CALENDAR ============ */
+let calMonth = new Date(2026,8,1);
+function renderCalendar(){
+  const dows = ['CN','T2','T3','T4','T5','T6','T7'];
+  const first = new Date(calMonth.getFullYear(), calMonth.getMonth(),1);
+  const startOffset = first.getDay();
+  const daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1,0).getDate();
+  const prevDays = new Date(calMonth.getFullYear(), calMonth.getMonth(),0).getDate();
+  let cells = [];
+  for(let i=startOffset-1;i>=0;i--) cells.push({day:prevDays-i, other:true});
+  for(let d=1; d<=daysInMonth; d++) cells.push({day:d, other:false});
+  while(cells.length%7!==0) cells.push({day:cells.length,other:true});
+  const monthLabel = calMonth.toLocaleDateString('vi-VN',{month:'2-digit', year:'numeric'});
+  return `<div class="cal-toolbar">
+      <div class="seg"><button class="active">Tháng</button><button>Tuần</button><button>Ngày</button></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
+        <button class="icon-btn" id="cal-prev">‹</button>
+        <span style="font-weight:600;">Tháng ${monthLabel}</span>
+        <button class="icon-btn" id="cal-next">›</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      ${dows.map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+      ${cells.map(c=>{
+        const dateObj = new Date(calMonth.getFullYear(), calMonth.getMonth(), c.other? (c.day<=daysInMonth? c.day : c.day) : c.day);
+        const dstr = c.other? '' : iso(new Date(calMonth.getFullYear(), calMonth.getMonth(), c.day));
+        const isToday = dstr===iso(today);
+        const dayObjs = c.other? [] : objects.filter(o=>o.due===dstr && (o.type==='EVENT'||o.type==='TASK'));
+        return `<div class="cal-cell ${c.other?'other':''} ${isToday?'today':''}">
+          <span class="cal-daynum">${c.day}</span>
+          ${dayObjs.map(o=>{
+            const overdue = o.type==='TASK' && o.due < iso(today) && o.status!=='DONE';
+            const cls = o.type==='EVENT'? 'ev' : (overdue? 'overdue':'tk');
+            return `<span class="cal-chip ${cls}" data-id="${o.id}">${o.time?o.time+' - ':''}${escapeHtml(o.title)}</span>`;
+          }).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+function wireCalendar(){
+  document.getElementById('cal-prev')?.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1,1); renderSpace(); });
+  document.getElementById('cal-next')?.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1,1); renderSpace(); });
+  document.querySelectorAll('.cal-chip').forEach(c=>c.addEventListener('click', ()=>openModal(c.dataset.id)));
+}
+
+/* ============ CANVAS ============ */
+let canvasPositions = {};
+function renderCanvas(sp){
+  const a = noteHybrid, b = taskPrisma, c = refNestjs;
+  if(!canvasPositions.a) canvasPositions = {a:{x:120,y:150}, b:{x:480,y:140}, c:{x:120,y:380}};
+  return `<div class="canvas-wrap" id="canvas-wrap">
+    <div class="canvas-toolbar">
+      <button title="Di chuyển" class="active">✋</button><button title="Chọn">↖</button><button title="Kết nối">↗</button><button title="Ghi chú">📝</button><button title="Thêm thẻ">＋</button>
+    </div>
+    <svg class="cv-svg" id="cv-svg"></svg>
+    <div class="cv-node" id="node-a" style="left:${canvasPositions.a.x}px; top:${canvasPositions.a.y}px;">
+      <div class="row-chips" style="margin-bottom:6px;">${badgeHtml('NOTE')}</div>
+      <div class="stream-title">📝 Kiến trúc Hybrid Object</div>
+      <div class="stream-preview">${a? escapeHtml((a.body||'').slice(0,60)):''}…</div>
+      <span class="tag">#Architecture</span>
+    </div>
+    <div class="cv-node" id="node-b" style="left:${canvasPositions.b.x}px; top:${canvasPositions.b.y}px;">
+      <div class="row-chips" style="margin-bottom:6px;">${badgeHtml('TASK')}${priorityPill('URGENT')}</div>
+      <div class="stream-title">☑️ Viết mã nguồn Prisma Schema</div>
+      <div class="stream-preview">Hạn: 28/09</div>
+    </div>
+    <div class="cv-node" id="node-c" style="left:${canvasPositions.c.x}px; top:${canvasPositions.c.y}px;">
+      <div class="row-chips" style="margin-bottom:6px;">${badgeHtml('REFERENCE')}</div>
+      <div class="stream-title">🔗 NestJS Docs</div>
+      <div class="stream-preview">docs.nestjs.com</div>
+    </div>
+    <div class="canvas-zoom"><button id="cv-zoomout">−</button><span>100%</span><button id="cv-zoomin">+</button></div>
+  </div>`;
+}
+function drawCanvasLines(){
+  const svg = document.getElementById('cv-svg'); if(!svg) return;
+  const a = document.getElementById('node-a'), b = document.getElementById('node-b'), c = document.getElementById('node-c');
+  if(!a||!b||!c) return;
+  const wrap = document.getElementById('canvas-wrap').getBoundingClientRect();
+  function center(el){ const r = el.getBoundingClientRect(); return {x:r.left-wrap.left+r.width/2, y:r.top-wrap.top+r.height/2}; }
+  const pa=center(a), pb=center(b), pc=center(c);
+  svg.innerHTML = `
+    <path d="M${pb.x},${pb.y} C${(pb.x+pa.x)/2},${pb.y} ${(pb.x+pa.x)/2},${pa.y} ${pa.x},${pa.y}" stroke="#1a73e8" stroke-width="1.6" fill="none" stroke-dasharray="0"/>
+    <text x="${(pb.x+pa.x)/2}" y="${(pb.y+pa.y)/2 - 6}" font-size="11" fill="#5f6368" font-family="Inter,sans-serif">DEPENDS_ON</text>
+    <line x1="${pa.x}" y1="${pa.y}" x2="${pc.x}" y2="${pc.y}" stroke="#7b1fa2" stroke-width="1.6"/>
+    <text x="${(pa.x+pc.x)/2+8}" y="${(pa.y+pc.y)/2}" font-size="11" fill="#5f6368" font-family="Inter,sans-serif">REFERENCES</text>
+  `;
+}
+function wireCanvas(){
+  requestAnimationFrame(drawCanvasLines);
+  let zoom = 100;
+  document.getElementById('cv-zoomin')?.addEventListener('click', ()=>{ zoom=Math.min(160,zoom+10); document.querySelector('.canvas-zoom span').textContent=zoom+'%'; });
+  document.getElementById('cv-zoomout')?.addEventListener('click', ()=>{ zoom=Math.max(60,zoom-10); document.querySelector('.canvas-zoom span').textContent=zoom+'%'; });
+  ['a','b','c'].forEach(key=>{
+    const node = document.getElementById('node-'+key);
+    if(!node) return;
+    let dragging=false, offX=0, offY=0;
+    node.addEventListener('mousedown', e=>{
+      dragging=true; const wrap = document.getElementById('canvas-wrap').getBoundingClientRect();
+      offX = e.clientX - node.offsetLeft; offY = e.clientY - node.offsetTop;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e=>{
+      if(!dragging) return;
+      const wrap = document.getElementById('canvas-wrap').getBoundingClientRect();
+      let nx = e.clientX - offX, ny = e.clientY - offY;
+      nx = Math.max(0, Math.min(wrap.width-210, nx)); ny = Math.max(0, Math.min(wrap.height-90, ny));
+      node.style.left = nx+'px'; node.style.top = ny+'px';
+      canvasPositions[key] = {x:nx,y:ny};
+      drawCanvasLines();
+    });
+    window.addEventListener('mouseup', ()=>dragging=false);
+    node.addEventListener('click', (e)=>{ if(!dragging){ const map={a:noteHybrid,b:taskPrisma,c:refNestjs}; const o=map[key]; if(o) openModal(o.id); } });
+  });
+}
+
+/* ============ INBOX ============ */
+function renderInbox(){
+  const filters = [['all','Tất cả'],['NOTE','📝 Ghi chú'],['TASK','☑️ Việc cần làm'],['REFERENCE','🔗 Tài liệu']];
+  const unassigned = objects.filter(o=> !o.spaces || o.spaces.length===0);
+  document.getElementById('inbox-count').textContent = unassigned.length;
+  document.getElementById('inbox-subtitle').textContent = `${unassigned.length} đối tượng chưa phân loại vào Không gian`;
+  document.getElementById('inbox-filters').innerHTML = filters.map(([key,label])=>{
+    const count = key==='all'? unassigned.length : unassigned.filter(o=>o.type===key).length;
+    return `<button class="filter-chip ${state.inboxFilter===key?'active':''}" data-filter="${key}">${label} (${count})</button>`;
+  }).join('');
+  const shown = state.inboxFilter==='all'? unassigned : unassigned.filter(o=>o.type===state.inboxFilter);
+  document.getElementById('inbox-stream').innerHTML = shown.map(o=>`
+    <div class="stream-item" data-id="${o.id}">
+      <div class="flexline">
+        <span class="stream-icon">${TYPE_ICON[o.type]}</span>
+        <div class="stream-body">
+          <div class="stream-title">${escapeHtml(o.title)}</div>
+          ${o.url? `<div class="stream-preview">${o.url}</div>`:''}
+          ${o.body? `<div class="stream-preview">${escapeHtml(o.body.slice(0,70))}</div>`:''}
+        </div>
+      </div>
+      <button class="assign-btn" data-assign="${o.id}">📁 Gán vào Không gian...</button>
+    </div>`).join('') || '<div class="empty-inline">Hộp nhận trống 🎉</div>';
+}
+
+/* ============ TRASH ============ */
+function renderTrash(){
+  document.getElementById('trash-list').innerHTML = trashed.map(t=>`
+    <div class="task-row">
+      <span class="stream-icon">${TYPE_ICON[t.type]}</span>
+      <div style="flex:1;">
+        <div class="task-title">${escapeHtml(t.title)}</div>
+        <div class="meta">Đã xoá ${Math.round((today-t.deletedAt)/86400000)} ngày trước</div>
+      </div>
+      <button class="btn-ghost" data-restore="${t.id}">Khôi phục</button>
+    </div>`).join('') || '<div class="empty-inline">Thùng rác trống.</div>';
+}
+
+/* ============ OBJECT MODAL ============ */
+function openModal(id, defaults){
+  state.editingId = id;
+  const obj = id? objects.find(o=>o.id===id) : {type:(defaults&&defaults.type)||'TASK', title:'', status:'TODO', priority:'MEDIUM', due:null, spaces: defaults&&defaults.spaceId? [defaults.spaceId]:[], body:'', relations:[]};
+  document.getElementById('m-type').value = obj.type;
+  document.getElementById('m-title').value = obj.title;
+  document.getElementById('m-status').value = obj.status||'TODO';
+  document.getElementById('m-priority').value = obj.priority||'MEDIUM';
+  document.getElementById('m-due').value = obj.due||'';
+  document.getElementById('m-body').value = obj.body||'';
+  document.getElementById('m-preview').innerHTML = mdToHtml(obj.body);
+  renderModalSpaces(obj.spaces||[]);
+  renderModalRelations(obj.relations||[]);
+  document.getElementById('modal-overlay').style.display='flex';
+}
+function renderModalSpaces(selected){
+  const el = document.getElementById('m-spaces');
+  el.innerHTML = selected.map(sid=>{ const sp=spaceOf(sid); if(!sp) return ''; return `<span class="chip" data-sid="${sid}"><span class="space-dot" style="background:${sp.color}"></span>${sp.icon} ${sp.name}<span class="chip-x" data-removespace="${sid}">✕</span></span>`; }).join('') +
+    `<button class="add-space-chip" id="m-addspace">+ Thêm Space</button>`;
+  document.getElementById('m-addspace').addEventListener('click', ()=>{
+    const available = SPACES.filter(s=>!selected.includes(s.id));
+    if(!available.length){ toast('Đã thêm vào tất cả không gian'); return; }
+    selected.push(available[0].id);
+    renderModalSpaces(selected);
+  });
+  el.querySelectorAll('[data-removespace]').forEach(b=>b.addEventListener('click',()=>{
+    const idx = selected.indexOf(b.dataset.removespace); if(idx>-1) selected.splice(idx,1);
+    renderModalSpaces(selected);
+  }));
+  el._selected = selected;
+}
+function renderModalRelations(rels){
+  const el = document.getElementById('m-relations');
+  el.innerHTML = rels.map((r,i)=>{ const t=objects.find(x=>x.id===r.targetId); return t? `<span class="backlink-chip">🔗 ${relLabel(r.type)}: ${TYPE_ICON[t.type]} ${escapeHtml(t.title)}<span class="chip-x" data-removerel="${i}">✕</span></span>`:''; }).join('');
+  el._rels = rels;
+  el.querySelectorAll('[data-removerel]').forEach(b=>b.addEventListener('click', ()=>{ rels.splice(+b.dataset.removerel,1); renderModalRelations(rels); }));
+}
+document.getElementById('m-body').addEventListener('input', e=>{ document.getElementById('m-preview').innerHTML = mdToHtml(e.target.value); });
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e=>{ if(e.target.id==='modal-overlay') closeModal(); });
+function closeModal(){ document.getElementById('modal-overlay').style.display='none'; state.editingId=null; }
+
+document.getElementById('m-addlink').addEventListener('click', ()=>{
+  const candidates = objects.filter(o=>o.id!==state.editingId).slice(0,40);
+  const pick = prompt('Nhập tên đối tượng muốn liên kết (vd: Góp ý của Thầy Cường):');
+  if(!pick) return;
+  const target = objects.find(o=>o.title.toLowerCase().includes(pick.toLowerCase()));
+  if(!target){ toast('Không tìm thấy đối tượng phù hợp'); return; }
+  const relType = prompt('Loại quan hệ: DEPENDS_ON / RELATES_TO / REFERENCES', 'RELATES_TO') || 'RELATES_TO';
+  const relsEl = document.getElementById('m-relations');
+  const rels = relsEl._rels || [];
+  rels.push({type:relType.toUpperCase(), targetId:target.id});
+  renderModalRelations(rels);
+});
+
+document.getElementById('m-save').addEventListener('click', ()=>{
+  const spacesEl = document.getElementById('m-spaces');
+  const relsEl = document.getElementById('m-relations');
+  const data = {
+    type: document.getElementById('m-type').value,
+    title: document.getElementById('m-title').value.trim() || 'Không có tiêu đề',
+    status: document.getElementById('m-status').value,
+    priority: document.getElementById('m-priority').value,
+    due: document.getElementById('m-due').value || null,
+    body: document.getElementById('m-body').value,
+    spaces: (spacesEl._selected||[]).slice(),
+    relations: (relsEl._rels||[]).slice(),
+  };
+  if(state.editingId){
+    const obj = objects.find(o=>o.id===state.editingId);
+    Object.assign(obj, data); obj.updated = new Date();
+  } else {
+    objects.push(Object.assign({id:mkId(), tags:[], pinned:false, updated:new Date()}, data));
+  }
+  closeModal(); toast('Đã lưu thay đổi'); rerenderCurrent();
+});
+document.getElementById('m-delete').addEventListener('click', ()=>{
+  if(!state.editingId){ closeModal(); return; }
+  const obj = objects.find(o=>o.id===state.editingId);
+  objects = objects.filter(o=>o.id!==state.editingId);
+  trashed.unshift({id:'tr'+Date.now(), type:obj.type, title:obj.title, deletedAt:new Date()});
+  closeModal(); toast('Đã chuyển vào Thùng rác'); rerenderCurrent();
+});
+function rerenderCurrent(){ showView(state.view==='space'? 'views-'+state.spaceTab : state.view, state.view==='space'? {spaceId:state.spaceId}: {}); }
+
+/* ============ EVENT DELEGATION ============ */
+document.body.addEventListener('click', e=>{
+  const navBtn = e.target.closest('[data-nav]');
+  if(navBtn){
+    const nav = navBtn.dataset.nav;
+    if(nav==='space') showView('space',{spaceId:navBtn.dataset.space, spaceTab:'all'});
+    else showView(nav);
+    return;
+  }
+  const mnav = e.target.closest('.mnav-item');
+  if(mnav){
+    state.mobileTab = mnav.dataset.mnav;
+    if(mnav.dataset.mnav==='spaceslist') showView('spaceslist');
+    else showView(mnav.dataset.mnav);
+    return;
+  }
+  const openSp = e.target.closest('[data-openspace]');
+  if(openSp){ showView('space',{spaceId:openSp.dataset.openspace, spaceTab:'all'}); return; }
+
+  const tabBtn = e.target.closest('.tab-btn');
+  if(tabBtn){ state.spaceTab = tabBtn.dataset.tab; renderSpace(); return; }
+
+  const toggle = e.target.closest('[data-toggle]');
+  if(toggle){
+    const obj = objects.find(o=>o.id===toggle.dataset.toggle);
+    obj.status = obj.status==='DONE'? 'TODO':'DONE';
+    renderDashboard(); return;
+  }
+  const taskRow = e.target.closest('.task-row[data-id]');
+  if(taskRow && !e.target.closest('[data-toggle]')){ openModal(taskRow.dataset.id); return; }
+
+  const noteMini = e.target.closest('.note-mini[data-id]');
+  if(noteMini){ openModal(noteMini.dataset.id); return; }
+
+  const streamItem = e.target.closest('.stream-item[data-id]');
+  if(streamItem && !e.target.closest('[data-assign]')){ openModal(streamItem.dataset.id); return; }
+
+  const assignBtn = e.target.closest('[data-assign]');
+  if(assignBtn){
+    const obj = objects.find(o=>o.id===assignBtn.dataset.assign);
+    obj.spaces = ['s1']; toast('Đã gán vào Đồ án tốt nghiệp'); renderInbox(); return;
+  }
+  const filterChip = e.target.closest('[data-filter]');
+  if(filterChip){ state.inboxFilter = filterChip.dataset.filter; renderInbox(); return; }
+
+  const restoreBtn = e.target.closest('[data-restore]');
+  if(restoreBtn){ trashed = trashed.filter(t=>t.id!==restoreBtn.dataset.restore); toast('Đã khôi phục'); renderTrash(); return; }
+
+  if(e.target.id==='hero-continue'){ openModal(noteHybrid.id); return; }
+  if(e.target.id==='hero-card' || e.target.closest('#hero-card')){ /* clicking banner opens note too, but continue btn already handles */ }
+});
+
+document.getElementById('dash-capture').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && e.target.value.trim()){
+    objects.push({id:mkId(), type:'TASK', title:e.target.value.trim(), status:'TODO', priority:'MEDIUM', due:null, spaces:[], tags:[], body:'', relations:[], pinned:false, updated:new Date()});
+    e.target.value=''; toast('Đã lưu vào Hộp nhận');
+  }
+});
+
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
+
+/* ============ QUICK CAPTURE ============ */
+const qcPop = document.getElementById('qc-pop');
+function toggleQC(show){
+  qcPop.style.display = show? 'block':'none';
+  if(show){ document.getElementById('qc-input').value=''; setTimeout(()=>document.getElementById('qc-input').focus(),20); }
+}
+document.getElementById('quickcapture-btn').addEventListener('click', ()=>toggleQC(qcPop.style.display!=='block'));
+document.getElementById('fab').addEventListener('click', ()=>toggleQC(true));
+document.getElementById('qc-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && e.target.value.trim()){
+    objects.push({id:mkId(), type:'TASK', title:e.target.value.trim(), status:'TODO', priority:'MEDIUM', due:null, spaces:[], tags:[], body:'', relations:[], pinned:false, updated:new Date()});
+    toggleQC(false); toast('Đã lưu vào Hộp nhận'); if(state.view==='unassigned') renderInbox();
+  } else if(e.key==='Escape'){ toggleQC(false); }
+});
+document.addEventListener('click', e=>{
+  if(qcPop.style.display==='block' && !qcPop.contains(e.target) && e.target.id!=='quickcapture-btn' && e.target.id!=='fab'){ toggleQC(false); }
+});
+
+/* ============ NOTIFICATION BELL ============ */
+document.getElementById('bell-btn').addEventListener('click', ()=>toast('Thông báo: Thầy Cường vừa bình luận vào ghi chú của bạn'));
+
+/* ============ ZEN MODE ============ */
+const zenEl = document.getElementById('zen');
+function openZen(){ zenEl.style.display='block'; }
+function closeZen(){ zenEl.style.display='none'; }
+document.getElementById('zen-exit').addEventListener('click', closeZen);
+document.querySelectorAll('.zen-check-item .check').forEach(c=>c.addEventListener('click', ()=>c.classList.toggle('done')));
+let pomoSeconds = 25*60, pomoRunning=false, pomoTimer=null;
+function pomoRender(){ const m=String(Math.floor(pomoSeconds/60)).padStart(2,'0'); const s=String(pomoSeconds%60).padStart(2,'0'); document.getElementById('pomo-time').textContent = m+':'+s; }
+document.getElementById('pomo-btn').addEventListener('click', e=>{
+  pomoRunning = !pomoRunning; e.target.textContent = pomoRunning? '❚❚':'▶';
+  if(pomoRunning){ pomoTimer = setInterval(()=>{ if(pomoSeconds>0){ pomoSeconds--; pomoRender(); } else { clearInterval(pomoTimer); } },1000); }
+  else clearInterval(pomoTimer);
+});
+
+/* ============ KEYBOARD SHORTCUTS ============ */
+document.addEventListener('keydown', e=>{
+  const tag = (e.target.tagName||'').toLowerCase();
+  const typing = tag==='input' || tag==='textarea' || tag==='select';
+  if(e.key==='Escape'){
+    if(document.getElementById('modal-overlay').style.display==='flex') closeModal();
+    else if(document.getElementById('drawer').classList.contains('open')) closeDrawer();
+    else if(zenEl.style.display==='block') closeZen();
+    else if(qcPop.style.display==='block') toggleQC(false);
+    return;
+  }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); document.getElementById('search-input').focus(); return; }
+  if(typing) return;
+  if(e.key.toLowerCase()==='c'){ toggleQC(true); }
+  if(e.key.toLowerCase()==='f'){ openZen(); }
+});
+
+document.getElementById('search-input').addEventListener('input', e=>{
+  const q = e.target.value.trim().toLowerCase();
+  if(!q) return;
+});
+document.getElementById('search-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    const q = e.target.value.trim().toLowerCase();
+    const found = objects.find(o=>o.title.toLowerCase().includes(q));
+    if(found){ openModal(found.id); e.target.blur(); } else toast('Không tìm thấy kết quả phù hợp');
+  }
+});
+
+/* ============ INIT ============ */
+renderSidebarSpaces();
+pomoRender();
+showView('dashboard');
+
+})();
+</script>
+</body>
+</html>

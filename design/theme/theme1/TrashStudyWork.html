@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thùng rác · StudyWork</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f8f9fa;--card:#fff;--bd:#dadce0;--tx:#202124;--tx2:#5f6368;--blue:#1a73e8;--tb:#e8f0fe;--tbt:#1967d2;--nb:#fef7e0;--nbt:#b06000;--eb:#e6f4ea;--ebt:#137333;--rb:#f3e8fd;--rbt:#7b1fa2;--ub:#fce8e6;--ubt:#c5221f;--sh:0 1px 2px rgba(60,64,67,.12),0 1px 3px rgba(60,64,67,.06);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#202124;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--tb:#283142;--tbt:#8ab4f8;--nb:#3d3520;--nbt:#fdd663;--eb:#25332a;--ebt:#81c995;--rb:#332942;--rbt:#d7aefb;--ub:#42282a;--ubt:#f28b82;--sh:0 1px 3px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#202124;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--tb:#283142;--tbt:#8ab4f8;--nb:#3d3520;--nbt:#fdd663;--eb:#25332a;--ebt:#81c995;--rb:#332942;--rbt:#d7aefb;--ub:#42282a;--ubt:#f28b82;--sh:0 1px 3px rgba(0,0,0,.4)}
+*{box-sizing:border-box}html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font:14px/1.5 Inter,Roboto,Arial,sans-serif}
+button{font:inherit;color:inherit}
+.wrap{max-width:920px;margin:0 auto;padding:28px 24px 60px}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+h1{margin:0;font-size:21px;font-weight:700}
+.clr{margin-left:auto;border:1px solid var(--ubt);background:var(--card);color:var(--ubt);border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer}
+.clr:hover{background:var(--ub)}
+.sub{margin:0 0 18px;color:var(--tx2);font-size:13px}
+.list{background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.row:last-child{border-bottom:0}
+.ic{flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:15px}
+.t{flex:1;min-width:0}
+.t b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t span{font-size:12px;color:var(--tx2);display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.chip{background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:0 8px;font-size:11px}
+.acts{display:flex;gap:6px;flex:none}
+.ab{border:1px solid var(--bd);background:var(--bg);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--tx);white-space:nowrap}
+.ab:hover{background:var(--card)}
+.ab.danger{color:var(--ubt);border-color:#f3c6c4}
+.ab.danger:hover{background:var(--ub)}
+.row.leaving{opacity:0;transform:translateX(8px);transition:opacity .18s,transform .18s}
+.empty{text-align:center;color:var(--tx2);padding:60px 0;display:none}
+.empty.show{display:block}
+.empty b{display:block;font-size:16px;color:var(--tx);margin-bottom:4px}
+/* app shell */
+body{display:flex;height:100%;overflow:hidden}
+aside{width:240px;flex:none;background:var(--card);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:14px 10px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;padding:4px 8px 16px}
+.dot2{width:9px;height:9px;border-radius:50%;background:var(--blue)}
+.sec2{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);padding:14px 10px 6px;display:flex;justify-content:space-between}
+.item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.item:hover{background:var(--bg)}
+.item.on{background:var(--tb);color:var(--tbt);font-weight:600}
+.item small{margin-left:auto;background:var(--tb);color:var(--tbt);border-radius:99px;padding:0 7px;font-weight:600;font-size:11px}
+.grow{flex:1}
+.storage{padding:10px 10px 4px}
+.storage .lb{display:flex;justify-content:space-between;font-size:12px;color:var(--tx2);margin-bottom:6px}
+.sbar{height:5px;border-radius:99px;background:var(--bd);overflow:hidden}
+.sbar i{display:block;height:100%;width:68%;background:var(--blue);border-radius:99px}
+.appmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.apphead{height:56px;flex:none;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:14px;padding:0 18px}
+.crumb{font-size:13px;color:var(--tx2);white-space:nowrap}
+.crumb b{color:var(--tx);font-weight:600}
+.omni{margin:0 auto;width:380px;max-width:32vw;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;height:36px;padding:0 10px}
+.omni input{border:0;background:transparent;outline:0;flex:1;min-width:0;font:inherit;color:inherit}
+kbd{font-size:11px;color:var(--tx2);border:1px solid var(--bd);border-radius:5px;padding:1px 6px;background:var(--card)}
+.hrw{display:flex;align-items:center;gap:10px;flex:none}
+.qc{height:34px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;padding:0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;font-size:13px}
+:root[data-theme="dark"] .qc{color:#202124}
+.qc kbd{background:rgba(255,255,255,.18);border-color:transparent;color:inherit}
+.ibtn{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--tx2);cursor:pointer;flex:none;border:0;background:transparent}
+.ibtn:hover{background:var(--bg)}
+.dotr{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ea4335;border:1.5px solid var(--card)}
+.avwrap{position:relative;flex:none}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8ab4f8,#1a73e8);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+.onl{position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#34a853;border:2px solid var(--card)}
+.scr{flex:1;overflow-y:auto}
+@media (max-width:1000px){aside{display:none}.omni{max-width:none;width:auto;flex:1}}
+</style></head>
+<body>
+<aside>
+  <div class="brand"><span class="dot2"></span>StudyWork</div>
+  <div class="item">🏠 Tổng quan</div>
+  <div class="item">📥 Hộp nhận tự do<small>24</small></div>
+  <div class="sec2"><span>Không gian của tôi</span><span>＋</span></div>
+  <div class="item">🎓 Đồ án tốt nghiệp</div>
+  <div class="item">💼 Việc Freelance</div>
+  <div class="item">🇬🇧 Tiếng Anh TOEIC</div>
+  <div class="sec2">Chế độ xem</div>
+  <div class="item">📋 Bảng việc Kanban</div>
+  <div class="item">📅 Lịch &amp; Thời khoá biểu</div>
+  <div class="item">🗺️ Bản đồ tư duy</div>
+  <div class="grow"></div>
+  <div class="storage"><div class="lb"><span>Bộ nhớ</span><span>68%</span></div><div class="sbar"><i></i></div></div>
+  <div class="item on">🗑️ Thùng rác</div>
+</aside>
+<main class="appmain">
+  <header class="apphead">
+    <div class="crumb">Trang chủ <span style="opacity:.5">/</span> <b>Thùng rác</b></div>
+    <label class="omni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="Tìm kiếm bài học, việc cần làm, tài liệu..." aria-label="Tìm kiếm"><kbd>Ctrl K</kbd></label>
+    <div class="hrw">
+      <button class="qc">+ Tạo nhanh<kbd>C</kbd></button>
+      <button class="ibtn" aria-label="Thông báo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dotr"></span></button>
+      <div class="avwrap"><div class="av">VH</div><span class="onl"></span></div>
+    </div>
+  </header>
+  <div class="scr">
+<div class="wrap">
+  <div class="top"><h1>🗑️ Thùng rác (Trash)</h1><button class="clr" id="clr">Dọn sạch thùng rác</button></div>
+  <p class="sub">Tự động xóa vĩnh viễn sau 30 ngày · <span id="cnt">6</span> mục</p>
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty"><b>🗑️ Thùng rác trống</b>Không có mục nào để khôi phục.</div>
+</div>
+  </div>
+</main>
+
+<script>
+(function(){
+var D=[
+ {ic:'📝',bg:'var(--nb)',c:'var(--nbt)',t:'Bản nháp cũ: Chương 1 - Mở đầu',s:'🎓 Đồ án tốt nghiệp',d:'Đã xoá 2 ngày trước'},
+ {ic:'☑️',bg:'var(--tb)',c:'var(--tbt)',t:'Sửa lỗi UI trang đăng nhập (đã hoàn thành)',s:'🎓 Đồ án tốt nghiệp',d:'Đã xoá 3 ngày trước'},
+ {ic:'🔗',bg:'var(--rb)',c:'var(--rbt)',t:'Bài viết cũ về AngularJS (hết hạn)',s:'📥 Không phân loại',d:'Đã xoá 5 ngày trước'},
+ {ic:'📅',bg:'var(--eb)',c:'var(--ebt)',t:'Họp nhóm tuần 35 (đã diễn ra)',s:'🎓 Đồ án tốt nghiệp',d:'Đã xoá 1 tuần trước'},
+ {ic:'☑️',bg:'var(--tb)',c:'var(--tbt)',t:'Trùng lặp: Viết mã nguồn Prisma Schema',s:'🎓 Đồ án tốt nghiệp',d:'Đã xoá 9 ngày trước'},
+ {ic:'📝',bg:'var(--nb)',c:'var(--nbt)',t:'Ghi chú nháp không dùng nữa',s:'💼 Việc Freelance',d:'Đã xoá 12 ngày trước'}
+];
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var list=$('#list');
+function row(x,i){
+ return '<div class="row" data-i="'+i+'"><div class="ic" style="background:'+x.bg+';color:'+x.c+'">'+x.ic+'</div>'+
+  '<div class="t"><b>'+x.t+'</b><span><span class="chip">'+x.s+'</span><span>'+x.d+'</span></span></div>'+
+  '<div class="acts"><button class="ab" data-a="restore">↩️ Khôi phục</button><button class="ab danger" data-a="wipe">🗑️ Xóa vĩnh viễn</button></div></div>';
+}
+function paint(){
+ list.innerHTML=D.map(row).join('');
+ $('#cnt').textContent=D.length;
+ var show=D.length===0;
+ $('#empty').classList.toggle('show',show);
+ list.style.display=show?'none':'';
+}
+list.addEventListener('click',function(e){
+ var b=e.target.closest('.ab');if(!b)return;
+ var row=b.closest('.row'),i=+row.dataset.i;
+ row.classList.add('leaving');
+ setTimeout(function(){D.splice(i,1);paint()},180);
+});
+$('#clr').onclick=function(){D.length=0;paint()};
+paint();
+})();
+</script>
+</body></html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chi tiết đối tượng · StudyWork</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f8f9fa;--card:#fff;--bd:#dadce0;--tx:#202124;--tx2:#5f6368;--blue:#1a73e8;--blueh:#1557b0;--tb:#e8f0fe;--tbt:#1967d2;--nb:#fef7e0;--nbt:#b06000;--eb:#e6f4ea;--ebt:#137333;--rb:#f3e8fd;--rbt:#7b1fa2;--ub:#fce8e6;--ubt:#c5221f;--sh:0 12px 40px rgba(32,33,36,.24);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#202124;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--blueh:#aecbfa;--tb:#283142;--tbt:#8ab4f8;--nb:#3d3520;--nbt:#fdd663;--eb:#25332a;--ebt:#81c995;--rb:#332942;--rbt:#d7aefb;--ub:#42282a;--ubt:#f28b82;--sh:0 12px 40px rgba(0,0,0,.55)}}
+:root[data-theme="dark"]{--bg:#202124;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--blueh:#aecbfa;--tb:#283142;--tbt:#8ab4f8;--nb:#3d3520;--nbt:#fdd663;--eb:#25332a;--ebt:#81c995;--rb:#332942;--rbt:#d7aefb;--ub:#42282a;--ubt:#f28b82;--sh:0 12px 40px rgba(0,0,0,.55)}
+*{box-sizing:border-box}html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:14px/1.55 Inter,Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.page{padding:20px 24px;color:var(--tx2)}
+.backdrop{position:fixed;inset:0;background:rgba(32,33,36,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:10;padding:24px}
+.dlg{width:680px;max-width:100%;max-height:88vh;background:var(--card);border-radius:16px;box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden}
+.dh{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--bd)}
+.badge{font-size:11px;font-weight:700;letter-spacing:.05em;background:var(--tb);color:var(--tbt);border-radius:99px;padding:3px 11px}
+.dh .grow{flex:1}
+.x{border:0;background:transparent;width:30px;height:30px;border-radius:8px;cursor:pointer;color:var(--tx2);font-size:16px}
+.x:hover{background:var(--bg)}
+.db{flex:1;overflow-y:auto;padding:20px 24px}
+.ttl{width:100%;border:0;outline:0;background:transparent;font-size:20px;font-weight:700;margin-bottom:14px}
+.props{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--bd)}
+.pf{display:flex;flex-direction:column;gap:5px}
+.pf label{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--tx2)}
+.pf select,.pf input{border:1px solid var(--bd);border-radius:7px;padding:6px 9px;background:var(--bg);font-size:12.5px}
+.pr{display:flex;gap:5px}
+.pr button{border:1px solid var(--bd);background:var(--bg);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer}
+.pr button.on{color:#fff;border-color:transparent}
+.pr button[data-p="LOW"].on{background:#80868b}.pr button[data-p="MEDIUM"].on{background:var(--blue)}
+.pr button[data-p="HIGH"].on{background:var(--nbt)}.pr button[data-p="URGENT"].on{background:var(--ubt)}
+.toolbar{display:flex;gap:4px;margin-bottom:8px}
+.tb2{width:28px;height:28px;border:1px solid var(--bd);background:var(--bg);border-radius:6px;cursor:pointer;color:var(--tx2);font:600 13px ui-monospace,Menlo,monospace}
+.tb2:hover{background:var(--card)}
+.editor{display:flex;gap:14px}
+.editor>div{flex:1;min-width:0}
+.lbl2{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin-bottom:6px}
+#src{width:100%;height:190px;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;resize:vertical;background:var(--bg);outline:0;font:13px/1.6 ui-monospace,Menlo,monospace}
+#src:focus{border-color:var(--blue)}
+.prev{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;height:190px;overflow-y:auto;font-size:13px}
+.prev h2{margin:0 0 6px;font-size:15px}.prev p{margin:0 0 8px}.prev ul{margin:0 0 8px;padding-left:18px}
+.prev code{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:0 4px;font:12px ui-monospace,Menlo,monospace}
+.sec{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin:20px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.addlink{border:1px dashed var(--bd);background:transparent;color:var(--tbt);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.addlink:hover{background:var(--tb)}
+.rel{display:flex;align-items:center;gap:10px;border:1px solid var(--bd);border-radius:10px;padding:9px 12px;margin-bottom:8px;background:var(--bg)}
+.rel .ic{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center}
+.rel .t{flex:1;min-width:0;font-size:13px}
+.rel .kind{font-size:10.5px;font-weight:700;color:var(--tx2);letter-spacing:.04em}
+.rel .rm{border:0;background:transparent;color:var(--tx2);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:13px}
+.rel .rm:hover{background:var(--card);color:var(--ubt)}
+.foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)}
+.cancel{border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;color:var(--tx)}
+.save{border:0;background:var(--blue);color:#fff;border-radius:8px;padding:9px 18px;font-weight:600;font-size:13px;cursor:pointer}
+:root[data-theme="dark"] .save{color:#202124}
+.save:hover{background:var(--blueh)}
+@media (max-width:640px){.editor{flex-direction:column}.prev{height:140px}#src{height:140px}}
+</style></head>
+<body>
+<div class="page">StudyWork</div>
+<div class="backdrop">
+  <div class="dlg">
+    <div class="dh"><span class="badge">📝 Ghi chú</span><div class="grow"></div><button class="x">✕</button></div>
+    <div class="db">
+      <input class="ttl" id="ttl" value="Kiến trúc Hybrid Object">
+      <div class="props">
+        <div class="pf"><label>Trạng thái</label><select><option>Bản nháp</option><option selected>Đã hoàn thiện</option></select></div>
+        <div class="pf"><label>Ưu tiên</label><div class="pr" id="pr"><button data-p="LOW">LOW</button><button data-p="MEDIUM" class="on">MEDIUM</button><button data-p="HIGH">HIGH</button><button data-p="URGENT">URGENT</button></div></div>
+        <div class="pf"><label>Hạn chót</label><input type="date" value="2026-10-05"></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="tb2" title="Đậm">B</button><button class="tb2" title="In nghiêng"><i>I</i></button><button class="tb2" title="Tiêu đề">H2</button><button class="tb2" title="Danh sách">•</button><button class="tb2" title="Code">&lt;/&gt;</button>
+      </div>
+      <div class="editor">
+        <div><div class="lbl2">Markdown</div><textarea id="src" spellcheck="false"></textarea></div>
+        <div><div class="lbl2">Xem trước</div><div class="prev" id="prev"></div></div>
+      </div>
+
+      <div class="sec"><span>Liên kết liên quan (Cross-Relations)</span><button class="addlink" id="addlink">+ Thêm liên kết chéo...</button></div>
+      <div id="rels">
+        <div class="rel" data-k="hard"><div class="ic" style="background:var(--tb);color:var(--tbt)">☑️</div><div class="t"><span class="kind">DEPENDS_ON ·</span> Viết mã nguồn Prisma Schema</div><button class="rm">✕</button></div>
+        <div class="rel" data-k="soft"><div class="ic" style="background:var(--rb);color:var(--rbt)">🔗</div><div class="t"><span class="kind">REFERENCES ·</span> NestJS Official Documentation</div><button class="rm">✕</button></div>
+        <div class="rel" data-k="soft"><div class="ic" style="background:var(--nb);color:var(--nbt)">📝</div><div class="t"><span class="kind">PHỤ THUỘC VÀO ·</span> Góp ý của Thầy Cường</div><button class="rm">✕</button></div>
+      </div>
+    </div>
+    <div class="foot"><button class="cancel">Đóng</button><button class="save">Lưu thay đổi</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var md="## Mô hình Hybrid Object\nMọi thực thể dùng chung một bảng `objects`.\n\n- Thuộc tính riêng của từng loại lưu trong cột `props` (JSONB)\n- Quan hệ giữa các đối tượng lưu ở bảng `relations`\n\n**Ưu điểm**: thêm loại đối tượng mới mà không cần migrate CSDL.";
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function inl(s){return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
+function render(src){
+ var out=[],L=src.split('\n'),ul=false;
+ function cu(){if(ul){out.push('</ul>');ul=false}}
+ L.forEach(function(l){
+  if(/^## /.test(l)){cu();out.push('<h2>'+inl(l.slice(3))+'</h2>')}
+  else if(/^[-*] /.test(l)){if(!ul){out.push('<ul>');ul=true}out.push('<li>'+inl(l.slice(2))+'</li>')}
+  else if(l.trim()===''){cu()}
+  else{cu();out.push('<p>'+inl(l)+'</p>')}
+ });cu();return out.join('');
+}
+var src=$('#src');src.value=md;
+function show(){$('#prev').innerHTML=render(src.value)}
+src.oninput=show;show();
+$$('.pr button').forEach(function(b){b.onclick=function(){$$('.pr button',b.parentNode).forEach(function(x){x.classList.remove('on')});b.classList.add('on')}});
+$$('.rel .rm').forEach(function(b){b.onclick=function(){b.closest('.rel').remove()}});
+$('#addlink').onclick=function(){
+ var d=document.createElement('div');d.className='rel';
+ d.innerHTML='<div class="ic" style="background:var(--eb);color:var(--ebt)">🔍</div><div class="t"><span class="kind">LIÊN KẾT ·</span> Chọn đối tượng để liên kết...</div><button class="rm">✕</button>';
+ d.querySelector('.rm').onclick=function(){d.remove()};
+ $('#rels').appendChild(d);
+};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')e.preventDefault()});
+})();
+</script>
+</body></html>

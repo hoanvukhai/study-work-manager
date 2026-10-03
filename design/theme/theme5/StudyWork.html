@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StudyWork</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f9fa; --surface:#ffffff; --border:#dadce0;
+  --text:#202124; --text2:#5f6368;
+  --blue:#1a73e8; --blue-hover:#1557b0;
+  --task-bg:#e8f0fe; --task-fg:#1967d2;
+  --note-bg:#fef7e0; --note-fg:#b06000;
+  --event-bg:#e6f4ea; --event-fg:#137333;
+  --ref-bg:#f3e8fd; --ref-fg:#7b1fa2;
+  --urgent-bg:#fce8e6; --urgent-fg:#c5221f;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{margin:0;font-family:'Roboto',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100%;}
+html,body{height:100%;}
+.shell{display:flex;height:100vh;}
+
+/* Sidebar */
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;padding-top:env(safe-area-inset-top,0px);}
+.brand{display:flex;align-items:center;gap:8px;padding:18px 16px 14px;font-weight:700;font-size:16px;}
+.sidebar{transition:width .18s;}
+.sidebar.collapsed{width:60px;}
+.sidebar.collapsed .brand-text,.sidebar.collapsed .nav-label,.sidebar.collapsed .badge-count,.sidebar.collapsed .storage{display:none;}
+.sidebar.collapsed .nav-item .left{display:inline-block;width:20px;overflow:hidden;white-space:nowrap;}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--blue);}
+.nav-section{padding:6px 10px;}
+.nav-label{font-size:11px;color:var(--text2);padding:14px 10px 6px;letter-spacing:.02em;}
+.nav-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;font-size:13.5px;color:var(--text);cursor:pointer;text-decoration:none;}
+.nav-item:hover{background:var(--bg);}
+.nav-item.active{background:var(--task-bg);color:var(--task-fg);font-weight:500;}
+.nav-item .left{display:flex;align-items:center;gap:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.badge-count{font-size:11px;background:var(--bg);color:var(--text2);padding:1px 7px;border-radius:10px;}
+.space-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.storage{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text2);}
+.storage-bar{height:4px;border-radius:2px;background:var(--bg);margin-top:6px;overflow:hidden;}
+.storage-bar > div{height:100%;width:68%;background:var(--blue);}
+
+/* Header */
+.header{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:16px;flex-shrink:0;padding-top:env(safe-area-inset-top,0px);}
+.breadcrumb{font-size:13px;color:var(--text2);white-space:nowrap;}
+.breadcrumb b{color:var(--text);font-weight:500;}
+.search{flex:1;max-width:380px;margin:0 auto;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text2);font-size:13px;}
+.search kbd{margin-left:auto;font-size:10.5px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--text2);}
+.header-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.btn-quick{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.btn-quick:hover{background:var(--blue-hover);}
+.btn-quick kbd{background:rgba(255,255,255,.25);border-radius:4px;padding:0 5px;font-size:10.5px;}
+.bell{position:relative;color:var(--text2);font-size:17px;}
+.bell::after{content:'';position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--urgent-fg);border:1.5px solid var(--surface);}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--task-bg);color:var(--task-fg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+
+/* Main */
+.main{flex:1;overflow-y:auto;padding:26px 30px 60px;}
+.page-title{font-size:22px;font-weight:700;margin:0 0 4px;}
+.page-sub{color:var(--text2);font-size:13.5px;margin:0 0 22px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;display:inline-block;}
+.b-task{background:var(--task-bg);color:var(--task-fg);}
+.b-note{background:var(--note-bg);color:var(--note-fg);}
+.b-event{background:var(--event-bg);color:var(--event-fg);}
+.b-ref{background:var(--ref-bg);color:var(--ref-fg);}
+.b-urgent{background:var(--urgent-bg);color:var(--urgent-fg);}
+
+/* Dashboard */
+.hero{padding:20px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.hero-label{font-size:11.5px;color:var(--text2);margin-bottom:6px;}
+.hero-title{font-size:15.5px;font-weight:500;margin-bottom:5px;}
+.hero-meta{font-size:12px;color:var(--text2);}
+.btn-primary{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.btn-primary:hover{background:var(--blue-hover);}
+.grid2{display:grid;grid-template-columns:65% 1fr;gap:18px;}
+.section-h{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:10px;}
+.task-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin-bottom:9px;}
+.checkbox{width:17px;height:17px;border:1.8px solid var(--text2);border-radius:50%;flex-shrink:0;}
+.task-row .t-title{font-size:13.5px;flex:1;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.timeline-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.timeline-item:last-child{border-bottom:none;}
+.time{color:var(--text2);font-size:11.5px;min-width:44px;}
+.note-mini{padding:11px 0;border-bottom:1px solid var(--border);}
+.note-mini:last-child{border-bottom:none;}
+.note-mini .t{font-size:13px;font-weight:500;margin-bottom:2px;}
+.note-mini .s{font-size:12px;color:var(--text2);}
+.side-card{padding:16px;margin-bottom:16px;}
+
+/* Kanban */
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;}
+.kcol-h{font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:10px;padding:0 2px;}
+.kcard{padding:12px 14px;margin-bottom:10px;cursor:pointer;}
+.kcard .t-title{font-size:13.5px;margin:6px 0 8px;line-height:1.4;}
+.kcard .meta-row{display:flex;gap:6px;flex-wrap:wrap;}
+.kcard .drag{color:var(--border);font-size:11px;}
+
+/* Calendar */
+.cal-controls{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.seg span{padding:6px 12px;font-size:12.5px;color:var(--text2);cursor:pointer;}
+.seg span.active{background:var(--task-bg);color:var(--task-fg);font-weight:500;}
+.cal-date{font-size:13px;color:var(--text2);margin-left:4px;}
+.cal-grid{display:grid;grid-template-columns:50px repeat(7,1fr);border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+.cal-head{padding:8px 4px;text-align:center;font-size:11.5px;color:var(--text2);border-left:1px solid var(--border);border-bottom:1px solid var(--border);font-weight:500;}
+.cal-corner{border-bottom:1px solid var(--border);}
+.cal-hour{font-size:10.5px;color:var(--text2);text-align:right;padding:2px 6px 0 0;border-top:1px solid var(--border);height:52px;}
+.cal-cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:52px;position:relative;}
+.ev{position:absolute;left:3px;right:3px;border-radius:6px;padding:4px 6px;font-size:10.8px;font-weight:500;line-height:1.3;overflow:hidden;}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#202124;--surface:#292a2d;--border:#3c4043;--text:#e8eaed;--text2:#9aa0a6;
+  }
+}
+:root[data-theme="dark"]{--bg:#202124;--surface:#292a2d;--border:#3c4043;--text:#e8eaed;--text2:#9aa0a6;}
+
+/* Inbox */
+.filter-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.ftab{font-size:12.5px;padding:6px 13px;border-radius:20px;border:1px solid var(--border);color:var(--text2);cursor:pointer;}
+.ftab.active{background:var(--task-bg);color:var(--task-fg);border-color:transparent;font-weight:500;}
+.masonry{columns:3 220px;column-gap:16px;}
+.mcard{break-inside:avoid;padding:14px;margin-bottom:14px;position:relative;}
+.mcard .t-title{font-size:13.5px;margin:6px 0 10px;line-height:1.4;}
+.assign-btn{font-size:11.5px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text2);cursor:pointer;}
+
+/* Trash */
+.trash-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;}
+.trash-row:last-child{border-bottom:none;}
+.trash-row .tt{flex:1;}
+.trash-row .meta{color:var(--text2);font-size:12px;}
+.tbtn{font-size:12px;border:1px solid var(--border);background:var(--surface);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--text);}
+
+/* Canvas */
+.canvas-wrap{position:relative;height:520px;border:1px solid var(--border);border-radius:12px;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:18px 18px;background-color:var(--bg);overflow:hidden;}
+.canvas-toolbar{position:absolute;top:12px;left:12px;display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:5px;z-index:2;}
+.canvas-toolbar span{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:14px;cursor:pointer;}
+.canvas-toolbar span.active{background:var(--task-bg);}
+.zen-node{position:absolute;width:190px;padding:12px 13px;font-size:12px;z-index:1;}
+.zen-node .t{font-size:12.5px;font-weight:500;margin:5px 0 4px;line-height:1.35;}
+.zen-node .s{color:var(--text2);font-size:11px;line-height:1.4;}
+
+/* Modals */
+.overlay{position:fixed;inset:0;background:rgba(32,33,36,.45);display:flex;align-items:flex-start;justify-content:center;padding-top:11vh;z-index:50;}
+.hidden{display:none !important;}
+.modal{background:var(--surface);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.22);width:520px;max-width:92vw;overflow:hidden;}
+.modal.wide{width:680px;}
+.modal.palette{width:640px;border-radius:16px;}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);}
+.modal-body{padding:18px 20px;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.field-label{font-size:11.5px;color:var(--text2);margin:12px 0 5px;}
+.field-input{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);}
+.seg-select{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.seg-select span{flex:1;text-align:center;padding:8px 4px;font-size:12.5px;cursor:pointer;color:var(--text2);border-right:1px solid var(--border);}
+.seg-select span:last-child{border-right:none;}
+.seg-select span.active{background:var(--task-bg);color:var(--task-fg);font-weight:500;}
+.btn-ghost{background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 15px;font-size:13px;color:var(--text);cursor:pointer;}
+.pal-input{border:none;outline:none;width:100%;font-size:15px;padding:16px 20px;color:var(--text);background:transparent;}
+.pal-group{font-size:10.5px;color:var(--text2);padding:10px 20px 4px;}
+.pal-row{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;cursor:pointer;}
+.pal-row:hover{background:var(--bg);}
+.rel-chip{display:inline-flex;align-items:center;gap:6px;background:var(--note-bg);color:var(--note-fg);border-radius:20px;padding:5px 11px;font-size:12px;margin:4px 6px 4px 0;}
+
+/* Focus mode */
+#focus-overlay{position:fixed;inset:0;background:var(--bg);z-index:60;overflow-y:auto;}
+.focus-sheet{max-width:780px;margin:0 auto;padding:60px 24px 100px;line-height:1.75;}
+.focus-sheet h2{font-size:20px;}
+.focus-exit{position:fixed;top:16px;right:20px;font-size:12.5px;color:var(--text2);cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;z-index:61;}
+.pomodoro{position:fixed;bottom:22px;right:26px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:61;}
+.pomodoro .pt{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;}
+
+/* Auth */
+#auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:70;display:flex;align-items:center;justify-content:center;}
+.auth-card{width:440px;max-width:90vw;padding:34px 32px;}
+.auth-card h2{font-size:19px;margin:14px 0 22px;}
+.g-btn{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13.5px;background:var(--surface);cursor:pointer;margin-bottom:16px;}
+.divider{display:flex;align-items:center;gap:10px;color:var(--text2);font-size:11.5px;margin:16px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Space Detail (unified) */
+.space-head{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+.space-icon{width:44px;height:44px;border-radius:12px;background:var(--task-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.progress-bar{height:5px;border-radius:3px;background:var(--border);margin-top:10px;overflow:hidden;width:240px;}
+.progress-bar>div{height:100%;background:var(--blue);}
+.space-tabs{display:flex;gap:4px;margin:20px 0 18px;border-bottom:1px solid var(--border);}
+.space-tabs span{padding:9px 14px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.space-tabs span.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500;}
+.pin-strip{background:#fffbe6;border:1px solid #fbe8a6;border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;font-size:13px;}
+.stream-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:9px;cursor:pointer;}
+.stream-item .body{flex:1;min-width:0;}
+.stream-item .t{font-size:13.5px;font-weight:500;margin-bottom:3px;}
+.stream-item .p{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* Kanban side-peek drawer */
+#drawer-overlay{position:fixed;inset:0;background:rgba(32,33,36,.3);z-index:55;display:flex;justify-content:flex-end;}
+.drawer{width:420px;max-width:92vw;background:var(--surface);height:100%;box-shadow:-6px 0 24px rgba(0,0,0,.14);overflow-y:auto;padding:20px;}
+.drawer-close{float:right;cursor:pointer;color:var(--text2);}
+
+/* Mobile mockup */
+.phone-frame{width:390px;max-width:94vw;height:700px;border:10px solid #111;border-radius:36px;overflow:hidden;position:relative;background:var(--bg);margin:0 auto;}
+.phone-top{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+.day-glance{padding:0 16px;}
+.h-cards{display:flex;gap:10px;overflow-x:auto;padding:2px 16px 10px;}
+.h-cards .card{min-width:150px;padding:10px;flex-shrink:0;}
+.fab{position:absolute;bottom:78px;right:18px;width:48px;height:48px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(26,115,232,.4);}
+.phone-nav{position:absolute;bottom:0;left:0;right:0;height:60px;background:var(--surface);border-top:1px solid var(--border);display:flex;}
+.phone-nav span{flex:1;text-align:center;font-size:9.5px;color:var(--text2);padding-top:9px;}
+
+@media (max-width:820px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%);transition:transform .2s;}
+  .sidebar.open{transform:translateX(0);}
+  .grid2{grid-template-columns:1fr;}
+  .kanban{grid-template-columns:1fr;}
+  .cal-grid{grid-template-columns:36px repeat(7,minmax(70px,1fr));overflow-x:auto;}
+  .main{padding:16px;padding-bottom:80px;}
+  .search{display:none;}
+  .masonry{columns:1;}
+  .modal,.modal.wide,.modal.palette{width:94vw;}
+  .mobile-nav{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:15;}
+  .mobile-nav span{flex:1;text-align:center;font-size:10.5px;color:var(--text2);}
+  .mobile-nav span div:first-child{font-size:16px;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="dot"></span> <span class="brand-text">StudyWork</span><span style="margin-left:auto;cursor:pointer;color:var(--text2);font-size:13px;" onclick="toggleSidebar()" title="Thu gọn">⟨⟩</span></div>
+    <div class="nav-section">
+      <a class="nav-item active" href="#" onclick="go('dashboard');return false;" data-nav="dashboard">
+        <span class="left">🏠 Tổng quan</span>
+      </a>
+      <a class="nav-item" href="#" onclick="go('inbox');return false;" data-nav="inbox">
+        <span class="left">📥 Hộp nhận tự do</span><span class="badge-count">24</span>
+      </a>
+      <a class="nav-item" href="#" onclick="go('trash');return false;" data-nav="trash"><span class="left">🗑️ Thùng rác</span></a>
+    </div>
+    <div class="nav-label">KHÔNG GIAN CỦA TÔI</div>
+    <div class="nav-section" style="padding-top:0;">
+      <a class="nav-item" href="#" onclick="go('space');return false;" data-nav="space"><span class="left"><span class="space-dot" style="background:#1a73e8"></span> 🎓 Đồ án tốt nghiệp</span></a>
+      <a class="nav-item" href="#"><span class="left"><span class="space-dot" style="background:#f59e0b"></span> 💼 Việc Freelance</span></a>
+      <a class="nav-item" href="#"><span class="left"><span class="space-dot" style="background:#10b981"></span> 🇬🇧 Tiếng Anh TOEIC</span></a>
+    </div>
+    <div class="nav-label">CHẾ ĐỘ XEM</div>
+    <div class="nav-section" style="padding-top:0;">
+      <a class="nav-item" href="#" onclick="go('kanban');return false;" data-nav="kanban"><span class="left">📋 Bảng việc Kanban</span></a>
+      <a class="nav-item" href="#" onclick="go('calendar');return false;" data-nav="calendar"><span class="left">📅 Lịch & Thời khóa biểu</span></a>
+      <a class="nav-item" href="#" onclick="go('canvas');return false;" data-nav="canvas"><span class="left">🗺️ Bản đồ tư duy</span></a>
+    </div>
+    <div class="storage">Bộ nhớ đã dùng: 68%<div class="storage-bar"><div></div></div>
+      <div style="margin-top:10px;cursor:pointer;color:var(--blue)" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">Xem màn hình đăng nhập →</div>
+      <div style="margin-top:6px;cursor:pointer;" onclick="openFocus()">Chế độ Zen Focus (F) →</div>
+      <div style="margin-top:6px;cursor:pointer;color:var(--blue)" onclick="openMobile()">Xem giao diện di động →</div>
+    </div>
+  </aside>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <header class="header">
+      <div class="breadcrumb">Trang chủ / <b id="crumb">🎓 Đồ án tốt nghiệp</b></div>
+      <div class="search" onclick="openPalette()" style="cursor:pointer">🔍 Tìm kiếm bài học, việc cần làm, tài liệu... <kbd>Ctrl K</kbd></div>
+      <div class="header-right">
+        <button class="btn-quick" onclick="openCapture()">+ Tạo nhanh <kbd>C</kbd></button>
+        <span class="bell">🔔</span>
+        <span class="avatar">VK</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- SPACE DETAIL (UNIFIED) -->
+      <section id="view-space" style="display:none;">
+        <div class="space-head">
+          <div class="space-icon">🎓</div>
+          <div>
+            <h1 class="page-title" style="margin:0;">Đồ án tốt nghiệp</h1>
+            <p class="page-sub" style="margin:2px 0 0;">Hệ thống Quản lý Học tập và Công việc Cá nhân</p>
+          </div>
+        </div>
+        <div class="progress-bar"><div style="width:65%"></div></div>
+        <div class="page-sub" style="margin:6px 0 0;">Tiến độ: 65%</div>
+        <div class="space-tabs">
+          <span class="active" data-stab="all">📑 Tất cả</span>
+          <span onclick="go('kanban')">📋 Bảng Kanban</span>
+          <span onclick="go('canvas')">📝 Ghi chú & Tài liệu</span>
+          <span onclick="go('calendar')">📅 Lịch trình</span>
+          <span onclick="go('canvas')">🗺️ Bản đồ Canvas</span>
+        </div>
+        <div class="pin-strip">📌 <b>Góp ý của Thầy Cường</b> — Ghi chú đã ghim</div>
+        <div class="pin-strip">📌 <b>Khởi tạo CSDL</b> — Việc đã ghim · Hoàn thành</div>
+        <div style="margin-top:16px;">
+          <div class="stream-item" onclick="openDetail('note')">
+            <div class="body"><div class="t">📝 Ý tưởng thiết kế UI Google Neutral</div><div class="p">Dùng badge pastel để phân biệt 4 loại object: Task, Note, Event, Reference...</div><span class="badge b-note" style="margin-top:6px;">#UIUX</span></div>
+          </div>
+          <div class="stream-item" onclick="openDrawer()">
+            <div class="body"><div class="t">☑️ Viết 22 API endpoints NestJS</div><div class="p">Ưu tiên HIGH · Hạn 28/09</div><span class="badge b-urgent">HIGH</span></div>
+          </div>
+          <div class="stream-item" onclick="openDetail('ref')">
+            <div class="body"><div class="t">🔗 NestJS Documentation</div><div class="p">docs.nestjs.com</div></div>
+          </div>
+          <div class="stream-item" onclick="openDrawer()">
+            <div class="body"><div class="t">☑️ Kiểm thử API</div><div class="p">🔗 Phụ thuộc: Góp ý của Thầy Cường</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section id="view-dashboard">
+        <h1 class="page-title">Xin chào Hoàn 👋</h1>
+        <p class="page-sub">Nhập nhanh ý tưởng hoặc việc cần làm... nhấn Enter để lưu</p>
+
+        <div class="card hero">
+          <div>
+            <div class="hero-label">TIẾP TỤC VIỆC DỞ DANG</div>
+            <div class="hero-title">🎓 Đồ án tốt nghiệp / 📝 Ghi chú: Phân tích kiến trúc Hybrid Object</div>
+            <div class="hero-meta">Đã sửa 35 phút trước</div>
+          </div>
+          <button class="btn-primary">Tiếp tục học →</button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="section-h">Ưu tiên & cận hạn hôm nay</div>
+            <div class="task-row">
+              <span class="checkbox"></span>
+              <span class="t-title">Hoàn thiện Prisma Schema và nạp 8 bảng CSDL</span>
+              <div class="chips"><span class="badge b-urgent">Hôm nay 23:59</span><span class="badge b-task">🎓 Đồ án</span></div>
+            </div>
+            <div class="task-row">
+              <span class="checkbox"></span>
+              <span class="t-title">Review API hợp đồng Freelance</span>
+              <div class="chips"><span class="badge" style="background:#fef3e0;color:#b06000">Ngày mai</span><span class="badge" style="background:#fff3e0;color:#a05a00">💼 Freelance</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-h">Lịch trình hôm nay</div>
+            <div class="card side-card">
+              <div class="timeline-item"><span class="time">14:00</span><span class="badge b-event">Họp tiến độ Thầy Cường</span></div>
+              <div class="section-h" style="margin-top:14px;">Ghi chú gần đây</div>
+              <div class="note-mini"><div class="t">Góp ý của Thầy Cường</div><div class="s">Cân nhắc tách schema thành module riêng cho phần Auth...</div></div>
+              <div class="note-mini"><div class="t">Ý tưởng thiết kế UI Google Neutral</div><div class="s">Dùng badge pastel để phân biệt 4 loại object...</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KANBAN -->
+      <section id="view-kanban" style="display:none;">
+        <h1 class="page-title">Bảng việc Kanban</h1>
+        <p class="page-sub">🎓 Đồ án tốt nghiệp</p>
+        <div class="kanban">
+          <div>
+            <div class="kcol-h">CẦN LÀM (4)</div>
+            <div class="card kcard" onclick="openDrawer()"><span class="drag">⠿⠿</span><div class="t-title">Viết 22 API endpoints NestJS</div><div class="meta-row"><span class="badge b-urgent">HIGH</span><span class="badge b-note">📝 2 Ghi chú</span></div></div>
+            <div class="card kcard"><span class="drag">⠿⠿</span><div class="t-title">Thiết kế sơ đồ quan hệ CSDL</div><div class="meta-row"><span class="badge b-task">MEDIUM</span></div></div>
+            <div class="card kcard"><span class="drag">⠿⠿</span><div class="t-title">Chuẩn bị slide bảo vệ tuần 1</div><div class="meta-row"><span class="badge b-ref">🔗 1 Link tài liệu</span></div></div>
+            <div class="card kcard"><span class="drag">⠿⠿</span><div class="t-title">Kiểm thử API</div><div class="meta-row"><span class="badge b-note">🔗 Phụ thuộc: Góp ý Thầy Cường</span></div></div>
+          </div>
+          <div>
+            <div class="kcol-h">ĐANG LÀM (2)</div>
+            <div class="card kcard"><span class="drag">⠿⠿</span><div class="t-title">Hoàn thiện Prisma Schema và nạp 8 bảng CSDL</div><div class="meta-row"><span class="badge b-urgent">Hôm nay 23:59</span></div></div>
+            <div class="card kcard"><span class="drag">⠿⠿</span><div class="t-title">Deep Work: Viết mã nguồn Prisma Schema</div><div class="meta-row"><span class="badge b-ref">Purple block</span></div></div>
+          </div>
+          <div>
+            <div class="kcol-h">ĐÃ XONG (8)</div>
+            <div class="card kcard" style="opacity:.65;"><span class="drag">⠿⠿</span><div class="t-title">Khởi tạo CSDL</div><div class="meta-row"><span class="badge b-event">Hoàn thành</span></div></div>
+            <div class="card kcard" style="opacity:.65;"><span class="drag">⠿⠿</span><div class="t-title">Đề cương chương 1</div><div class="meta-row"><span class="badge b-event">Hoàn thành</span></div></div>
+            <div class="card kcard" style="opacity:.65;"><span class="drag">⠿⠿</span><div class="t-title">Họp khởi động với Thầy Cường</div><div class="meta-row"><span class="badge b-event">Hoàn thành</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section id="view-calendar" style="display:none;">
+        <h1 class="page-title">Lịch & Thời khóa biểu</h1>
+        <div class="cal-controls">
+          <div class="seg"><span>Tháng</span><span class="active">Tuần</span><span>Ngày</span></div>
+          <span class="cal-date">Tuần 39: 21/09 – 27/09/2026</span>
+          <button class="btn-primary" style="margin-left:auto;">+ Thêm lịch / sự kiện</button>
+        </div>
+        <div class="cal-grid" id="calgrid"></div>
+      </section>
+
+      <!-- INBOX -->
+      <section id="view-inbox" style="display:none;">
+        <h1 class="page-title">📥 Hộp Nhận Tự Do</h1>
+        <p class="page-sub">24 đối tượng chưa phân loại vào Không gian</p>
+        <div class="filter-tabs">
+          <span class="ftab active">Tất cả (24)</span><span class="ftab">📝 Ghi chú (8)</span><span class="ftab">☑️ Việc cần làm (12)</span><span class="ftab">🔗 Tài liệu (4)</span>
+        </div>
+        <div class="masonry">
+          <div class="card mcard" onclick="openDetail('note')"><span class="badge b-note">📝 Ghi chú</span><div class="t-title">Ý tưởng ôn từ vựng TOEIC theo chủ đề</div><button class="assign-btn">📁 Gán vào Không gian...</button></div>
+          <div class="card mcard" onclick="openDetail('task')"><span class="badge b-task">☑️ Việc</span><div class="t-title">Liên hệ lại khách hàng freelance về hợp đồng mới</div><button class="assign-btn">📁 Gán vào Không gian...</button></div>
+          <div class="card mcard" onclick="openDetail('ref')"><span class="badge b-ref">🔗 Tài liệu</span><div class="t-title">Prisma Docs — Relations</div><button class="assign-btn">📁 Gán vào Không gian...</button></div>
+          <div class="card mcard" onclick="openDetail('note')"><span class="badge b-note">📝 Ghi chú</span><div class="t-title">Câu hỏi phản biện dự kiến từ hội đồng</div><button class="assign-btn">📁 Gán vào Không gian...</button></div>
+          <div class="card mcard" onclick="openDetail('task')"><span class="badge b-task">☑️ Việc</span><div class="t-title">Đặt lịch khám sức khỏe định kỳ</div><button class="assign-btn">📁 Gán vào Không gian...</button></div>
+          <div class="card mcard" onclick="openDetail('task')"><span class="badge b-task">☑️ Việc</span><div class="t-title">Mua thêm RAM cho laptop làm đồ án</div><button class="assign-btn">📁 Gán vào Không gian...</button></div>
+        </div>
+      </section>
+
+      <!-- TRASH -->
+      <section id="view-trash" style="display:none;">
+        <h1 class="page-title">🗑️ Thùng rác</h1>
+        <p class="page-sub">Tự động xóa vĩnh viễn sau 30 ngày</p>
+        <div style="margin-bottom:14px;"><button class="btn-ghost">Dọn sạch thùng rác</button></div>
+        <div class="card">
+          <div class="trash-row"><span class="badge b-task">Việc</span><span class="tt">Nộp báo cáo tuần 38 (bản nháp)</span><span class="meta">🎓 Đồ án · Xóa 3 ngày trước</span><button class="tbtn">↩️ Khôi phục</button><button class="tbtn">🗑️ Xóa vĩnh viễn</button></div>
+          <div class="trash-row"><span class="badge b-note">Ghi chú</span><span class="tt">Ghi chú họp cũ (trùng lặp)</span><span class="meta">💼 Freelance · Xóa 6 ngày trước</span><button class="tbtn">↩️ Khôi phục</button><button class="tbtn">🗑️ Xóa vĩnh viễn</button></div>
+          <div class="trash-row"><span class="badge b-ref">Tài liệu</span><span class="tt">Link tài liệu cũ đã hết hạn</span><span class="meta">🇬🇧 TOEIC · Xóa 12 ngày trước</span><button class="tbtn">↩️ Khôi phục</button><button class="tbtn">🗑️ Xóa vĩnh viễn</button></div>
+        </div>
+      </section>
+
+      <!-- CANVAS -->
+      <section id="view-canvas" style="display:none;">
+        <h1 class="page-title">🗺️ Bản đồ tư duy</h1>
+        <p class="page-sub">🎓 Đồ án tốt nghiệp</p>
+        <div class="canvas-wrap">
+          <div class="canvas-toolbar">
+            <span class="active">✋</span><span>↖</span><span>↗</span><span>T</span><span>+</span>
+          </div>
+          <svg style="position:absolute;inset:0;width:100%;height:100%;" id="canvas-svg">
+            <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5f6368"/></marker></defs>
+            <path d="M 260 200 C 320 160, 340 130, 380 110" stroke="#5f6368" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+            <text x="300" y="150" font-size="10.5" fill="#5f6368">DEPENDS_ON</text>
+            <path d="M 470 130 C 540 150, 580 190, 610 230" stroke="#5f6368" stroke-width="1.5" fill="none"/>
+            <text x="520" y="175" font-size="10.5" fill="#5f6368">REFERENCES</text>
+          </svg>
+          <div class="card zen-node" style="left:60px;top:180px;" onclick="openDetail('note')"><span class="badge b-note">📝 Ghi chú</span><div class="t">Kiến trúc Hybrid Object</div><div class="s">Task/Note/Event/Reference đều là Object với type riêng...</div></div>
+          <div class="card zen-node" style="left:380px;top:60px;" onclick="openDetail('task')"><span class="badge b-task">☑️ Việc</span><div class="t">Viết mã nguồn Prisma Schema</div><div class="s badge b-urgent" style="display:inline-block;margin-top:4px;">Hạn 28/09</div></div>
+          <div class="card zen-node" style="left:600px;top:250px;" onclick="openDetail('ref')"><span class="badge b-ref">🔗 Tài liệu</span><div class="t">NestJS Documentation</div><div class="s">docs.nestjs.com</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- QUICK CAPTURE MODAL -->
+<div class="overlay hidden" id="capture-overlay" onclick="if(event.target===this)closeAll()">
+  <div class="modal">
+    <div class="modal-h">
+      <div class="seg-select">
+        <span class="active">☑️ Nhiệm vụ</span><span>📝 Ghi chú</span><span>📅 Lịch hẹn</span><span>🔗 Tài liệu</span>
+      </div>
+    </div>
+    <div class="modal-body">
+      <input class="field-input" style="font-size:15px;font-weight:500;border:none;padding-left:0;" placeholder="Tên nhiệm vụ..." autofocus>
+      <div id="capture-fields">
+        <div class="field-label">HẠN CHÓT & ĐỘ ƯU TIÊN</div>
+        <div style="display:flex;gap:8px;">
+          <input class="field-input" placeholder="Chọn ngày">
+          <input class="field-input" placeholder="Mức ưu tiên">
+        </div>
+      </div>
+      <div class="field-label">KHÔNG GIAN</div>
+      <input class="field-input" value="🎓 Đồ án tốt nghiệp">
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeAll()">Hủy</button>
+      <button class="btn-primary" onclick="closeAll()">Lưu ngay (Enter)</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div class="overlay hidden" id="palette-overlay" onclick="if(event.target===this)closeAll()">
+  <div class="modal palette" style="max-width:92vw;">
+    <input class="pal-input" placeholder="Tìm kiếm bài học, việc cần làm, tài liệu, hoặc nhập lệnh..." autofocus>
+    <div style="padding:0 20px 12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="ftab active">Tất cả</span><span class="ftab">🎓 Đồ án</span><span class="ftab">📝 Ghi chú</span><span class="ftab">☑️ Nhiệm vụ</span>
+    </div>
+    <div style="border-top:1px solid var(--border);">
+      <div class="pal-group">XEM GẦN ĐÂY</div>
+      <div class="pal-row">📝 Ghi chú góp ý Thầy Cường</div>
+      <div class="pal-row">☑️ Hoàn thiện Prisma Schema</div>
+      <div class="pal-group">LỆNH NHANH</div>
+      <div class="pal-row" onclick="closeAll();openCapture();">⚡ Tạo ghi chú mới</div>
+      <div class="pal-row" onclick="closeAll();go('kanban');">⚡ Mở bảng Kanban</div>
+      <div class="pal-row" onclick="closeAll();openFocus();">⚡ Bật chế độ Zen Focus (F)</div>
+    </div>
+  </div>
+</div>
+
+<!-- OBJECT DETAIL MODAL -->
+<div class="overlay hidden" id="detail-overlay" onclick="if(event.target===this)closeAll()">
+  <div class="modal wide">
+    <div class="modal-h" style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="badge b-note" id="detail-badge">📝 Ghi chú</span>
+      <span style="cursor:pointer;color:var(--text2);" onclick="closeAll()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:17px;font-weight:500;margin-bottom:10px;" id="detail-title">Góp ý của Thầy Cường</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;">Cân nhắc tách schema thành module riêng cho phần Auth để dễ kiểm thử độc lập. Bổ sung index cho các trường tra cứu thường xuyên...</div>
+      <div class="field-label">LIÊN KẾT LIÊN QUAN</div>
+      <div class="rel-chip">🔗 Phụ thuộc vào: 📝 Ghi chú góp ý của Thầy Cường <span style="cursor:pointer">✕</span></div>
+      <div><button class="assign-btn" style="margin-top:6px;">+ Thêm liên kết chéo...</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-overlay" class="hidden">
+  <div class="auth-card card">
+    <div class="brand"><span class="dot"></span> StudyWork</div>
+    <h2>Đăng nhập tài khoản</h2>
+    <button class="g-btn">🌐 Tiếp tục với Google</button>
+    <div class="divider">HOẶC</div>
+    <div class="field-label" style="margin-top:0;">EMAIL</div>
+    <input class="field-input" placeholder="ban@email.com">
+    <div class="field-label">MẬT KHẨU</div>
+    <input class="field-input" type="password" placeholder="••••••••">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0;font-size:12px;color:var(--text2);">
+      <label><input type="checkbox"> Ghi nhớ đăng nhập</label><span style="cursor:pointer;color:var(--blue)">Quên mật khẩu?</span>
+    </div>
+    <button class="btn-primary" style="width:100%;padding:10px;" onclick="document.getElementById('auth-overlay').classList.add('hidden')">Đăng nhập</button>
+  </div>
+</div>
+
+<!-- FOCUS MODE -->
+<div id="focus-overlay" class="hidden">
+  <div class="focus-exit" onclick="closeFocus()">Thoát Zen Focus (Esc)</div>
+  <div class="focus-sheet">
+    <h2>Đồ án tốt nghiệp — Báo cáo chương 2</h2>
+    <p>Kiến trúc Hybrid Object cho phép mỗi đối tượng trong hệ thống mang một type riêng biệt — TASK, NOTE, EVENT hoặc REFERENCE — trong khi vẫn chia sẻ chung một khung dữ liệu nền tảng...</p>
+    <p>Việc đặt một đối tượng vào nhiều Không gian cùng lúc giải quyết bài toán ranh giới cứng nhắc giữa "học tập" và "công việc", vốn hiếm khi phản ánh đúng thực tế của người dùng...</p>
+    <div class="card" style="padding:14px 16px;margin-top:20px;">
+      <div class="section-h" style="margin-bottom:8px;">Việc cần làm trong phiên này</div>
+      <div class="task-row" style="margin-bottom:6px;"><span class="checkbox"></span><span class="t-title">Viết xong mục 2.1</span></div>
+      <div class="task-row" style="margin-bottom:6px;"><span class="checkbox"></span><span class="t-title">Vẽ sơ đồ kiến trúc</span></div>
+      <div class="task-row"><span class="checkbox"></span><span class="t-title">Gửi bản nháp cho Thầy Cường</span></div>
+    </div>
+  </div>
+  <div class="pomodoro"><div class="pt" id="pomo-time">25:00</div><div id="pomo-btn" style="font-size:11px;color:var(--text2);cursor:pointer;">▶ Bắt đầu</div></div>
+</div>
+
+<!-- KANBAN SIDE-PEEK DRAWER -->
+<div id="drawer-overlay" class="hidden" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer">
+    <span class="drawer-close" onclick="closeDrawer()">✕</span>
+    <span class="badge b-note">📝 Ghi chú liên kết</span>
+    <div style="font-size:16px;font-weight:500;margin:12px 0 10px;">Góp ý của Thầy Cường</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.75;">
+      ## Nhận xét buổi review tuần 5<br><br>
+      Cân nhắc tách schema thành module riêng cho phần Auth để dễ kiểm thử độc lập.<br><br>
+      Bổ sung index cho các trường tra cứu thường xuyên (email, taskId).<br><br>
+      Nhớ viết tài liệu API trước khi bảo vệ tiến độ tuần sau.
+    </div>
+    <div class="field-label">TASK ĐANG XEM</div>
+    <div class="task-row"><span class="checkbox"></span><span class="t-title">Viết 22 API endpoints NestJS</span></div>
+  </div>
+</div>
+
+<!-- MOBILE MOCKUP -->
+<div class="overlay hidden" id="mobile-overlay" onclick="if(event.target===this)closeAll()">
+  <div class="phone-frame card">
+    <div class="phone-top"><b>Xin chào Hoàn</b><span>🔍 &nbsp; <span class="avatar" style="width:24px;height:24px;font-size:10px;">VK</span></span></div>
+    <div class="day-glance">
+      <div class="section-h">Việc khẩn cấp hôm nay</div>
+      <div class="task-row" style="margin-bottom:8px;"><span class="checkbox"></span><span class="t-title">Hoàn thiện Prisma Schema</span><span class="badge b-urgent">23:59</span></div>
+      <div class="section-h">Lịch trình tiếp theo (còn 45 phút)</div>
+      <div class="timeline-item"><span class="time">14:00</span><span class="badge b-event">Họp tiến độ Thầy Cường</span></div>
+    </div>
+    <div class="h-cards">
+      <div class="card"><div class="badge b-note">📝</div><div style="font-size:12px;margin-top:6px;">Góp ý Thầy Cường</div></div>
+      <div class="card"><div class="badge b-note">📝</div><div style="font-size:12px;margin-top:6px;">Ý tưởng UI Neutral</div></div>
+    </div>
+    <div class="fab">+</div>
+    <div class="phone-nav">
+      <span>🏠<br>Trang chủ</span><span>🗂️<br>Không gian</span><span>📅<br>Lịch</span><span>👤<br>Cá nhân</span>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="mobile-nav">
+  <span onclick="go('dashboard')"><div>🏠</div>Trang chủ</span>
+  <span><div>🗂️</div>Không gian</span>
+  <span onclick="go('calendar')"><div>📅</div>Lịch</span>
+  <span><div>👤</div>Cá nhân</span>
+</div>
+
+<script>
+function go(view){
+  document.querySelectorAll('[id^="view-"]').forEach(s=>s.style.display='none');
+  document.getElementById('view-'+view).style.display='block';
+  document.querySelectorAll('.nav-item[data-nav]').forEach(n=>n.classList.remove('active'));
+  var active = document.querySelector('.nav-item[data-nav="'+view+'"]');
+  if(active) active.classList.add('active');
+  var crumbs = {space:'🎓 Đồ án tốt nghiệp', dashboard:'🎓 Đồ án tốt nghiệp · Tổng quan', kanban:'🎓 Đồ án tốt nghiệp · Kanban', calendar:'🎓 Đồ án tốt nghiệp · Lịch', inbox:'📥 Hộp nhận tự do', trash:'🗑️ Thùng rác', canvas:'🎓 Đồ án tốt nghiệp · Bản đồ'};
+  document.getElementById('crumb').textContent = crumbs[view];
+}
+
+function closeAll(){
+  document.querySelectorAll('.overlay').forEach(function(o){o.classList.add('hidden');});
+}
+function openCapture(){ closeAll(); document.getElementById('capture-overlay').classList.remove('hidden'); }
+function openPalette(){ closeAll(); document.getElementById('palette-overlay').classList.remove('hidden'); document.querySelector('.pal-input').focus(); }
+var detailData = {
+  note:{badge:'📝 Ghi chú', cls:'b-note', title:'Góp ý của Thầy Cường'},
+  task:{badge:'☑️ Nhiệm vụ', cls:'b-task', title:'Hoàn thiện Prisma Schema và nạp 8 bảng CSDL'},
+  ref:{badge:'🔗 Tài liệu', cls:'b-ref', title:'NestJS Documentation'}
+};
+function openDetail(type){
+  closeAll();
+  var d = detailData[type] || detailData.note;
+  var b = document.getElementById('detail-badge');
+  b.className = 'badge ' + d.cls; b.textContent = d.badge;
+  document.getElementById('detail-title').textContent = d.title;
+  document.getElementById('detail-overlay').classList.remove('hidden');
+}
+function openFocus(){ closeAll(); document.getElementById('focus-overlay').classList.remove('hidden'); }
+function closeFocus(){ document.getElementById('focus-overlay').classList.add('hidden'); }
+function openDrawer(){ closeAll(); document.getElementById('drawer-overlay').classList.remove('hidden'); }
+function closeDrawer(){ document.getElementById('drawer-overlay').classList.add('hidden'); }
+function openMobile(){ closeAll(); document.getElementById('mobile-overlay').classList.remove('hidden'); }
+function toggleSidebar(){ document.querySelector('.sidebar').classList.toggle('collapsed'); }
+
+// Canvas toolbar interactivity
+(function(){
+  var tools = document.querySelectorAll('.canvas-toolbar span');
+  var wrap = document.querySelector('.canvas-wrap');
+  var zoom = 100;
+  tools.forEach(function(t,i){
+    t.onclick = function(){
+      if(i===4){ // + add card
+        zoom = zoom; // no-op guard
+        var el = document.createElement('div');
+        el.className = 'card zen-node';
+        el.style.left = (80+Math.random()*420)+'px';
+        el.style.top = (40+Math.random()*350)+'px';
+        el.innerHTML = '<span class="badge b-note">📝 Ghi chú</span><div class="t">Ghi chú mới</div><div class="s">Nhấp để chỉnh sửa...</div>';
+        wrap.appendChild(el);
+        return;
+      }
+      tools.forEach(function(x){x.classList.remove('active');});
+      t.classList.add('active');
+    };
+  });
+})();
+
+// Quick capture: dynamic fields per type
+(function(){
+  var seg = document.querySelectorAll('#capture-overlay .seg-select span');
+  var fieldsBox = document.getElementById('capture-fields');
+  var byType = {
+    0: '<div class="field-label">HẠN CHÓT & ĐỘ ƯU TIÊN</div><div style="display:flex;gap:8px;"><input class="field-input" placeholder="Chọn ngày"><input class="field-input" placeholder="Mức ưu tiên"></div>',
+    1: '<div class="field-label">NỘI DUNG</div><textarea class="field-input" rows="3" placeholder="Viết ghi chú markdown..."></textarea>',
+    2: '<div class="field-label">THỜI GIAN BẮT ĐẦU / KẾT THÚC</div><div style="display:flex;gap:8px;"><input class="field-input" placeholder="Giờ bắt đầu"><input class="field-input" placeholder="Giờ kết thúc"></div>',
+    3: '<div class="field-label">ĐƯỜNG DẪN URL</div><input class="field-input" placeholder="https://...">'
+  };
+  seg.forEach(function(s,i){
+    s.onclick = function(){
+      seg.forEach(function(x){x.classList.remove('active');});
+      s.classList.add('active');
+      if(fieldsBox) fieldsBox.innerHTML = byType[i];
+    };
+  });
+})();
+
+// Pomodoro countdown
+(function(){
+  var secs = 25*60, timer = null;
+  var el = document.getElementById('pomo-time');
+  var btn = document.getElementById('pomo-btn');
+  if(!btn) return;
+  btn.onclick = function(){
+    if(timer){ clearInterval(timer); timer=null; btn.textContent='▶ Bắt đầu'; return; }
+    btn.textContent = '⏸ Tạm dừng';
+    timer = setInterval(function(){
+      secs--; if(secs<0){ clearInterval(timer); timer=null; secs=0; btn.textContent='▶ Bắt đầu'; }
+      var m = Math.floor(secs/60), s = secs%60;
+      el.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    },1000);
+  };
+})();
+
+document.addEventListener('keydown', function(e){
+  var tag = (e.target.tagName||'').toLowerCase();
+  if(tag==='input' || tag==='textarea'){
+    if(e.key==='Escape') closeAll();
+    return;
+  }
+  if(e.key==='Escape'){ closeAll(); closeFocus(); }
+  else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openPalette(); }
+  else if(e.key.toLowerCase()==='c'){ openCapture(); }
+  else if(e.key.toLowerCase()==='f'){ openFocus(); }
+});
+
+// Build week grid 07:00-22:00
+(function(){
+  var grid = document.getElementById('calgrid');
+  var days = ['T2','T3','T4','T5','T6','T7','CN'];
+  var html = '<div class="cal-corner"></div>';
+  days.forEach(function(d,i){ html += '<div class="cal-head">'+d+(i===4?' <span style="color:#c5221f">●</span>':'')+'</div>'; });
+  for(var h=7; h<=21; h++){
+    html += '<div class="cal-hour">'+h+':00</div>';
+    for(var d=0; d<7; d++){ html += '<div class="cal-cell" data-h="'+h+'" data-d="'+d+'"></div>'; }
+  }
+  grid.innerHTML = html;
+
+  function place(day,h1,h1m,h2,h2m,label,bg,fg){
+    var cell = grid.querySelector('.cal-cell[data-d="'+day+'"][data-h="'+h1+'"]');
+    if(!cell) return;
+    var top = (h1m/60)*52;
+    var height = ((h2-h1)*60 + (h2m-h1m))/60*52 - 2;
+    var el = document.createElement('div');
+    el.className='ev';
+    el.style.top = top+'px'; el.style.height = Math.max(height,20)+'px';
+    el.style.background = bg; el.style.color = fg;
+    el.textContent = label;
+    cell.appendChild(el);
+    cell.style.overflow='visible';
+  }
+  place(0,8,0,11,30,'Tiết học: Chuyên đề tốt nghiệp (B204)','#e6f4ea','#137333');
+  place(2,14,0,15,30,'Họp tiến độ Thầy Cường (Meet)','#e8f0fe','#1967d2');
+  place(3,19,30,21,0,'Luyện đề TOEIC Listening','#fef7e0','#b06000');
+  place(4,15,0,18,0,'Deep Work: Prisma Schema','#f3e8fd','#7b1fa2');
+})();
+</script>
+</body>
+</html>

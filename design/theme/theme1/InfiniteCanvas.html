@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infinite Canvas · Đồ án tốt nghiệp</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f8f9fa;--dot:#c4c7cc;--card:#ffffff;--bd:#dadce0;--tx:#202124;--tx2:#5f6368;--blue:#1a73e8;--blue-bg:#e8f0fe;--amber:#b06000;--amber-bg:#fef7e0;--shadow:0 1px 2px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.08);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#202124;--dot:#4a4d51;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--blue-bg:#283142;--amber:#fdd663;--amber-bg:#3d3520;--shadow:0 1px 3px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#202124;--dot:#4a4d51;--card:#2d2e31;--bd:#3c4043;--tx:#e8eaed;--tx2:#9aa0a6;--blue:#8ab4f8;--blue-bg:#283142;--amber:#fdd663;--amber-bg:#3d3520;--shadow:0 1px 3px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font:14px/1.5 Inter,Roboto,"Helvetica Neue",Arial,sans-serif;display:flex}
+button{font:inherit;color:inherit}
+/* app shell */
+aside{width:240px;flex:none;background:var(--card);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:14px 10px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;padding:4px 8px 16px}
+.dot2{width:9px;height:9px;border-radius:50%;background:var(--blue)}
+.sec2{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);padding:14px 10px 6px;display:flex;justify-content:space-between}
+.item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.item:hover{background:var(--bg)}
+.item.on{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.item small{margin-left:auto;background:var(--amber-bg);color:var(--amber);border-radius:99px;padding:0 7px;font-weight:600;font-size:11px}
+.grow{flex:1}
+.storage{padding:10px 10px 4px}
+.storage .lb{display:flex;justify-content:space-between;font-size:12px;color:var(--tx2);margin-bottom:6px}
+.sbar{height:5px;border-radius:99px;background:var(--bd);overflow:hidden}
+.sbar i{display:block;height:100%;width:68%;background:var(--blue);border-radius:99px}
+.appmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.apphead{height:56px;flex:none;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:14px;padding:0 18px}
+.crumb{font-size:13px;color:var(--tx2);white-space:nowrap}
+.crumb b{color:var(--tx);font-weight:600}
+.omni{margin:0 auto;width:380px;max-width:32vw;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;height:36px;padding:0 10px}
+.omni input{border:0;background:transparent;outline:0;flex:1;min-width:0;font:inherit;color:inherit}
+kbd{font-size:11px;color:var(--tx2);border:1px solid var(--bd);border-radius:5px;padding:1px 6px;background:var(--card)}
+.hrw{display:flex;align-items:center;gap:10px;flex:none}
+.qc{height:34px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;padding:0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;font-size:13px}
+:root[data-theme="dark"] .qc{color:#202124}
+.qc kbd{background:rgba(255,255,255,.18);border-color:transparent;color:inherit}
+.ibtn{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--tx2);cursor:pointer;flex:none;border:0;background:transparent}
+.ibtn:hover{background:var(--bg)}
+.dotr{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ea4335;border:1.5px solid var(--card)}
+.avwrap{position:relative;flex:none}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8ab4f8,#1a73e8);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+.onl{position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#34a853;border:2px solid var(--card)}
+.canvaswrap{position:relative;flex:1;overflow:hidden}
+.canvas{position:absolute;inset:0;background-color:var(--bg);background-image:radial-gradient(circle,var(--dot) 1px,transparent 1.2px);background-size:24px 24px;overflow:hidden}
+.world{position:absolute;left:70px;top:130px;width:900px;height:520px;transform-origin:0 0;transition:transform .2s ease}
+svg.links{position:absolute;left:0;top:0;width:900px;height:520px;overflow:visible;pointer-events:none}
+.card{position:absolute;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:box-shadow .15s,border-color .15s;cursor:grab}
+.card:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(60,64,67,.18)}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.badge{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--tx2);text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.badge i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dots{color:var(--tx2);letter-spacing:2px;font-weight:600}
+h3{margin:0 0 6px;font-size:15px;font-weight:600;line-height:1.35}
+.md{margin:0;color:var(--tx2);font-size:13px;line-height:1.55}
+.md p{margin:0 0 3px}
+.md code{font:12px ui-monospace,Menlo,monospace;background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:0 4px;color:var(--tx)}
+.tag{display:inline-block;margin-top:8px;font-size:12px;color:var(--blue);background:var(--blue-bg);border-radius:999px;padding:1px 10px;font-weight:500}
+#A{left:40px;top:40px;width:320px;height:200px}
+#B{left:520px;top:120px;width:300px;height:130px}
+#C{left:40px;top:330px;width:320px;height:112px}
+.task{display:flex;gap:10px;align-items:flex-start}
+.chk{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #80868b;margin-top:2px}
+.meta{display:flex;align-items:center;gap:10px;margin-top:12px;padding-left:28px}
+.pill{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--amber);background:var(--amber-bg);border-radius:999px;padding:2px 10px;display:inline-flex;align-items:center;gap:5px}
+.pill:before{content:"";width:6px;height:6px;border-radius:50%;background:#f9ab00}
+.due{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px}
+.ref{display:flex;gap:12px;align-items:center;height:100%}
+.ico{flex:none;width:44px;height:44px;border-radius:10px;background:var(--blue-bg);display:grid;place-items:center;font-size:20px}
+.ref .t{flex:1;min-width:0}
+.ref .u{font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ext{flex:none;color:var(--tx2)}
+.lbl{position:absolute;transform:translate(-50%,-50%);background:var(--card);border:1px solid var(--bd);border-radius:999px;padding:1px 9px;font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--tx2);white-space:nowrap}
+.toolbar{position:absolute;top:16px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px 8px;box-shadow:var(--shadow);overflow-x:auto;z-index:5}
+.space{font-weight:600;padding:0 10px 0 6px;white-space:nowrap}
+.sep{width:1px;height:22px;background:var(--bd);margin:0 4px;flex:none}
+.tool{width:34px;height:34px;border:0;background:transparent;border-radius:8px;color:var(--tx2);display:grid;place-items:center;cursor:pointer;flex:none}
+.tool:hover{background:var(--bg)}
+.tool.on{background:var(--blue-bg);color:var(--blue)}
+.add{border:0;background:var(--blue);color:#fff;font:600 13px Inter,Roboto,sans-serif;border-radius:8px;padding:0 14px;height:34px;cursor:pointer;white-space:nowrap;flex:none}
+:root[data-theme="dark"] .add{color:#202124}
+.zoom{font-size:13px;color:var(--tx2);min-width:48px;text-align:center;flex:none}
+.br{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:5}
+.mini{position:relative;width:168px;height:100px;background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.mini b{position:absolute;border-radius:2px;background:#c4c7cc}
+.mini .vp{border:1.5px solid var(--blue);background:rgba(26,115,232,.06);border-radius:3px}
+.zc{display:flex;background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.zc button{width:36px;height:34px;border:0;background:transparent;color:var(--tx);font-size:18px;cursor:pointer}
+.zc button:hover{background:var(--bg)}
+.zc span{width:1px;background:var(--bd)}
+@media (max-width:640px){.space{font-size:13px}.hide-s{display:none}}
+@media (max-width:1000px){aside{display:none}.omni{max-width:none;width:auto;flex:1}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><span class="dot2"></span>StudyWork</div>
+  <div class="item">🏠 Tổng quan</div>
+  <div class="item">📥 Hộp nhận tự do<small>24</small></div>
+  <div class="sec2"><span>Không gian của tôi</span><span>＋</span></div>
+  <div class="item on">🎓 Đồ án tốt nghiệp</div>
+  <div class="item">💼 Việc Freelance</div>
+  <div class="item">🇬🇧 Tiếng Anh TOEIC</div>
+  <div class="sec2">Chế độ xem</div>
+  <div class="item">📋 Bảng việc Kanban</div>
+  <div class="item">📅 Lịch &amp; Thời khoá biểu</div>
+  <div class="item on" style="background:var(--blue-bg);color:var(--blue)">🗺️ Bản đồ tư duy</div>
+  <div class="grow"></div>
+  <div class="storage"><div class="lb"><span>Bộ nhớ</span><span>68%</span></div><div class="sbar"><i></i></div></div>
+  <div class="item">🗑️ Thùng rác</div>
+</aside>
+<main class="appmain">
+  <header class="apphead">
+    <div class="crumb">🎓 Đồ án tốt nghiệp <span style="opacity:.5">/</span> <b>Bản đồ tư duy</b></div>
+    <label class="omni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="Tìm kiếm bài học, việc cần làm, tài liệu..." aria-label="Tìm kiếm"><kbd>Ctrl K</kbd></label>
+    <div class="hrw">
+      <button class="qc">+ Tạo nhanh<kbd>C</kbd></button>
+      <button class="ibtn" aria-label="Thông báo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dotr"></span></button>
+      <div class="avwrap"><div class="av">VH</div><span class="onl"></span></div>
+    </div>
+  </header>
+  <div class="canvaswrap">
+<div class="canvas" id="canvas">
+  <div class="world" id="world">
+    <svg class="links" viewBox="0 0 900 520">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#80868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+      <path d="M520 185 C430 185 450 110 360 110" fill="none" stroke="#80868b" stroke-width="1.5" marker-end="url(#ar)"/>
+      <path d="M200 240 L200 330" fill="none" stroke="#80868b" stroke-width="1.5" marker-end="url(#ar)"/>
+    </svg>
+    <div class="lbl" style="left:440px;top:148px">DEPENDS_ON</div>
+    <div class="lbl" style="left:200px;top:285px">REFERENCES</div>
+
+    <article class="card" id="A">
+      <div class="head"><span class="badge"><i style="background:#1a73e8"></i>Note</span><span class="dots">···</span></div>
+      <h3>📝 Kiến trúc Hybrid Object</h3>
+      <div class="md">
+        <p>Mọi thực thể dùng chung một bảng <code>objects</code>.</p>
+        <p>Quan hệ lưu ở bảng <code>relations</code> theo kiểu có nhãn.</p>
+        <p>– Thuộc tính riêng của từng loại nằm trong cột JSONB.</p>
+      </div>
+      <span class="tag">#Architecture</span>
+    </article>
+
+    <article class="card" id="B">
+      <div class="head"><span class="badge"><i style="background:#f9ab00"></i>Task</span><span class="dots">···</span></div>
+      <div class="task"><span class="chk"></span><h3 style="margin:0">☑️ Viết mã nguồn Prisma Schema</h3></div>
+      <div class="meta">
+        <span class="pill">HIGH</span>
+        <span class="due"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>28/09</span>
+      </div>
+    </article>
+
+    <article class="card" id="C">
+      <div class="head" style="margin-bottom:6px"><span class="badge"><i style="background:#34a853"></i>Reference</span></div>
+      <div class="ref" style="height:auto">
+        <div class="ico">🔗</div>
+        <div class="t"><h3 style="margin:0;font-size:14px">🔗 NestJS Official Documentation</h3><div class="u">docs.nestjs.com</div></div>
+        <svg class="ext" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+      </div>
+    </article>
+  </div>
+</div>
+
+<div class="toolbar">
+  <span class="space">🎓 Đồ án tốt nghiệp</span><span class="sep"></span>
+  <button class="tool on" title="Hand tool" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-4.5a1.5 1.5 0 0 1 3 0V13m0-3.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.8-2.4L4 14.5a1.5 1.5 0 0 1 2.4-1.8L8 14"/></svg></button>
+  <button class="tool" title="Card selector" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 8-6 2-2 6z"/></svg></button>
+  <button class="tool" title="Arrow connector" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5M9 5h10v10"/></svg></button>
+  <button class="tool" title="Text note" data-t><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></button>
+  <span class="sep"></span>
+  <button class="add">+ Add Object</button>
+  <span class="sep"></span>
+  <span class="zoom" id="zl">100%</span>
+</div>
+
+<div class="br">
+  <div class="mini" title="Mini-map">
+    <b style="left:8px;top:8px;width:60px;height:38px;background:#aecbfa"></b>
+    <b style="left:97px;top:23px;width:56px;height:24px;background:#fde293"></b>
+    <b style="left:8px;top:62px;width:60px;height:21px;background:#a8dab5"></b>
+    <b class="vp" style="left:2px;top:3px;width:150px;height:88px"></b>
+  </div>
+  <div class="zc"><button id="zo" aria-label="Zoom out">−</button><span></span><button id="zi" aria-label="Zoom in">+</button></div>
+</div>
+  </div>
+</main>
+
+<script>
+(function(){
+  var z=100,w=document.getElementById('world'),l=document.getElementById('zl'),cw=document.querySelector('.canvaswrap');
+  function fit(){return Math.min(1,(cw.clientWidth-100)/900)}
+  function apply(){w.style.transform='scale('+(fit()*z/100)+')';l.textContent=z+'%'}
+  document.getElementById('zi').onclick=function(){z=Math.min(200,z+10);apply()};
+  document.getElementById('zo').onclick=function(){z=Math.max(40,z-10);apply()};
+  var ts=document.querySelectorAll('[data-t]');
+  ts.forEach(function(b){b.onclick=function(){ts.forEach(function(x){x.classList.remove('on')});b.classList.add('on')}});
+  window.addEventListener('resize',apply);apply();
+})();
+</script>
+</body>
+</html>

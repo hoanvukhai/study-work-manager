@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zen Focus Mode · Hybrid Object</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#fafafa;--tx:#202124;--tx2:#6b6f73;--mute:#a0a4a8;--bd:#e3e4e6;--code:#f0f1f2;--accent:#202124;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1c1d;--tx:#e8eaed;--tx2:#9aa0a6;--mute:#6f7378;--bd:#38393b;--code:#28292b;--accent:#e8eaed}}
+:root[data-theme="dark"]{--bg:#1c1c1d;--tx:#e8eaed;--tx2:#9aa0a6;--mute:#6f7378;--bd:#38393b;--code:#28292b;--accent:#e8eaed}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font:17px/1.75 Inter,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+/* chrome */
+.bar{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);display:flex;justify-content:space-between;align-items:center;padding:20px 28px;z-index:5;pointer-events:none}
+.bar>*{pointer-events:auto}
+.crumb{font-size:13px;color:var(--tx2);opacity:.55;transition:opacity .6s}
+.crumb b{font-weight:500;color:var(--tx)}
+.exit{font-size:13px;color:var(--tx2);border:1px solid var(--bd);border-radius:8px;padding:4px 12px;opacity:.55;transition:opacity .6s,background .2s}
+.exit:hover{opacity:1!important;background:var(--code)}
+body.idle .crumb,body.idle .exit{opacity:.12}
+body:not(.idle) .crumb:hover{opacity:1}
+/* column */
+.col{width:800px;max-width:100%;margin:0 auto;padding:14vh 24px 160px;transition:opacity .5s}
+h1{margin:0 0 6px;font-size:36px;line-height:1.25;font-weight:600;letter-spacing:-.02em;outline:0}
+.meta{font-size:13px;color:var(--mute);margin-bottom:30px;display:flex;gap:12px}
+#view{cursor:text;min-height:120px;outline:0}
+#view h2{margin:30px 0 8px;font-size:21px;line-height:1.35;font-weight:600}
+#view p{margin:0 0 14px}
+#view ul{margin:0 0 14px;padding-left:22px}#view li{margin-bottom:4px}
+#view blockquote{margin:16px 0;padding:2px 0 2px 16px;border-left:2px solid var(--tx);color:var(--tx2)}
+#view code{font:14px ui-monospace,Menlo,monospace;background:var(--code);border-radius:4px;padding:1px 6px}
+#view pre{margin:0 0 16px;background:var(--code);border-radius:10px;padding:14px 18px;overflow-x:auto}
+#view pre code{background:none;padding:0;font-size:13.5px;line-height:1.65}
+#view b{font-weight:600}
+#ed{display:none;width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--tx);font:14.5px/1.8 ui-monospace,Menlo,monospace;padding:0;overflow:hidden}
+.editing #view{display:none}.editing #ed{display:block}
+.hint{font-size:12px;color:var(--mute);margin-top:6px}
+hr{border:0;border-top:1px solid var(--bd);margin:44px 0 26px}
+.ttl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between}
+.task{display:flex;align-items:center;gap:14px;padding:9px 0;font-size:16px}
+.chk{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--mute);display:grid;place-items:center;transition:background .2s,border-color .2s;padding:0}
+.chk:hover{border-color:var(--tx)}
+.chk svg{opacity:0;transform:scale(.6);transition:.2s;color:var(--bg)}
+.task.done .chk{background:var(--accent);border-color:var(--accent)}
+.task.done .chk svg{opacity:1;transform:none}
+.task span{transition:color .3s;background:linear-gradient(currentColor,currentColor) 0 55%/0 1.5px no-repeat;transition:background-size .35s,color .3s;cursor:pointer}
+.task.done span{color:var(--mute);background-size:100% 1.5px}
+/* pomodoro */
+.pomo{position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:6px 8px 6px 16px;opacity:.6;transition:opacity .3s,box-shadow .3s;z-index:5}
+.pomo:hover,.pomo.run{opacity:1;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.pomo .lb{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-right:4px}
+.pomo .t{font:500 18px/1 Inter,sans-serif;font-variant-numeric:tabular-nums;min-width:52px;letter-spacing:.01em}
+.ib{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--tx2)}
+.ib:hover{background:var(--code);color:var(--tx)}
+.pomo .go{background:var(--accent);color:var(--bg)}.pomo .go:hover{background:var(--accent);color:var(--bg);opacity:.85}
+.pomo .go .pa{display:none}.pomo.run .go .pl{display:none}.pomo.run .go .pa{display:block}
+.pg{position:absolute;left:16px;right:16px;bottom:-1px;height:2px;border-radius:2px;background:transparent;overflow:hidden}
+.pg i{display:block;height:100%;width:0;background:var(--accent);opacity:.5;transition:width 1s linear}
+/* exited */
+.bye{display:none;position:fixed;inset:0;place-items:center;text-align:center;color:var(--tx2);font-size:15px}
+.bye kbd{font:500 13px Inter,sans-serif;border:1px solid var(--bd);border-radius:6px;padding:1px 8px;color:var(--tx);background:var(--code)}
+body.exited .bye{display:grid}
+body.exited .col,body.exited .bar,body.exited .pomo{display:none}
+@media (max-width:640px){h1{font-size:28px}.bar{padding:14px 16px}.crumb{max-width:55%;font-size:12px}.pomo .lb{display:none}.col{padding-top:11vh}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="crumb" id="crumb">Đồ án tốt nghiệp <span style="opacity:.5">/</span> <b>Chương 3: Thiết kế API</b></div>
+  <button class="exit" id="exit">Thoát Zen Mode (Esc)</button>
+</div>
+
+<main class="col" id="col">
+  <h1 contenteditable="true" spellcheck="false" id="title">Chi tiết kiến trúc Hybrid Object</h1>
+  <div class="meta"><span>📝 Ghi chú</span><span id="wc"></span><span>#Architecture</span></div>
+
+  <article id="note">
+    <div id="view" tabindex="0" aria-label="Nội dung ghi chú, bấm để chỉnh sửa"></div>
+    <textarea id="ed" spellcheck="false" aria-label="Soạn thảo Markdown"></textarea>
+    <div class="hint" id="hint">Bấm vào ghi chú để chỉnh sửa Markdown</div>
+  </article>
+
+  <hr>
+  <div class="ttl"><span>Việc cần làm từ tài liệu này</span><span id="cnt">0/3</span></div>
+  <div id="tasks">
+    <div class="task"><button class="chk" aria-label="Hoàn thành"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button><span>Viết Prisma Schema cho bảng objects và relations</span></div>
+    <div class="task"><button class="chk" aria-label="Hoàn thành"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button><span>Thêm index GIN cho cột props (JSONB)</span></div>
+    <div class="task"><button class="chk" aria-label="Hoàn thành"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button><span>Viết endpoint POST /objects và /relations trong NestJS</span></div>
+  </div>
+</main>
+
+<div class="pomo" id="pomo">
+  <span class="lb">Tập trung</span><span class="t" id="tm">25:00</span>
+  <button class="ib go" id="go" aria-label="Bắt đầu / Tạm dừng">
+    <svg class="pl" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    <svg class="pa" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+  </button>
+  <button class="ib" id="rs" aria-label="Đặt lại"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></button>
+  <div class="pg"><i id="pg"></i></div>
+</div>
+
+<div class="bye"><div>Đã thoát Zen Mode.<br><br>Nhấn <kbd>F</kbd> để quay lại.</div></div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},B=document.body;
+var md="## Mục tiêu\nThiết kế một mô hình dữ liệu **linh hoạt** để Note, Task và Reference cùng tồn tại trong một hệ thống.\n\n## Mô hình Hybrid Object\n- Mọi thực thể dùng chung bảng `objects`\n- Thuộc tính riêng của từng loại lưu trong cột `props` (JSONB)\n- Quan hệ giữa các đối tượng lưu ở bảng `relations`\n\n```prisma\nmodel Object {\n  id    String     @id @default(uuid())\n  type  ObjectType\n  props Json\n}\n```\n\n> Ưu tiên một bảng chung để thêm loại đối tượng mới mà không phải migrate nhiều.\n\n## Cần cân nhắc\nTruy vấn theo trường trong JSONB chậm hơn cột thường, nên đánh index GIN cho các trường hay dùng để lọc.";
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function inl(s){return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
+function render(src){
+  var out=[],L=src.split('\n'),i=0,ul=false;
+  function cu(){if(ul){out.push('</ul>');ul=false}}
+  while(i<L.length){
+    var l=L[i];
+    if(/^```/.test(l)){cu();var c=[];i++;while(i<L.length&&!/^```/.test(L[i]))c.push(L[i++]);out.push('<pre><code>'+esc(c.join('\n'))+'</code></pre>');i++;continue}
+    if(/^##? /.test(l)){cu();out.push('<h2>'+inl(l.replace(/^##? /,''))+'</h2>')}
+    else if(/^[-*] /.test(l)){if(!ul){out.push('<ul>');ul=true}out.push('<li>'+inl(l.slice(2))+'</li>')}
+    else if(/^> /.test(l)){cu();out.push('<blockquote>'+inl(l.slice(2))+'</blockquote>')}
+    else if(l.trim()===''){cu()}
+    else{cu();out.push('<p>'+inl(l)+'</p>')}
+    i++;
+  }
+  cu();return out.join('');
+}
+var view=$('view'),ed=$('ed'),note=$('note');
+function show(){view.innerHTML=render(ed.value);var w=(ed.value.match(/\S+/g)||[]).length;$('wc').textContent=w+' từ'}
+function fit(){ed.style.height='auto';ed.style.height=ed.scrollHeight+'px'}
+ed.value=md;show();
+view.onclick=function(){note.classList.add('editing');$('hint').textContent='Đang soạn Markdown · bấm ra ngoài để xem bản đọc';ed.focus();fit()};
+view.onkeydown=function(e){if(e.key==='Enter')view.onclick()};
+ed.oninput=function(){fit();show()};
+ed.onblur=function(){note.classList.remove('editing');$('hint').textContent='Bấm vào ghi chú để chỉnh sửa Markdown';show()};
+/* tasks */
+var ts=document.querySelectorAll('.task');
+function cnt(){$('cnt').textContent=document.querySelectorAll('.task.done').length+'/'+ts.length}
+Array.prototype.forEach.call(ts,function(t){
+  var tg=function(){t.classList.toggle('done');cnt()};
+  t.querySelector('.chk').onclick=tg;t.querySelector('span').onclick=tg;
+});
+cnt();
+/* pomodoro */
+var TOT=1500,left=TOT,iv=null,pomo=$('pomo');
+function draw(){var m=Math.floor(left/60),s=left%60;$('tm').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;$('pg').style.width=((TOT-left)/TOT*100)+'%'}
+function stop(){clearInterval(iv);iv=null;pomo.classList.remove('run')}
+function start(){if(left<=0)left=TOT;pomo.classList.add('run');iv=setInterval(function(){left--;draw();if(left<=0)stop()},1000)}
+$('go').onclick=function(){iv?stop():start()};
+$('rs').onclick=function(){stop();left=TOT;draw()};
+draw();
+/* idle fade */
+var it;function wake(){B.classList.remove('idle');clearTimeout(it);it=setTimeout(function(){B.classList.add('idle')},3000)}
+['mousemove','keydown','touchstart'].forEach(function(e){document.addEventListener(e,wake,{passive:true})});wake();
+/* exit / enter */
+function exitZ(){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();B.classList.add('exited')}
+$('exit').onclick=exitZ;
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){exitZ();return}
+  var a=document.activeElement,typing=a&&(a.tagName==='TEXTAREA'||a.isContentEditable);
+  if((e.key==='f'||e.key==='F')&&!typing&&!e.metaKey&&!e.ctrlKey){B.classList.remove('exited')}
+});
+})();
+</script>
+</body>
+</html>

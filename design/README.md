@@ -11,9 +11,9 @@ Thay vào đó, lưu **link Figma view-only** tại đây.
 
 | Nội dung | Link |
 |---|---|
-| Wireframes (tất cả màn hình) | *(chưa có)* |
-| Design System (màu, font, component) | *(chưa có)* |
-| Prototype (luồng tương tác) | *(chưa có)* |
+| Wireframes (tất cả màn hình) | [Figma StudyWork](https://www.figma.com/design/tkGn1vGAX1TZdhFxrCbuDa/StudyWork?node-id=0-1&t=9jEdzPWdy33IReqi-1) |
+| Design System (màu, font, component) | [Figma StudyWork](https://www.figma.com/design/tkGn1vGAX1TZdhFxrCbuDa/StudyWork?node-id=0-1&t=9jEdzPWdy33IReqi-1) |
+| Prototype (luồng tương tác) | [Figma StudyWork](https://www.figma.com/design/tkGn1vGAX1TZdhFxrCbuDa/StudyWork?node-id=0-1&t=9jEdzPWdy33IReqi-1) |
 
 ---
 

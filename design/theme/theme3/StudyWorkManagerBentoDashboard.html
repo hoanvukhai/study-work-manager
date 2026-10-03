@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi" data-v="1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study & Work Manager – Bảng điều khiển</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Mẫu 1 – Slate sáng */
+  --bg:#f6f7f9; --card:#ffffff; --line:#dadce0; --text:#15181e; --muted:#5b616e; --faint:#8a909c;
+  --accent:#2f4bd6; --accent-soft:#eaeefc; --accent-ink:#2440b8; --on-accent:#ffffff;
+  --hover:#f1f3f6; --track:#e9ecf1;
+  --red-bg:#fdecea; --red-ink:#b3261e; --amber-bg:#fef4dc; --amber-ink:#9a5b00;
+  --green:#1e8e3e;
+  --r:12px; --shadow:0 1px 0 rgba(16,24,40,.02);
+  --card-bg:var(--card); --blur:none; --page:var(--bg);
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* Mẫu 2 – Tối kiểu Linear (cũng dùng cho chế độ tối của hệ thống ở mẫu 1) */
+:root[data-v="2"], :root[data-theme="dark"]{
+  --bg:#0d0e10; --card:#15171a; --line:#26292f; --text:#ededf0; --muted:#9296a1; --faint:#666b76;
+  --accent:#7b8bff; --accent-soft:#1d2140; --accent-ink:#a3afff; --on-accent:#0d0e10;
+  --hover:#1c1f23; --track:#252830;
+  --red-bg:#3a1c1b; --red-ink:#ff9a92; --amber-bg:#3a2e14; --amber-ink:#f5c563;
+  --green:#6fd08c; --shadow:none; --card-bg:var(--card); --page:var(--bg);
+}
+@media (prefers-color-scheme:dark){
+  :root[data-v="1"]:not([data-theme="light"]){
+    --bg:#0d0e10; --card:#15171a; --line:#26292f; --text:#ededf0; --muted:#9296a1; --faint:#666b76;
+    --accent:#7b8bff; --accent-soft:#1d2140; --accent-ink:#a3afff; --on-accent:#0d0e10;
+    --hover:#1c1f23; --track:#252830;
+    --red-bg:#3a1c1b; --red-ink:#ff9a92; --amber-bg:#3a2e14; --amber-ink:#f5c563;
+    --green:#6fd08c; --shadow:none; --card-bg:var(--card); --page:var(--bg);
+  }
+}
+/* Mẫu 3 – Kính mờ kiểu Apple */
+:root[data-v="3"]{
+  --bg:#eceff5; --card:#ffffff; --line:#dadce0; --text:#1d1d1f; --muted:#5f6470; --faint:#8b8f99;
+  --accent:#0071e3; --accent-soft:#e3f0fd; --accent-ink:#0062c4; --on-accent:#ffffff;
+  --hover:rgba(0,0,0,.045); --track:rgba(0,0,0,.07);
+  --red-bg:#fde8e6; --red-ink:#c5221f; --amber-bg:#fff1d6; --amber-ink:#9a5b00;
+  --green:#1e8e3e; --r:18px; --shadow:0 8px 30px rgba(30,40,80,.06);
+  --card-bg:rgba(255,255,255,.66); --blur:saturate(180%) blur(22px);
+  --page:radial-gradient(900px 500px at 12% -10%, #dfe8ff 0%, transparent 60%), radial-gradient(800px 500px at 100% 10%, #fbe6f0 0%, transparent 55%), radial-gradient(900px 600px at 50% 110%, #dff4ec 0%, transparent 60%), #eef1f7;
+}
+
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{min-height:100%;margin:0;background:var(--page);background-attachment:fixed;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss03"}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 28px 56px}
+
+.variant-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.variant-bar .lbl{font-size:12.5px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);padding:2px}
+.seg button{border:0;background:transparent;padding:5px 14px;border-radius:999px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:500}
+
+/* Top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.hello h1{margin:0;font-size:26px;line-height:1.2;font-weight:650;letter-spacing:-.02em}
+.hello p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.top-right{display:flex;align-items:center;gap:10px}
+.search{position:relative;width:300px;max-width:100%}
+.search input{width:100%;height:38px;padding:0 64px 0 36px;border-radius:10px;border:1px solid var(--line);background:var(--card-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);font-size:13.5px}
+.search input::placeholder{color:var(--faint)}
+.search svg{position:absolute;left:11px;top:11px;color:var(--faint)}
+.kbd{font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;background:var(--hover);white-space:nowrap}
+.search .kbd{position:absolute;right:8px;top:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);font-size:13.5px}
+.pill b{font-weight:600;color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:600;font-size:14px}
+
+/* Quick capture */
+.capture{margin:20px 0 20px;position:relative}
+.capture input{width:100%;height:56px;padding:0 120px 0 52px;border-radius:var(--r);border:1px solid var(--line);background:var(--card-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);font-size:15px;box-shadow:var(--shadow);transition:border-color .15s, box-shadow .15s}
+.capture input::placeholder{color:var(--faint)}
+.capture input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.capture .plus{position:absolute;left:16px;top:16px;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center}
+.capture .kbd{position:absolute;right:14px;top:16px;font-size:12px}
+
+/* Bento */
+.bento{display:grid;grid-template-columns:5fr 3fr 2fr;gap:16px}
+.box{background:var(--card-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
+.box-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.box-head h2{margin:0;font-size:14px;font-weight:600;letter-spacing:-.005em}
+.box-head .sub{font-size:12.5px;color:var(--faint)}
+.link{border:0;background:transparent;color:var(--accent-ink);font-size:12.5px;padding:2px 4px;border-radius:6px}
+.link:hover{background:var(--accent-soft)}
+
+/* Box 1 */
+.b1{grid-column:1}
+.space-line{display:flex;align-items:center;gap:12px}
+.space-emoji{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:22px;flex:none}
+.space-line h3{margin:0;font-size:18px;font-weight:600;letter-spacing:-.015em}
+.space-line small{color:var(--muted);font-size:12.5px}
+.prog{display:flex;align-items:center;gap:10px;margin:16px 0 18px}
+.track{flex:1;height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.fill{height:100%;width:65%;background:var(--accent);border-radius:99px}
+.prog span{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.notes{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+.note{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;margin:0 -12px;width:calc(100% + 24px);border-radius:10px}
+.note:hover{background:var(--hover)}
+.note .t{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13.5px}
+.note .t svg{color:var(--faint);flex:none}
+.note .t .when{margin-left:auto;font-size:12px;color:var(--faint);font-weight:400}
+.note p{margin:3px 0 0 22px;color:var(--muted);font-size:12.5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.next{margin-top:auto;border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;background:var(--hover)}
+.next .info{flex:1;min-width:0}
+.next .info small{display:block;font-size:12px;color:var(--muted)}
+.next .info b{display:block;font-weight:550;font-size:14px;margin-top:1px}
+.next .info span{font-size:12px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);font-weight:550;font-size:13.5px;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+
+/* Box 2 */
+.b2{grid-column:2}
+.tasks{display:flex;flex-direction:column;list-style:none;margin:0;padding:0}
+.tasks li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.tasks li:first-child{border-top:0;padding-top:0}
+.circle{flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;border:1.5px solid var(--faint);background:transparent;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s}
+.circle svg{width:11px;height:11px;color:var(--on-accent);opacity:0}
+.circle[aria-checked="true"]{background:var(--green);border-color:var(--green)}
+.circle[aria-checked="true"] svg{opacity:1;color:#fff}
+.tasks .txt{flex:1;min-width:0}
+.tasks .txt b{display:block;font-weight:500;font-size:13.5px;line-height:1.4}
+.tasks li[data-done="true"] .txt b{text-decoration:line-through;color:var(--faint)}
+.tasks li[data-done="true"] .row{opacity:.5}
+.row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.time{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:4px}
+.badge{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.02em}
+.badge.high{background:var(--red-bg);color:var(--red-ink)}
+.badge.med{background:var(--amber-bg);color:var(--amber-ink)}
+.badge.low{background:var(--hover);color:var(--muted)}
+
+/* Box 3 */
+.b3{grid-column:3}
+.timeline{position:relative;margin:2px 0 0;padding:0;list-style:none}
+.timeline::before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--line)}
+.timeline li{position:relative;padding:0 0 22px 24px}
+.timeline li:last-child{padding-bottom:0}
+.timeline li::before{content:"";position:absolute;left:0;top:5px;width:11px;height:11px;border-radius:50%;background:var(--card);border:2px solid var(--faint)}
+.timeline li.soon::before{border-color:var(--accent);background:var(--accent)}
+.timeline .h{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+.timeline li.soon .h{color:var(--accent-ink)}
+.timeline b{display:block;font-weight:550;font-size:13.5px;line-height:1.4;margin-top:2px}
+.timeline .where{font-size:12px;color:var(--faint);margin-top:2px;display:block}
+
+/* Box 4 */
+.b4{grid-column:1 / -1}
+.spaces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.space{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid var(--line);border-radius:calc(var(--r) - 2px);background:transparent;text-align:left;transition:background .15s,border-color .15s}
+.space:hover{background:var(--hover)}
+.space.active{border-color:var(--accent);background:var(--accent-soft)}
+.ring{position:relative;flex:none;width:60px;height:60px}
+.ring svg{transform:rotate(-90deg);display:block}
+.ring .bg{stroke:var(--track)}
+.ring .fg{stroke:var(--accent);stroke-linecap:round}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.space h3{margin:0;font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.counts{display:flex;gap:14px;margin-top:6px;flex-wrap:wrap}
+.counts span{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:baseline;gap:4px}
+.counts b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13.5px;transition:opacity .2s,transform .2s;z-index:10}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:1080px){
+  .bento{grid-template-columns:1fr 1fr}
+  .b1{grid-column:1 / -1}
+  .b2{grid-column:1}
+  .b3{grid-column:2}
+}
+@media (max-width:720px){
+  .wrap{padding:16px 16px 40px}
+  .bento{grid-template-columns:1fr}
+  .b2,.b3{grid-column:1}
+  .spaces{grid-template-columns:1fr}
+  .search{width:100%}
+  .top-right{width:100%}
+  .capture input{padding-right:16px;font-size:14px}
+  .capture .kbd{display:none}
+  .next{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="variant-bar">
+    <span class="lbl">Xem mẫu phong cách:</span>
+    <div class="seg" role="group" aria-label="Chọn mẫu">
+      <button type="button" data-set="1" aria-pressed="true">Slate sáng</button>
+      <button type="button" data-set="2" aria-pressed="false">Tối</button>
+      <button type="button" data-set="3" aria-pressed="false">Kính mờ</button>
+    </div>
+  </div>
+
+  <header class="top">
+    <div class="hello">
+      <h1>Xin chào Hoàn</h1>
+      <p>Thứ Năm, 24 tháng 9 · Hôm nay bạn có 3 việc khẩn và 2 lịch.</p>
+    </div>
+    <div class="top-right">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Tìm việc, ghi chú, tài liệu" aria-label="Tìm kiếm toàn cục">
+        <span class="kbd">Ctrl K</span>
+      </label>
+      <span class="pill" title="Inbox">Inbox <b id="inboxCount">2</b></span>
+      <div class="avatar" aria-label="Tài khoản của Hoàn">H</div>
+    </div>
+  </header>
+
+  <div class="capture">
+    <span class="plus" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </span>
+    <input id="capture" type="text" placeholder="Gõ nhanh việc hoặc ghi chú mới... Nhấn Enter để lưu vào Inbox" aria-label="Ghi nhanh vào Inbox" autocomplete="off">
+    <span class="kbd">Enter</span>
+  </div>
+
+  <main class="bento">
+
+    <!-- Box 1 -->
+    <section class="box b1" aria-labelledby="t1">
+      <div class="box-head">
+        <h2 id="t1">Tiếp tục bài học &amp; Dự án đang dở</h2>
+        <span class="sub">Dừng lại 2 giờ trước</span>
+      </div>
+
+      <div class="space-line">
+        <div class="space-emoji" aria-hidden="true">🎓</div>
+        <div>
+          <h3>Đồ án tốt nghiệp</h3>
+          <small>Space đang mở gần nhất</small>
+        </div>
+      </div>
+
+      <div class="prog" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="Tiến độ đồ án">
+        <div class="track"><div class="fill"></div></div>
+        <span>65%</span>
+      </div>
+
+      <div class="notes">
+        <button class="note" type="button">
+          <div class="t">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+            Tóm tắt chương 2 - Lý thuyết ORM
+            <span class="when">2 giờ trước</span>
+          </div>
+          <p>ORM ánh xạ bảng trong CSDL sang class, giúp truy vấn bằng findMany() thay vì viết SQL thủ công. Ưu điểm: giảm lặp code, an toàn kiểu dữ liệu.</p>
+        </button>
+        <button class="note" type="button">
+          <div class="t">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+            Câu hỏi cho buổi gặp giảng viên
+            <span class="when">Hôm qua</span>
+          </div>
+          <p>Phạm vi chương 3 có cần so sánh thêm TypeORM không? Cách trình bày sơ đồ ERD trong báo cáo cuối kỳ.</p>
+        </button>
+      </div>
+
+      <div class="next">
+        <div class="info">
+          <small>Việc tiếp theo</small>
+          <b>Cài đặt Prisma và viết Seed dữ liệu</b>
+          <span>Hạn 28/09 · liên kết với note Lý thuyết ORM</span>
+        </div>
+        <button class="btn" type="button">
+          Tiếp tục học
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Box 2 -->
+    <section class="box b2" aria-labelledby="t2">
+      <div class="box-head">
+        <h2 id="t2">Việc khẩn cấp hôm nay</h2>
+        <span class="sub" id="urgentCount">3 còn lại</span>
+      </div>
+      <ul class="tasks" id="tasks">
+        <li data-done="false">
+          <button class="circle" type="button" role="checkbox" aria-checked="false" aria-label="Hoàn thành: Nộp bản thảo chương 2 cho GVHD">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+          <div class="txt"><b>Nộp bản thảo chương 2 cho GVHD</b>
+            <div class="row"><span class="badge high">HIGH</span><span class="time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>14:00</span></div>
+          </div>
+        </li>
+        <li data-done="false">
+          <button class="circle" type="button" role="checkbox" aria-checked="false" aria-label="Hoàn thành: Cài đặt Prisma và viết Seed dữ liệu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+          <div class="txt"><b>Cài đặt Prisma và viết Seed dữ liệu</b>
+            <div class="row"><span class="badge high">HIGH</span><span class="time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>17:30</span></div>
+          </div>
+        </li>
+        <li data-done="false">
+          <button class="circle" type="button" role="checkbox" aria-checked="false" aria-label="Hoàn thành: Gửi báo giá cho khách Freelance">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+          <div class="txt"><b>Gửi báo giá cho khách Freelance</b>
+            <div class="row"><span class="badge med">MEDIUM</span><span class="time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>20:00</span></div>
+          </div>
+        </li>
+        <li data-done="true">
+          <button class="circle" type="button" role="checkbox" aria-checked="true" aria-label="Đã xong: Ôn bài Kiến trúc Phần mềm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+          <div class="txt"><b>Ôn bài Kiến trúc Phần mềm</b>
+            <div class="row"><span class="badge low">LOW</span><span class="time">07:30</span></div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Box 3 -->
+    <section class="box b3" aria-labelledby="t3">
+      <div class="box-head">
+        <h2 id="t3">Lịch trình hôm nay</h2>
+      </div>
+      <ol class="timeline">
+        <li>
+          <span class="h">08:00 – 09:30</span>
+          <b>Tiết học Kiến trúc Phần mềm</b>
+          <span class="where">Phòng B3-204</span>
+        </li>
+        <li class="soon">
+          <span class="h">15:00 – 15:45</span>
+          <b>Gặp GVHD</b>
+          <span class="where">Google Meet</span>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Box 4 -->
+    <section class="box b4" aria-labelledby="t4">
+      <div class="box-head">
+        <h2 id="t4">Mạng lưới Không gian học tập</h2>
+        <button class="link" type="button">Xem tất cả</button>
+      </div>
+      <div class="spaces">
+
+        <button class="space active" type="button">
+          <div class="ring">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke-width="5"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fg" cx="30" cy="30" r="24" stroke-dasharray="98.02 150.8"/></svg>
+            <span>65%</span>
+          </div>
+          <div>
+            <h3>🎓 Đồ án tốt nghiệp</h3>
+            <div class="counts"><span><b>12</b> Tasks</span><span><b>8</b> Notes</span><span><b>5</b> Docs</span></div>
+          </div>
+        </button>
+
+        <button class="space" type="button">
+          <div class="ring">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke-width="5"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fg" cx="30" cy="30" r="24" stroke-dasharray="63.34 150.8"/></svg>
+            <span>42%</span>
+          </div>
+          <div>
+            <h3>💻 Học Lập trình Web</h3>
+            <div class="counts"><span><b>18</b> Tasks</span><span><b>21</b> Notes</span><span><b>9</b> Docs</span></div>
+          </div>
+        </button>
+
+        <button class="space" type="button">
+          <div class="ring">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke-width="5"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fg" cx="30" cy="30" r="24" stroke-dasharray="120.64 150.8"/></svg>
+            <span>80%</span>
+          </div>
+          <div>
+            <h3>💼 Freelance</h3>
+            <div class="counts"><span><b>6</b> Tasks</span><span><b>4</b> Notes</span><span><b>11</b> Docs</span></div>
+          </div>
+        </button>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var toast = document.getElementById('toast');
+  var tt;
+  function say(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(tt); tt = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+  }
+
+  // Variant switch
+  document.querySelectorAll('[data-set]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      root.setAttribute('data-v', btn.getAttribute('data-set'));
+      document.querySelectorAll('[data-set]').forEach(function(b){
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+    });
+  });
+
+  // Ctrl/Cmd + K focuses search
+  var search = document.getElementById('search');
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){
+      e.preventDefault(); search.focus(); search.select();
+    }
+  });
+
+  // Quick capture
+  var cap = document.getElementById('capture');
+  var count = document.getElementById('inboxCount');
+  cap.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && cap.value.trim()){
+      count.textContent = String(parseInt(count.textContent, 10) + 1);
+      cap.value = '';
+      say('Đã lưu vào Inbox');
+    }
+  });
+
+  // Task circles
+  var urgent = document.getElementById('urgentCount');
+  function recount(){
+    var left = document.querySelectorAll('#tasks li[data-done="false"]').length;
+    urgent.textContent = left === 0 ? 'Đã xong hết' : left + ' còn lại';
+  }
+  document.querySelectorAll('.circle').forEach(function(c){
+    c.addEventListener('click', function(){
+      var on = c.getAttribute('aria-checked') !== 'true';
+      c.setAttribute('aria-checked', on ? 'true' : 'false');
+      c.closest('li').setAttribute('data-done', on ? 'true' : 'false');
+      recount();
+    });
+  });
+
+  // Space cards
+  document.querySelectorAll('.space').forEach(function(s){
+    s.addEventListener('click', function(){
+      document.querySelectorAll('.space').forEach(function(x){ x.classList.remove('active'); });
+      s.classList.add('active');
+    });
+  });
+})();
+</script>
+</body>
+</html>

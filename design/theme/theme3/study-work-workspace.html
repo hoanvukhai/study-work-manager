@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="vi" data-v="1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đồ án tốt nghiệp – Study & Work Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#f8f9fa; --card:#ffffff; --line:#dadce0; --text:#202124; --muted:#5f6368; --faint:#80868b;
+  --hover:#f1f3f4; --track:#e8eaed;
+  --blue:#1a73e8; --blue-soft:#e8f0fe; --blue-ink:#1967d2;
+  --amber:#f9ab00; --amber-soft:#fef7e0; --amber-ink:#b06000; --amber-line:#fdd663;
+  --green:#1e8e3e; --green-soft:#e6f4ea; --green-ink:#137333;
+  --purple:#9334e6; --purple-soft:#f3e8fd; --purple-ink:#7627bb;
+  --red-soft:#fce8e6; --red-ink:#c5221f;
+  --r:12px;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --canvas:#202124; --card:#2d2e31; --line:#3c4043; --text:#e8eaed; --muted:#9aa0a6; --faint:#80868b;
+    --hover:#35363a; --track:#3c4043;
+    --blue:#8ab4f8; --blue-soft:#283142; --blue-ink:#aecbfa;
+    --amber:#fdd663; --amber-soft:#3a3020; --amber-ink:#fdd663; --amber-line:#5f4b1e;
+    --green:#81c995; --green-soft:#1e3325; --green-ink:#a8dab5;
+    --purple:#c58af9; --purple-soft:#33253f; --purple-ink:#d7aefb;
+    --red-soft:#3c2321; --red-ink:#f28b82;
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#202124; --card:#2d2e31; --line:#3c4043; --text:#e8eaed; --muted:#9aa0a6; --faint:#80868b;
+  --hover:#35363a; --track:#3c4043;
+  --blue:#8ab4f8; --blue-soft:#283142; --blue-ink:#aecbfa;
+  --amber:#fdd663; --amber-soft:#3a3020; --amber-ink:#fdd663; --amber-line:#5f4b1e;
+  --green:#81c995; --green-soft:#1e3325; --green-ink:#a8dab5;
+  --purple:#c58af9; --purple-soft:#33253f; --purple-ink:#d7aefb;
+  --red-soft:#3c2321; --red-ink:#f28b82;
+}
+
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{min-height:100%;margin:0;background:var(--canvas);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:8px}
+[hidden]{display:none!important}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 28px 64px}
+
+/* variant switch */
+.variant-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.variant-bar .lbl{font-size:12.5px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:2px}
+.seg button{border:0;background:transparent;padding:5px 14px;border-radius:999px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--blue-soft);color:var(--blue-ink);font-weight:500}
+
+/* banner */
+.banner{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.banner-icon{flex:none;width:64px;height:64px;border-radius:16px;background:var(--blue-soft);border:1px solid var(--line);display:grid;place-items:center;color:var(--blue)}
+.banner-text{flex:1;min-width:240px}
+.banner h1{margin:0;font-size:30px;line-height:1.2;font-weight:650;letter-spacing:-.02em}
+.banner p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:60ch}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-size:13.5px;font-weight:500}
+.btn:hover{filter:brightness(.94)}
+:root[data-theme="dark"] .btn{color:#202124}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#202124}}
+
+/* tabs */
+.tabs{display:flex;gap:4px;margin:28px 0 24px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;border:0;background:transparent;color:var(--muted);font-size:13.5px;position:relative;white-space:nowrap;border-radius:8px 8px 0 0}
+.tab:hover{color:var(--text);background:var(--hover)}
+.tab .n{font-size:12px;color:var(--faint);background:var(--hover);padding:0 7px;border-radius:99px;line-height:20px;font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"]{color:var(--blue-ink);font-weight:500}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:var(--blue);border-radius:2px}
+.tab[aria-selected="true"] .n{background:var(--blue-soft);color:var(--blue-ink)}
+
+/* masonry */
+.grid{column-count:3;column-gap:16px}
+.card{display:block;break-inside:avoid;margin:0 0 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 14px;position:relative;transition:border-color .15s, box-shadow .15s}
+.card:hover{border-color:#bdc1c6}
+.card.rel{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.kind{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--faint);margin-bottom:10px}
+.kind svg{flex:none}
+.card h3{margin:0;font-size:15px;line-height:1.4;font-weight:550;letter-spacing:-.005em}
+.foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:99px;font-size:12px;border:1px solid var(--line);color:var(--muted);background:transparent;white-space:nowrap;max-width:100%}
+.pill.amber{background:var(--amber-soft);color:var(--amber-ink);border-color:var(--amber-line)}
+.pill.green{background:var(--green-soft);color:var(--green-ink);border-color:transparent;font-weight:500}
+.pill.blue{background:var(--blue-soft);color:var(--blue-ink);border-color:transparent}
+.pill.chip{background:var(--hover);border-color:transparent;color:var(--text)}
+button.pill{cursor:pointer}
+button.pill:hover{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-ink)}
+
+/* task */
+.task-row{display:flex;gap:12px;align-items:flex-start}
+.circle{flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;border:1.5px solid var(--faint);background:transparent;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s}
+.circle svg{width:11px;height:11px;color:#fff;opacity:0}
+.circle[aria-checked="true"]{background:var(--green);border-color:var(--green)}
+.circle[aria-checked="true"] svg{opacity:1}
+.task-body{flex:1;min-width:0}
+.card[data-done="true"] h3{text-decoration:line-through;color:var(--faint)}
+.card[data-done="true"] .foot{opacity:.55}
+.meter{display:flex;align-items:center;gap:10px;margin-top:12px}
+.meter .bar{flex:1;height:4px;border-radius:99px;background:var(--track);overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--blue);border-radius:99px}
+.meter span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* note */
+.bullets{margin:10px 0 0;padding:0 0 0 18px;color:var(--muted);font-size:13.5px;line-height:1.6}
+.bullets li{margin:2px 0;padding-left:2px}
+.bullets li::marker{color:var(--faint)}
+.bullets b{color:var(--text);font-weight:550}
+.bullets code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--hover);color:var(--text);padding:1px 5px;border-radius:4px}
+.bullets mark{background:var(--amber-soft);color:var(--text);padding:0 3px;border-radius:3px}
+.para{margin:8px 0 0;color:var(--muted);font-size:13.5px;line-height:1.6}
+
+/* reference */
+.ref-top{display:flex;gap:12px;align-items:center}
+.fav{flex:none;width:36px;height:36px;border-radius:9px;background:var(--hover);border:1px solid var(--line);display:grid;place-items:center;color:var(--text)}
+.ref-top .t{flex:1;min-width:0}
+.ref-top .domain{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ext{flex:none;width:30px;height:30px;border:0;background:transparent;color:var(--muted);border-radius:8px;display:grid;place-items:center}
+.ext:hover{background:var(--hover);color:var(--blue)}
+.one-line{margin:12px 0 0;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* event */
+.ev{display:flex;gap:14px;align-items:flex-start}
+.date{flex:none;width:48px;border:1px solid var(--line);border-radius:10px;overflow:hidden;text-align:center;background:var(--card)}
+.date small{display:block;background:var(--green-soft);color:var(--green-ink);font-size:11px;font-weight:600;line-height:18px}
+.date b{display:block;font-size:19px;line-height:28px;font-weight:600;font-variant-numeric:tabular-nums}
+.ev .body{flex:1;min-width:0}
+.where{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:12.5px;margin-top:6px}
+
+.count-note{margin-top:8px;text-align:center;color:var(--faint);font-size:12.5px}
+
+/* ===== Variant 2: viền màu theo loại ===== */
+[data-v="2"] .card{border-top:3px solid var(--tc, var(--line))}
+[data-v="2"] .card[data-type="task"]{--tc:var(--blue)}
+[data-v="2"] .card[data-type="note"]{--tc:var(--amber)}
+[data-v="2"] .card[data-type="ref"]{--tc:var(--purple)}
+[data-v="2"] .card[data-type="event"]{--tc:var(--green)}
+[data-v="2"] .card[data-type="task"] .kind{color:var(--blue-ink)}
+[data-v="2"] .card[data-type="note"] .kind{color:var(--amber-ink)}
+[data-v="2"] .card[data-type="ref"] .kind{color:var(--purple-ink)}
+[data-v="2"] .card[data-type="event"] .kind{color:var(--green-ink)}
+[data-v="2"] .kind{font-weight:500}
+
+/* ===== Variant 3: gọn kiểu Notion ===== */
+[data-v="3"]{--r:8px}
+[data-v="3"] .card{border-color:transparent;padding:14px 14px 12px;box-shadow:0 0 0 1px rgba(60,64,67,.06)}
+[data-v="3"] .card:hover{border-color:transparent;box-shadow:0 0 0 1px var(--line),0 2px 8px rgba(60,64,67,.08)}
+[data-v="3"] .card.rel{box-shadow:0 0 0 2px var(--blue)}
+[data-v="3"] .kind{margin-bottom:6px}
+[data-v="3"] .grid{column-gap:12px}
+[data-v="3"] .card{margin-bottom:12px}
+[data-v="3"] .pill{border-color:transparent;background:var(--hover)}
+[data-v="3"] .pill.amber{background:var(--amber-soft)}
+[data-v="3"] .pill.green{background:var(--green-soft)}
+[data-v="3"] .pill.blue{background:var(--blue-soft)}
+
+@media (max-width:980px){.grid{column-count:2}}
+@media (max-width:640px){
+  .wrap{padding:16px 16px 48px}
+  .grid{column-count:1}
+  .banner h1{font-size:24px}
+  .banner-icon{width:52px;height:52px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="variant-bar">
+    <span class="lbl">Xem mẫu thẻ:</span>
+    <div class="seg" role="group" aria-label="Chọn mẫu">
+      <button type="button" data-set="1" aria-pressed="true">Cổ điển</button>
+      <button type="button" data-set="2" aria-pressed="false">Viền màu theo loại</button>
+      <button type="button" data-set="3" aria-pressed="false">Gọn kiểu Notion</button>
+    </div>
+  </div>
+
+  <header class="banner">
+    <div class="banner-icon" aria-hidden="true">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 9.2 12 4.5l10 4.7-10 4.8z"/>
+        <path d="M6 11.6v4.6c0 1.3 2.7 3 6 3s6-1.7 6-3v-4.6"/>
+        <path d="M22 9.2v6"/>
+        <circle cx="22" cy="16.6" r="1" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="banner-text">
+      <h1>🎓 Đồ án tốt nghiệp</h1>
+      <p>Quản lý tài liệu nghiên cứu và tiến độ hoàn thành</p>
+    </div>
+    <button class="btn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Thêm mới
+    </button>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Lọc theo loại">
+    <button class="tab" role="tab" aria-selected="true"  data-filter="all">Tất cả <span class="n">24</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-filter="note">📝 Ghi chú bài học <span class="n">8</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-filter="task">☑️ Nhiệm vụ cần làm <span class="n">12</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-filter="ref">🔗 Tài liệu tham khảo <span class="n">4</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-filter="event">📅 Lịch trình</button>
+  </div>
+
+  <main class="grid" id="grid">
+
+    <!-- TASK -->
+    <article class="card" data-type="task" data-done="false">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>
+        Nhiệm vụ
+      </div>
+      <div class="task-row">
+        <button class="circle" type="button" role="checkbox" aria-checked="false" aria-label="Hoàn thành: Viết đặc tả 22 API endpoints">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </button>
+        <div class="task-body">
+          <h3>Viết đặc tả 22 API endpoints</h3>
+          <div class="meter"><div class="bar"><i style="width:41%"></i></div><span>9 / 22</span></div>
+        </div>
+      </div>
+      <div class="foot">
+        <span class="pill amber">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Hạn: Ngày mai
+        </span>
+        <span class="pill chip">📎 Slide bài giảng 07</span>
+      </div>
+    </article>
+
+    <!-- NOTE -->
+    <article class="card" id="noteAdvisor" data-type="note">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+        Ghi chú
+      </div>
+      <h3>Góp ý của Thầy Cường tuần 3</h3>
+      <ul class="bullets">
+        <li><b>Tách</b> module <code>Auth</code> khỏi <code>User</code> trước khi viết test</li>
+        <li>Bổ sung <mark>ERD mức logic</mark> vào chương 3</li>
+        <li>Demo luồng <i>đăng ký lớp</i>, chưa cần thêm tính năng mới</li>
+      </ul>
+      <div class="foot">
+        <span class="pill amber">#Advisor</span>
+        <span class="pill" style="border-color:transparent;padding:0">Hôm qua</span>
+      </div>
+    </article>
+
+    <!-- REFERENCE -->
+    <article class="card" data-type="ref">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+        Tài liệu tham khảo
+      </div>
+      <div class="ref-top">
+        <div class="fav" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 19.5l9-3.3 9 3.3z"/></svg>
+        </div>
+        <div class="t">
+          <h3>Prisma Schema Docs</h3>
+          <div class="domain">prisma.io</div>
+        </div>
+        <button class="ext" type="button" aria-label="Mở liên kết ngoài">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+        </button>
+      </div>
+      <p class="one-line">Cú pháp định nghĩa model, quan hệ và enum trong schema.prisma.</p>
+    </article>
+
+    <!-- EVENT -->
+    <article class="card" data-type="event">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+        Lịch trình
+      </div>
+      <div class="ev">
+        <div class="date" aria-hidden="true"><small>Thg 9</small><b>25</b></div>
+        <div class="body">
+          <h3>Buổi báo cáo tiến độ tuần 4</h3>
+          <div class="where">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+            Phòng họp Khoa CNTT
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="pill green">Thứ 6, 09:00</span></div>
+    </article>
+
+    <!-- TASK linked to note -->
+    <article class="card" data-type="task" data-done="false">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>
+        Nhiệm vụ
+      </div>
+      <div class="task-row">
+        <button class="circle" type="button" role="checkbox" aria-checked="false" aria-label="Hoàn thành: Vẽ lại sơ đồ ERD sau góp ý">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </button>
+        <div class="task-body"><h3>Vẽ lại sơ đồ ERD sau góp ý</h3></div>
+      </div>
+      <div class="foot">
+        <span class="pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Hạn: 30/09
+        </span>
+        <button class="pill blue" type="button" data-target="noteAdvisor">📝 Góp ý của Thầy Cường tuần 3</button>
+      </div>
+    </article>
+
+    <!-- NOTE 2 -->
+    <article class="card" data-type="note">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+        Ghi chú
+      </div>
+      <h3>Ý tưởng cho phần Kết luận</h3>
+      <p class="para">Nhấn vào <b style="color:var(--text);font-weight:550">giá trị thực tế</b>: hệ thống giúp sinh viên gom tài liệu, việc và lịch vào một chỗ, thay vì ba công cụ rời rạc.</p>
+      <div class="foot"><span class="pill blue">#Draft</span></div>
+    </article>
+
+    <!-- REF 2 -->
+    <article class="card" data-type="ref">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+        Tài liệu tham khảo
+      </div>
+      <div class="ref-top">
+        <div class="fav" aria-hidden="true" style="color:#e0234e;font-weight:700">N</div>
+        <div class="t">
+          <h3>NestJS – Custom decorators</h3>
+          <div class="domain">docs.nestjs.com</div>
+        </div>
+        <button class="ext" type="button" aria-label="Mở liên kết ngoài">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+        </button>
+      </div>
+      <p class="one-line">Cách tạo decorator riêng để lấy user hiện tại từ request.</p>
+    </article>
+
+    <!-- EVENT 2 -->
+    <article class="card" data-type="event">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+        Lịch trình
+      </div>
+      <div class="ev">
+        <div class="date" aria-hidden="true"><small>Thg 9</small><b>28</b></div>
+        <div class="body">
+          <h3>Nộp bản thảo chương 3</h3>
+          <div class="where">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+            Gửi qua email cho GVHD
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="pill green">Thứ 2, 14:00</span></div>
+    </article>
+
+    <!-- TASK done -->
+    <article class="card" data-type="task" data-done="true">
+      <div class="kind">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>
+        Nhiệm vụ
+      </div>
+      <div class="task-row">
+        <button class="circle" type="button" role="checkbox" aria-checked="true" aria-label="Đã xong: Chốt đề cương với GVHD">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </button>
+        <div class="task-body"><h3>Chốt đề cương với GVHD</h3></div>
+      </div>
+      <div class="foot"><span class="pill">Hoàn thành 18/09</span></div>
+    </article>
+
+  </main>
+
+  <div class="count-note" id="countNote"></div>
+</div>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var grid = document.getElementById('grid');
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.card'));
+  var note = document.getElementById('countNote');
+
+  function apply(filter){
+    var n = 0;
+    cards.forEach(function(c){
+      var show = filter === 'all' || c.getAttribute('data-type') === filter;
+      c.hidden = !show;
+      if (show) n++;
+    });
+    note.textContent = 'Đang hiển thị ' + n + ' mục mẫu';
+  }
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
+      apply(t.getAttribute('data-filter'));
+    });
+  });
+  apply('all');
+
+  // variants
+  document.querySelectorAll('[data-set]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      root.setAttribute('data-v', btn.getAttribute('data-set'));
+      document.querySelectorAll('[data-set]').forEach(function(b){ b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+    });
+  });
+
+  // task toggle
+  document.querySelectorAll('.circle').forEach(function(c){
+    c.addEventListener('click', function(){
+      var on = c.getAttribute('aria-checked') !== 'true';
+      c.setAttribute('aria-checked', on ? 'true' : 'false');
+      c.closest('.card').setAttribute('data-done', on ? 'true' : 'false');
+    });
+  });
+
+  // relation chip: highlight the linked card
+  document.querySelectorAll('[data-target]').forEach(function(chip){
+    var target = document.getElementById(chip.getAttribute('data-target'));
+    function on(){ if (target) target.classList.add('rel'); }
+    function off(){ if (target) target.classList.remove('rel'); }
+    chip.addEventListener('mouseenter', on);
+    chip.addEventListener('mouseleave', off);
+    chip.addEventListener('focus', on);
+    chip.addEventListener('blur', off);
+    chip.addEventListener('click', function(){
+      if (target){ target.hidden = false; target.scrollIntoView({behavior:'smooth', block:'center'}); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
