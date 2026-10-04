@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { PrismaClient, ObjectType, TaskStatus, Priority, ObjectLifecycle, RelationType } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -12,7 +13,7 @@ async function main() {
     create: {
       email: 'hoan@example.com',
       fullName: 'Vũ Khải Hoàn',
-      passwordHash: '$2b$10$abcdefghijklmnopqrstuv', // hashed password demo
+      passwordHash: await bcrypt.hash('Password123!', 10),
       avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hoan',
     },
   });

@@ -11,8 +11,10 @@ import {
   Link as LinkIcon 
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Welcome Banner & Quick Capture Bar */}
@@ -25,7 +27,7 @@ export default function Dashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Xin chào Hoàn 👋
+              Xin chào {user?.fullName || 'bạn'} 👋
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Chào mừng bạn trở lại không gian làm việc. Hôm nay bạn có 2 nhiệm vụ cần hoàn thành.

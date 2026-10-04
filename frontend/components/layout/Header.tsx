@@ -1,9 +1,27 @@
 'use client';
 
-import React from 'react';
-import { Search, Bell, Plus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Bell, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Header() {
+  const { user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const initial = user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U';
+
   return (
     <header style={{
       height: 'var(--header-height)',
@@ -55,10 +73,12 @@ export default function Header() {
         <button style={{
           position: 'relative',
           background: 'transparent',
+          border: 'none',
           color: 'var(--text-secondary)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          cursor: 'pointer',
         }}>
           <Bell size={20} />
           <span style={{
@@ -72,36 +92,103 @@ export default function Header() {
           }}></span>
         </button>
 
-        {/* User Avatar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          paddingLeft: '8px',
-          borderLeft: '1px solid var(--border-subtle)',
-        }}>
-          <div style={{
-            width: '34px',
-            height: '34px',
-            borderRadius: '50%',
-            backgroundColor: '#e8f0fe',
-            color: '#1967d2',
-            fontWeight: 600,
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            H
-          </div>
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>
-              Vũ Khải Hoàn
+        {/* User Profile Dropdown */}
+        <div ref={dropdownRef} style={{ position: 'relative' }}>
+          <button 
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              paddingLeft: '8px',
+              borderLeft: '1px solid var(--border-subtle)',
+              background: 'transparent',
+              borderTop: 'none',
+              borderRight: 'none',
+              borderBottom: 'none',
+              cursor: 'pointer',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: '50%',
+              backgroundColor: '#e8f0fe',
+              color: 'var(--primary-blue, #1a73e8)',
+              fontWeight: 600,
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              {initial}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-              hoan@example.com
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {user?.fullName || 'Người dùng'}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                {user?.email || 'user@example.com'}
+              </div>
             </div>
-          </div>
+          </button>
+
+          {/* Dropdown Menu */}
+          {dropdownOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              right: 0,
+              width: '200px',
+              backgroundColor: '#ffffff',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '8px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+              padding: '6px',
+              zIndex: 100,
+            }}>
+              <div style={{
+                padding: '8px 12px',
+                borderBottom: '1px solid var(--border-subtle)',
+                marginBottom: '4px',
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {user?.fullName}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.email}
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setDropdownOpen(false);
+                  logout();
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#d93025',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fce8e6')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                <LogOut size={15} />
+                <span>Đăng xuất</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

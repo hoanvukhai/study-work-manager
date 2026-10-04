@@ -1,6 +1,5 @@
 import './globals.css';
-import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header';
+import { AuthProvider } from '@/lib/auth-context';
 
 export const metadata = {
   title: 'Study & Work Manager — Hệ thống Quản lý Học tập & Công việc',
@@ -15,15 +14,9 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body>
-        <div className="app-container">
-          <Sidebar />
-          <div className="main-wrapper">
-            <Header />
-            <main className="content-container">
-              {children}
-            </main>
-          </div>
-        </div>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
