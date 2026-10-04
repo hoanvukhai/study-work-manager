@@ -8,8 +8,8 @@ import { useAuth } from '@/lib/auth-context';
 export default function LoginPage() {
   const router = useRouter();
   const { user, login } = useAuth();
-  const [email, setEmail] = useState('hoan@example.com');
-  const [password, setPassword] = useState('Password123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ví dụ: hoan@example.com"
+              placeholder="Nhập email của bạn (ví dụ: hoan@example.com)"
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -136,19 +136,6 @@ export default function LoginPage() {
                 boxSizing: 'border-box',
               }}
             />
-          </div>
-
-          <div style={{
-            backgroundColor: '#f1f3f4',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            color: '#5f6368',
-            lineHeight: 1.5,
-          }}>
-            🔑 <strong>Tài khoản mẫu:</strong><br />
-            Email: <code>hoan@example.com</code><br />
-            Mật khẩu: <code>Password123!</code>
           </div>
 
           <button
