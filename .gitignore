@@ -70,3 +70,7 @@ coverage/
 #  PRISMA GENERATED
 # ─────────────────────────────────────────────
 backend/prisma/migrations/*.sql.bak
+
+# Build cache
+*.tsbuildinfo
+

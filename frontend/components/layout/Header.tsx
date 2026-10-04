@@ -2,12 +2,31 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Bell, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import CreateObjectModal from '../objects/CreateObjectModal';
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Keyboard shortcut 'c'
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key.toLowerCase() === 'c' &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
+      ) {
+        e.preventDefault();
+        setCreateModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -73,7 +92,11 @@ export default function Header() {
 
       {/* Actions & Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button className="btn-primary" style={{ padding: '6px 14px', fontSize: '13px' }}>
+        <button
+          onClick={() => setCreateModalOpen(true)}
+          className="btn-primary"
+          style={{ padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}
+        >
           <Plus size={16} />
           <span>Tạo mới (C)</span>
         </button>
@@ -199,6 +222,19 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      {createModalOpen && (
+        <CreateObjectModal
+          onClose={() => setCreateModalOpen(false)}
+          onCreated={(newObj) => {
+            if (newObj.spaceObjects && newObj.spaceObjects.length > 0) {
+              router.push(`/spaces/${newObj.spaceObjects[0].spaceId}`);
+            } else {
+              window.location.reload();
+            }
+          }}
+        />
+      )}
     </header>
   );
 }
