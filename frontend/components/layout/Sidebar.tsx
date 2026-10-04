@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, Trash2, Plus,
   ChevronDown, ChevronRight, Loader2,
+  KanbanSquare, Calendar,
 } from 'lucide-react';
 import { getSpaces, Space, deleteSpace, updateSpace } from '../../lib/spaces-api';
 import CreateSpaceModal from '../spaces/CreateSpaceModal';
@@ -111,12 +112,26 @@ export default function Sidebar() {
         {/* Nav */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
           {/* Core Nav */}
-          <div style={{ marginBottom: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
             <Link href="/" style={navLinkStyle(isActive('/'))}
-              onMouseEnter={e => { if (!isActive('/')) e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--border-subtle)'; }}
+              onMouseEnter={e => { if (!isActive('/')) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--border-subtle)'; } }}
               onMouseLeave={e => { if (!isActive('/')) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; } }}>
               <LayoutDashboard size={18} />
               Dashboard
+            </Link>
+
+            <Link href="/kanban" style={navLinkStyle(isActive('/kanban'))}
+              onMouseEnter={e => { if (!isActive('/kanban')) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--border-subtle)'; } }}
+              onMouseLeave={e => { if (!isActive('/kanban')) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; } }}>
+              <KanbanSquare size={18} />
+              Bảng Kanban
+            </Link>
+
+            <Link href="/calendar" style={navLinkStyle(isActive('/calendar'))}
+              onMouseEnter={e => { if (!isActive('/calendar')) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--border-subtle)'; } }}
+              onMouseLeave={e => { if (!isActive('/calendar')) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; } }}>
+              <Calendar size={18} />
+              Lịch trình tuần
             </Link>
           </div>
 

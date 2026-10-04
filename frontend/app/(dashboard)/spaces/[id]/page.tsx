@@ -9,10 +9,13 @@ import {
 } from '../../../../lib/objects-api';
 import CreateObjectModal from '../../../../components/objects/CreateObjectModal';
 import EditObjectModal from '../../../../components/objects/EditObjectModal';
+import KanbanBoard from '@/components/views/KanbanBoard';
+import WeeklyCalendar from '@/components/views/WeeklyCalendar';
+import ObjectRelationsModal from '@/components/relations/ObjectRelationsModal';
 import {
   MoreHorizontal, Edit3, Archive, Trash2, Plus, LayoutGrid, List,
   Clock, Loader2, ArrowLeft, Check, CheckSquare, Square, FileText,
-  Calendar, Search, Filter, AlertCircle,
+  Calendar, Search, Filter, AlertCircle, KanbanSquare, Link as LinkIcon,
 } from 'lucide-react';
 
 const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: string }> = {
@@ -34,13 +37,15 @@ export default function SpaceDetailPage() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [showSpaceMenu, setShowSpaceMenu] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban' | 'calendar'>('list');
 
   // Objects state
   const [objects, setObjects] = useState<AppObject[]>([]);
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createModalProps, setCreateModalProps] = useState<{ initialStatus?: TaskStatus; initialDueDate?: string } | null>(null);
   const [editingObject, setEditingObject] = useState<AppObject | null>(null);
+  const [relationsObject, setRelationsObject] = useState<AppObject | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   // Filters & Search
@@ -261,6 +266,28 @@ export default function SpaceDetailPage() {
               }}
             >
               <LayoutGrid size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              title="Bảng Kanban kéo thả"
+              style={{
+                padding: '6px 10px', border: 'none', cursor: 'pointer', display: 'flex',
+                background: viewMode === 'kanban' ? color + '33' : 'transparent',
+                color: viewMode === 'kanban' ? color : 'var(--text-secondary)',
+              }}
+            >
+              <KanbanSquare size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              title="Lịch trình tuần"
+              style={{
+                padding: '6px 10px', border: 'none', cursor: 'pointer', display: 'flex',
+                background: viewMode === 'calendar' ? color + '33' : 'transparent',
+                color: viewMode === 'calendar' ? color : 'var(--text-secondary)',
+              }}
+            >
+              <Calendar size={16} />
             </button>
           </div>
 
@@ -536,6 +563,28 @@ export default function SpaceDetailPage() {
             <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
             <span>Đang tải danh sách công việc và ghi chú...</span>
           </div>
+        ) : viewMode === 'kanban' ? (
+          <KanbanBoard
+            tasks={filteredObjects.filter(o => o.type === 'TASK')}
+            onTaskUpdated={handleObjectUpdated}
+            onTaskDeleted={handleDeleteObject}
+            onEditTask={setEditingObject}
+            onOpenRelations={setRelationsObject}
+            onAddTask={(status) => {
+              setCreateModalProps({ initialStatus: status });
+              setShowCreateModal(true);
+            }}
+          />
+        ) : viewMode === 'calendar' ? (
+          <WeeklyCalendar
+            tasks={filteredObjects.filter(o => o.type === 'TASK')}
+            onTaskUpdated={handleObjectUpdated}
+            onEditTask={setEditingObject}
+            onAddTaskOnDate={(dateStr) => {
+              setCreateModalProps({ initialDueDate: dateStr });
+              setShowCreateModal(true);
+            }}
+          />
         ) : filteredObjects.length === 0 ? (
           /* Empty state */
           <div style={{
@@ -676,8 +725,22 @@ export default function SpaceDetailPage() {
                     )}
                   </div>
 
-                  {/* Action Menu button */}
-                  <div style={{ position: 'relative' }}>
+                  {/* Action buttons: Relations & Menu */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
+                    <button
+                      onClick={() => setRelationsObject(item)}
+                      title="Liên kết tham chiếu"
+                      style={{
+                        background: 'transparent', border: 'none', cursor: 'pointer',
+                        color: 'var(--text-secondary)', padding: '4px', borderRadius: '4px',
+                        display: 'flex', alignItems: 'center',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary-blue)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                    >
+                      <LinkIcon size={15} />
+                    </button>
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -698,10 +761,22 @@ export default function SpaceDetailPage() {
                         style={{
                           position: 'absolute', top: '100%', right: 0, marginTop: '4px', zIndex: 50,
                           background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px', padding: '4px', minWidth: '130px',
+                          borderRadius: '8px', padding: '4px', minWidth: '150px',
                           boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
                         }}
                       >
+                        <button
+                          onClick={() => { setRelationsObject(item); setActiveMenuId(null); }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                            padding: '6px 10px', borderRadius: '4px', background: 'none', border: 'none',
+                            color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', textAlign: 'left',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                        >
+                          <LinkIcon size={13} /> Liên kết tham chiếu
+                        </button>
                         <button
                           onClick={() => { setEditingObject(item); setActiveMenuId(null); }}
                           style={{
@@ -781,6 +856,15 @@ export default function SpaceDetailPage() {
 
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button
+                          onClick={() => setRelationsObject(item)}
+                          title="Liên kết tham chiếu"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px' }}
+                          onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary-blue)')}
+                          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                        >
+                          <LinkIcon size={14} />
+                        </button>
+                        <button
                           onClick={() => setEditingObject(item)}
                           title="Sửa"
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px' }}
@@ -853,7 +937,12 @@ export default function SpaceDetailPage() {
       {showCreateModal && (
         <CreateObjectModal
           initialSpaceId={spaceId}
-          onClose={() => setShowCreateModal(false)}
+          initialStatus={createModalProps?.initialStatus}
+          initialDueDate={createModalProps?.initialDueDate}
+          onClose={() => {
+            setShowCreateModal(false);
+            setCreateModalProps(null);
+          }}
           onCreated={handleObjectCreated}
         />
       )}
@@ -863,6 +952,13 @@ export default function SpaceDetailPage() {
           object={editingObject}
           onClose={() => setEditingObject(null)}
           onUpdated={handleObjectUpdated}
+        />
+      )}
+
+      {relationsObject && (
+        <ObjectRelationsModal
+          currentObject={relationsObject}
+          onClose={() => setRelationsObject(null)}
         />
       )}
     </div>

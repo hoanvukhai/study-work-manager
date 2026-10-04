@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, CheckSquare, FileText, Calendar, AlertCircle } from 'lucide-react';
-import { createObject, ObjectType, Priority, AppObject, CreateObjectPayload } from '@/lib/objects-api';
+import { createObject, ObjectType, Priority, TaskStatus, AppObject, CreateObjectPayload } from '@/lib/objects-api';
 import { getSpaces, Space } from '@/lib/spaces-api';
 
 interface Props {
   initialSpaceId?: string;
   initialType?: ObjectType;
+  initialStatus?: TaskStatus;
+  initialDueDate?: string;
   onClose: () => void;
   onCreated: (object: AppObject) => void;
 }
@@ -22,6 +24,8 @@ const PRIORITIES: { value: Priority; label: string; color: string; bg: string }[
 export default function CreateObjectModal({
   initialSpaceId,
   initialType = 'TASK',
+  initialStatus,
+  initialDueDate = '',
   onClose,
   onCreated,
 }: Props) {
@@ -29,7 +33,7 @@ export default function CreateObjectModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('MEDIUM');
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState(initialDueDate);
   const [spaceId, setSpaceId] = useState<string>(initialSpaceId || '');
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,6 +62,7 @@ export default function CreateObjectModal({
         description: description.trim() || undefined,
         ...(type === 'TASK' && {
           priority,
+          status: initialStatus,
           dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         }),
         spaceId: spaceId || undefined,
