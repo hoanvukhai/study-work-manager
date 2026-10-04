@@ -20,7 +20,15 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const initial = user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U';
+  // Lấy chữ cái của Tên gọi chính (từ cuối cùng theo tiếng Việt, ví dụ: "Vũ Khải Hoàn" -> lấy "H")
+  const getInitials = (fullName?: string) => {
+    if (!fullName) return 'U';
+    const parts = fullName.trim().split(/\s+/);
+    const lastWord = parts[parts.length - 1];
+    return lastWord ? lastWord.charAt(0).toUpperCase() : 'U';
+  };
+
+  const initial = getInitials(user?.fullName);
 
   return (
     <header style={{

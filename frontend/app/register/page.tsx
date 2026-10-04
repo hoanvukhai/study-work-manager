@@ -115,7 +115,7 @@ export default function RegisterPage() {
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="ví dụ: Vũ Khải Hoàn"
+              placeholder="ví dụ: Nguyễn Văn An"
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -137,7 +137,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ví dụ: hoan@example.com"
+              placeholder="ví dụ: user@example.com"
               style={{
                 width: '100%',
                 padding: '10px 12px',
