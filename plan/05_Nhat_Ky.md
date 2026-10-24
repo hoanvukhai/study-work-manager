@@ -1,0 +1,102 @@
+# 05 — Nhật ký làm việc
+
+> Ghi ngắn sau mỗi buổi làm: **làm gì · gặp vấn đề gì · xử lý thế nào · việc tiếp theo**.
+> Mục "Vấn đề & cách xử lý" là nguyên liệu cho phần "Khó khăn và giải pháp" trong Chương 4 của báo cáo.
+
+---
+
+## Mẫu
+
+```markdown
+### DD/MM/YYYY — GĐx
+- **Đã làm:** ...
+- **Vấn đề & cách xử lý:** ...
+- **Tiếp theo:** ...
+```
+
+---
+
+### 09/10/2026 — Đánh giá tổng thể
+- **Đã làm:** Đọc toàn bộ `docs/`, `backend/`, `frontend/`, sơ đồ, wireframe. Lập bộ sổ tay `plan/` (hiện trạng, quyết định, lộ trình, kho ý tưởng).
+- **Vấn đề & cách xử lý:**
+  - Tài liệu có nhiều chỗ mâu thuẫn do thiết kế đổi 3 lần (Lần 1 → Lần 3) mà chưa dọn hết → liệt kê thành các mục DOC-xx, sẽ sửa dần cuối mỗi giai đoạn.
+  - Tính năng cốt lõi (gán nhiều Space) có API nhưng chưa có giao diện → đưa vào GĐ2.
+  - Đã chốt bỏ Tag (QD-01); Space lồng nhau chốt tạm bỏ (QD-02).
+- **Tiếp theo:** Chốt các quyết định còn chờ trong `02_Quyet_Dinh.md`, đánh giá các ý tưởng trong `04_Kho_Y_Tuong.md`, rồi bắt đầu GĐ0.
+
+---
+
+### 12/10/2026 — GĐ0 (Phiên 01)
+- **Đã làm:** 
+  - Khởi tạo thư mục theo dõi nhanh `progress/` (`00_Tong_Quan.md`, `GD0_Don_Nen.md`).
+  - Cập nhật Prisma Schema theo các quyết định kiến trúc: bỏ `Tag`, bỏ `Space.parentId` (xóa triệt để SEC-01), thêm User `role` & `lockedAt` (QD-11), chuyển Space sang `archivedAt` và thêm `settings`/`goal`/`dueDate` (QD-03), cho phép `status`/`priority` nullable và thêm `archivedAt` cho Object (QD-05, QD-07), thêm các index hiệu năng (TECH-09). Sinh Prisma client thành công.
+  - Viết lại `seed.ts` chuẩn TypeScript với bcrypt: 2 user (Demo + Admin), 4 loại Object, mô phỏng gán multi-space.
+  - Sửa các lỗi nghiêm trọng backend: BUG-06 (loại bỏ `type`/`lifecycle` khỏi API update), SEC-02 (bỏ fallback JWT), SEC-03 (mật khẩu tối thiểu 8), SEC-06 (validate Event thời gian và Reference URL), BUG-07 (gói create Object + space vào transaction), BUG-05 (sửa logic Calendar OR), BUG-11 (ẩn mục Thùng rác khỏi liên kết), BUG-14 (bổ sung Event vào Dashboard), TECH-06 (hỗ trợ cả `/views/summary` và `/dashboard/summary`).
+  - Thêm `AllExceptionsFilter` chuẩn hóa định dạng lỗi theo doc 07 (TECH-04), tích hợp Swagger tại `/api/docs` (TECH-03).
+  - Dựng khung test Jest + `ts-jest`, viết 10 unit test cho ObjectsService và SpacesService — chạy xanh 10/10 tests (TECH-02).
+  - Cả Backend và Frontend biên dịch build 100% thành công không có lỗi.
+- **Vấn đề & cách xử lý:**
+  - `@nestjs/swagger` cài mặc định kéo bản v12 dành cho NestJS 12 dẫn tới xung đột peer dependencies với NestJS 10 -> Cài đặt chỉ định `@nestjs/swagger@^7.4.2` tương thích hoàn hảo.
+  - Jest ban đầu báo lỗi do thiếu cấu hình `ts-jest` trong `package.json` -> Đã bổ sung cấu hình module chuẩn của NestJS.
+- **Tiếp theo:** Bước vào GĐ1 — Xây dựng bộ giao diện nền (Component dùng chung, CSS Modules, Responsive và TanStack Query).
+
+---
+
+### 12/10/2026 — GĐ1 (Phiên 02)
+- **Đã làm:**
+  - Hoàn thiện toàn bộ hệ thống Design Tokens màu sắc (Google Neutral Light & Google Dark theo Doc 08) trong `globals.css` cùng `ThemeProvider` tự động ghi nhớ tùy chọn vào `localStorage`.
+  - Xây dựng trọn bộ 13 UI Components dùng chung (`frontend/components/ui/`): `Button`, `Input`, `Textarea`, `Select`, `DatePicker`, `Dialog`, `ConfirmDialog`, `Toast` (hỗ trợ Hoàn tác - Undo), `Badge`, `DropdownMenu`, `Tabs`, `EmptyState`, `Skeleton`.
+  - Cài đặt `@tanstack/react-query@^5.28.4`, thiết lập `ReactQueryProvider` và viết toàn bộ các hook: `useSpaces`, `useObjects`, `useViews`.
+  - Bố cục Responsive hoàn chỉnh: Sidebar thu gọn thành ngăn kéo trên mobile, Header gọn gàng, thanh điều hướng đáy `MobileNav` cho thiết bị di động `<= 768px`.
+  - Loại bỏ hoàn toàn `confirm()` và `alert()` nguyên thủy (UI-03), thay thế bằng `ConfirmDialog` và `Toast`.
+  - Sửa lỗi **BUG-01** (chuyển sang soft delete vào Thùng rác thay vì xóa cứng mất dữ liệu) và **BUG-02** (xóa trên Kanban gọi backend API thay vì chỉ xóa client-only).
+  - Tích hợp phím tắt nhanh (UI-10): `C` tạo mới đối tượng, `Ctrl+K` mở tìm kiếm toàn cục, nút chuyển sáng/tối (UI-09).
+  - Tái cấu trúc toàn bộ các trang: Dashboard, Kanban, Lịch, Chi tiết Space, Đăng nhập, Đăng ký sang CSS Modules và TanStack Query.
+  - Cập nhật tài liệu tiến độ chi tiết `progress/GD1_Giao_Dien_Nen.md` và `progress/00_Tong_Quan.md`.
+- **Vấn đề & cách xử lý:**
+  - `Next.js 14` kiểm tra chặt chẽ kiểu type trong các component modal -> Chuẩn hóa các interface Props của `CreateObjectModal`, `ConfirmDialog`, `ObjectRelationsModal` hỗ trợ linh hoạt các biến thể props và alias.
+  - Xung đột kiểu dữ liệu `priority: null` với enum `Priority` trên Kanban board -> Bổ sung kiểm tra an toàn `task.priority ? PRIORITY_CONFIG[task.priority] : null`.
+- **Kết quả:**
+  - `npm run build` Frontend: **Exit code 0 (100% thành công không lỗi)**.
+  - `npm run build` Backend: **Exit code 0 (100% thành công không lỗi)**.
+  - `npm test` Backend: **10/10 PASS**.
+- **Tiếp theo:** Bước vào **GĐ2 — Hoàn thiện lõi còn thiếu** (Drawer chi tiết đối tượng trượt từ phải sang, gán nhiều Space, Thùng rác, Lưu trữ, Hộp nhận).
+
+---
+
+### 12/10/2026 — GĐ2 (Phiên 03)
+- **Đã làm:**
+  - **Backend:**
+    - TECH-05: Tối ưu `getDashboardSummary` bằng truy vấn CSDL trực tiếp (đếm `count`, giới hạn `take: 6..8`), không nạp toàn bộ Task vào bộ nhớ.
+    - QD-04: Thêm tham số `unassigned?: boolean` vào DTO và lọc `spaceObjects: { none: {} }` cho Hộp nhận.
+    - QD-06: Viết DTO và endpoint `PATCH /objects/:id/convert-type` chuyển đổi linh hoạt giữa 4 loại Object (`TASK`, `NOTE`, `EVENT`, `REFERENCE`).
+    - BUG-03: Viết endpoint `DELETE /objects/trash/empty` dọn sạch thùng rác và xóa triệt để liên kết quan hệ.
+    - FR-AUTH-06, FR-AUTH-07: Viết DTO và các endpoint `PATCH /auth/profile` (cập nhật họ tên, avatar) và `POST /auth/change-password` (đổi mật khẩu bcrypt, tối thiểu 8 ký tự).
+    - Viết thêm 2 unit test (Test 8 & Test 9) trong `objects.service.spec.ts` cho `convertType` và `emptyTrash` -> **12/12 unit tests PASS 100%**.
+  - **Frontend:**
+    - Cập nhật `AuthContext` với `updateProfile` và `changePassword`.
+    - Viết hook `useRelations` (`useObjectRelations`, `useCreateRelation`, `useDeleteRelation`).
+    - Xây dựng **`ObjectDetailDrawer` (UI-07)** trượt mượt mà từ cạnh phải: sửa trực tiếp, gán/gỡ nhiều Space dạng chip (tính năng cốt lõi), dropdown "Chuyển thành..." (QD-06), danh sách liên kết chéo 2 chiều kèm ô tìm kiếm đối tượng (BUG-11, BUG-15), quản lý vòng đời (Lưu trữ, Thùng rác có Hoàn tác, Khôi phục, Xoá vĩnh viễn).
+    - Xây dựng **`CommandPalette` (UI-04)** tìm kiếm toàn cục `Ctrl+K` tức thì cả Không gian và Đối tượng kèm điều hướng bàn phím.
+    - Xây dựng các trang mới:
+      - `/inbox` (Hộp nhận - QD-04) với thanh nhập nhanh (Quick Add).
+      - `/trash` (Thùng rác - BUG-03) với Dọn sạch thùng rác, Khôi phục (giữ nguyên Space cũ) và Xoá vĩnh viễn.
+      - `/archive` (Kho Lưu trữ - BUG-08) tách 2 tab: Đối tượng đã lưu trữ & Không gian đã lưu trữ.
+      - `/profile` (Hồ sơ & Bảo mật - FR-AUTH-06, 07) cập nhật thông tin cá nhân và đổi mật khẩu.
+    - Nâng cấp các màn hình hiện có:
+      - Dashboard (UI-06, BUG-14): thanh nhập nhanh, khu vực "Tiếp tục dở dang" có hiệu ứng pulse dot, click mở Drawer.
+      - Kanban (BUG-10): nút chuyển đổi cột Đã hủy (`CANCELLED`), click mở Drawer.
+      - Lịch trình (BUG-04, BUG-05): bộ chuyển đổi chế độ xem Tuần / Tháng, hiển thị cả Task và Event trải dài, click mở Drawer.
+      - Chi tiết Không gian: tích hợp mở Drawer cho Danh sách, Lưới thẻ, Kanban, Lịch trình.
+      - Sidebar & MobileNav: cập nhật đường dẫn tới `/inbox`, `/archive`, `/trash`, `/profile`.
+  - Cập nhật tài liệu: `progress/GD2_Loi_Chuc_Nang.md`, `progress/00_Tong_Quan.md`, `plan/05_Nhat_Ky.md`.
+- **Vấn đề & cách xử lý:**
+  - Route tĩnh `trash/empty` trong NestJS nếu đặt sau route động `:id` sẽ bị nhầm lẫn `id = "trash"` -> Đã đặt `@Delete('trash/empty')` lên trước `@Delete(':id')`.
+  - Type `ButtonProps` ban đầu chưa có variant `'outline'` mà chỉ có `'secondary'` -> Bổ sung `'outline'` vào `ButtonProps` và CSS Module alias với `.secondary`.
+  - Next.js type check yêu cầu option cho toast undo khớp interface -> Mở rộng `ToastActionOptions` hỗ trợ cả `action: { label, onClick }` và `onUndo` linh hoạt.
+- **Kết quả:**
+  - `npm test` Backend: **12/12 PASS (100% xanh)**.
+  - `npm run build` Backend: **Exit code 0 (100% thành công)**.
+  - `npm run build` Frontend: **Exit code 0 (100% thành công, 13/13 static routes)**.
+- **Tiếp theo:** Bước vào **GĐ3 — Thông báo & Quản trị Admin**.
+
