@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRelationDto } from './dto/create-relation.dto';
+import { ObjectLifecycle } from '@prisma/client';
 
 const objectSelect = {
   id: true,
@@ -10,6 +11,9 @@ const objectSelect = {
   priority: true,
   description: true,
   dueDate: true,
+  startAt: true,
+  endAt: true,
+  lifecycle: true,
 };
 
 @Injectable()
@@ -28,6 +32,11 @@ export class RelationsService {
 
     if (!fromObject) throw new NotFoundException('Không tìm thấy đối tượng nguồn');
     if (!toObject) throw new NotFoundException('Không tìm thấy đối tượng đích');
+
+    // QD-09: Không cho phép liên kết với mục trong Thùng rác
+    if (fromObject.lifecycle === ObjectLifecycle.TRASH || toObject.lifecycle === ObjectLifecycle.TRASH) {
+      throw new BadRequestException('Không thể liên kết với đối tượng đang nằm trong Thùng rác');
+    }
 
     const existing = await this.prisma.objectRelation.findUnique({
       where: {
@@ -62,14 +71,21 @@ export class RelationsService {
     });
     if (!object) throw new NotFoundException('Không tìm thấy đối tượng');
 
+    // BUG-11: Ẩn các đối tượng đang nằm trong Thùng rác khỏi danh sách liên kết
     const [outgoing, incoming] = await Promise.all([
       this.prisma.objectRelation.findMany({
-        where: { fromObjectId: objectId },
+        where: {
+          fromObjectId: objectId,
+          toObject: { lifecycle: { not: ObjectLifecycle.TRASH }, deletedAt: null },
+        },
         include: { toObject: { select: objectSelect } },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.objectRelation.findMany({
-        where: { toObjectId: objectId },
+        where: {
+          toObjectId: objectId,
+          fromObject: { lifecycle: { not: ObjectLifecycle.TRASH }, deletedAt: null },
+        },
         include: { fromObject: { select: objectSelect } },
         orderBy: { createdAt: 'desc' },
       }),
@@ -86,7 +102,10 @@ export class RelationsService {
     const relation = await this.prisma.objectRelation.findFirst({
       where: {
         id,
-        fromObject: { userId },
+        OR: [
+          { fromObject: { userId } },
+          { toObject: { userId } },
+        ],
       },
     });
 

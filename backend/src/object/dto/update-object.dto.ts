@@ -3,10 +3,6 @@ import { ObjectType, TaskStatus, Priority, ObjectLifecycle } from '@prisma/clien
 
 export class UpdateObjectDto {
   @IsOptional()
-  @IsEnum(ObjectType, { message: 'Loại đối tượng không hợp lệ' })
-  type?: ObjectType;
-
-  @IsOptional()
   @IsString()
   @MaxLength(255, { message: 'Tiêu đề tối đa 255 ký tự' })
   title?: string;
@@ -22,10 +18,6 @@ export class UpdateObjectDto {
   @IsOptional()
   @IsEnum(Priority, { message: 'Mức độ ưu tiên không hợp lệ' })
   priority?: Priority;
-
-  @IsOptional()
-  @IsEnum(ObjectLifecycle, { message: 'Vòng đời không hợp lệ' })
-  lifecycle?: ObjectLifecycle;
 
   @IsOptional()
   @IsDateString({}, { message: 'Hạn chót phải đúng định dạng ngày tháng' })

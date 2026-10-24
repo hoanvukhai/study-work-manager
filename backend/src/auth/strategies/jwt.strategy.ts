@@ -15,10 +15,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('Biến môi trường JWT_SECRET chưa được cấu hình');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'super-secret-key-datn-study-work-manager-2026',
+      secretOrKey: secret,
     });
   }
 
@@ -30,12 +34,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: true,
         fullName: true,
         avatarUrl: true,
+        role: true,
+        lockedAt: true,
         createdAt: true,
       },
     });
 
     if (!user) {
       throw new UnauthorizedException('Người dùng không tồn tại hoặc phiên đăng nhập đã hết hạn');
+    }
+
+    if (user.lockedAt) {
+      throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
 
     return user;

@@ -1,143 +1,208 @@
 import * as bcrypt from 'bcrypt';
-import { PrismaClient, ObjectType, TaskStatus, Priority, ObjectLifecycle, RelationType } from '@prisma/client';
+import {
+  PrismaClient,
+  Role,
+  ObjectType,
+  TaskStatus,
+  Priority,
+  ObjectLifecycle,
+  RelationType,
+} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding initial data for study-work-manager...');
+  console.log('Seeding revamped database for study-work-manager...');
 
-  // 1. Create Demo User: Vu Khai Hoan
-  const user = await prisma.user.upsert({
-    where: { email: 'hoan@example.com' },
-    update: {},
+  // 1. Tạo User Demo
+  const demoPasswordHash = await bcrypt.hash('Password123!', 10);
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@example.com' },
+    update: {
+      passwordHash: demoPasswordHash,
+      role: Role.USER,
+    },
     create: {
-      email: 'hoan@example.com',
+      email: 'demo@example.com',
       fullName: 'Vũ Khải Hoàn',
-      passwordHash: await bcrypt.hash('Password123!', 10),
+      passwordHash: demoPasswordHash,
       avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hoan',
+      role: Role.USER,
     },
   });
-  console.log(`Created user: ${user.fullName} (${user.email})`);
+  console.log(`[Seed] Demo User: ${demoUser.email} (Mật khẩu: Password123!)`);
 
-  // 2. Create Spaces
+  // 2. Tạo User Admin
+  const adminPasswordHash = await bcrypt.hash('Admin12345!', 10);
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {
+      passwordHash: adminPasswordHash,
+      role: Role.ADMIN,
+    },
+    create: {
+      email: 'admin@example.com',
+      fullName: 'Quản Trị Viên Hệ Thống',
+      passwordHash: adminPasswordHash,
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
+      role: Role.ADMIN,
+    },
+  });
+  console.log(`[Seed] Admin User: ${adminUser.email} (Mật khẩu: Admin12345!)`);
+
+  // 3. Tạo Không gian (Spaces) cho Demo User
   const thesisSpace = await prisma.space.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       name: 'Đồ án tốt nghiệp',
       icon: '🎓',
       color: '#1a73e8',
       description: 'Hệ thống Quản lý Học tập và Công việc Cá nhân',
+      goal: 'Bảo vệ thành công xuất sắc đồ án tốt nghiệp',
+      dueDate: new Date(Date.now() + 86400000 * 60), // Hạn 60 ngày tới
+      settings: {
+        enableKanban: true,
+        enableCalendar: true,
+        enableProgress: true,
+      },
     },
   });
 
   const freelanceSpace = await prisma.space.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       name: 'Việc Freelance',
       icon: '💼',
       color: '#f59e0b',
-      description: 'Các dự án nhận thêm ngoài giờ',
+      description: 'Các dự án gia công ngoài giờ',
+      goal: 'Bàn giao 2 dự án đúng tiến độ trong quý 4',
+      settings: {
+        enableKanban: true,
+        enableCalendar: false,
+      },
     },
   });
-  console.log(`Created spaces: "${thesisSpace.name}", "${freelanceSpace.name}"`);
+  console.log(`[Seed] Đã tạo 2 Không gian: "${thesisSpace.name}", "${freelanceSpace.name}"`);
 
-  // 3. Create Diverse Objects
+  // 4. Tạo đầy đủ 4 loại đối tượng (Task, Note, Event, Reference)
+  const now = Date.now();
+
+  // (a) NOTE
   const noteThesis = await prisma.object.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       type: ObjectType.NOTE,
       title: 'Ghi chú góp ý của Thầy Cường',
-      description: '- Tập trung vào kiến trúc Hybrid Object\n- Chú ý liên kết chéo giữa Note và Task\n- Giao diện tối giản theo chuẩn Google',
+      description: '- Tập trung vào kiến trúc Hybrid Object\n- Chú ý liên kết chéo giữa Note và Task\n- Giao diện tối giản, trực quan và responsive',
       lifecycle: ObjectLifecycle.ACTIVE,
     },
   });
 
+  // (b) TASK
   const taskApi = await prisma.object.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       type: ObjectType.TASK,
       title: 'Hoàn thiện bản thiết kế 22 API endpoints',
-      description: 'Đặc tả chi tiết Request/Response cho module Object và Relation',
+      description: 'Đặc tả chi tiết Request/Response cho module Object, Space và Relation',
       status: TaskStatus.DONE,
       priority: Priority.HIGH,
       lifecycle: ObjectLifecycle.ACTIVE,
-      dueDate: new Date(Date.now() + 86400000 * 2),
+      dueDate: new Date(now + 86400000 * 2),
     },
   });
 
   const taskSeed = await prisma.object.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       type: ObjectType.TASK,
-      title: 'Khởi tạo Prisma Schema và nạp dữ liệu mẫu 8 bảng',
+      title: 'Khởi tạo Prisma Schema và nạp dữ liệu mẫu',
+      description: 'Cấu hình Docker PostgreSQL và kiểm tra kết nối với NestJS',
       status: TaskStatus.IN_PROGRESS,
       priority: Priority.URGENT,
       lifecycle: ObjectLifecycle.ACTIVE,
-      dueDate: new Date(Date.now() + 86400000 * 1),
+      dueDate: new Date(now + 86400000 * 1),
     },
   });
 
+  // (c) EVENT
+  const meetingEvent = await prisma.object.create({
+    data: {
+      userId: demoUser.id,
+      type: ObjectType.EVENT,
+      title: 'Họp báo cáo tiến độ tuần với GVHD',
+      description: 'Báo cáo hoàn thành Giai đoạn 0: Dọn nền CSDL và sửa lỗi bảo mật',
+      priority: Priority.HIGH,
+      startAt: new Date(now + 86400000 * 3), // 3 ngày nữa
+      endAt: new Date(now + 86400000 * 3 + 3600000 * 2), // Họp 2 tiếng
+      lifecycle: ObjectLifecycle.ACTIVE,
+    },
+  });
+
+  // (d) REFERENCE
   const refNest = await prisma.object.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       type: ObjectType.REFERENCE,
       title: 'NestJS & Prisma Documentation',
+      description: 'Tài liệu hướng dẫn tích hợp NestJS với Prisma ORM',
       url: 'https://docs.nestjs.com/recipes/prisma',
       lifecycle: ObjectLifecycle.ACTIVE,
     },
   });
 
-  // 4. Place Objects into Spaces (SpaceObject)
+  // 5. Gán đối tượng vào các Không gian (SpaceObject)
+  // Demo tính năng cốt lõi: 1 Object có thể thuộc NHIỀU Space
   await prisma.spaceObject.createMany({
     data: [
       { spaceId: thesisSpace.id, objectId: noteThesis.id, position: 0, isPinned: true },
       { spaceId: thesisSpace.id, objectId: taskApi.id, position: 1, isPinned: false },
       { spaceId: thesisSpace.id, objectId: taskSeed.id, position: 2, isPinned: true },
-      { spaceId: thesisSpace.id, objectId: refNest.id, position: 3, isPinned: false },
+      { spaceId: thesisSpace.id, objectId: meetingEvent.id, position: 3, isPinned: false },
+      { spaceId: thesisSpace.id, objectId: refNest.id, position: 4, isPinned: false },
+      // Đồng thời gán task API và refNest sang cả FreelanceSpace để demo multi-space
+      { spaceId: freelanceSpace.id, objectId: taskApi.id, position: 0, isPinned: false },
+      { spaceId: freelanceSpace.id, objectId: refNest.id, position: 1, isPinned: false },
     ],
   });
-  console.log('Placed 4 objects into Space "Đồ án tốt nghiệp"');
+  console.log('[Seed] Đã gán đối tượng vào Space (bao gồm đối tượng thuộc nhiều Space)');
 
-  // 5. Create Bi-directional Relation (ObjectRelation)
-  await prisma.objectRelation.create({
-    data: {
-      fromObjectId: taskSeed.id,
-      toObjectId: noteThesis.id,
-      relationType: RelationType.DEPENDS_ON,
-    },
+  // 6. Tạo Liên kết (ObjectRelation)
+  await prisma.objectRelation.createMany({
+    data: [
+      {
+        fromObjectId: taskSeed.id,
+        toObjectId: noteThesis.id,
+        relationType: RelationType.DEPENDS_ON,
+      },
+      {
+        fromObjectId: taskApi.id,
+        toObjectId: refNest.id,
+        relationType: RelationType.REFERENCES,
+      },
+    ],
   });
-  console.log('Created relation: Task "Khởi tạo Prisma" DEPENDS_ON Note "Góp ý của Thầy Cường"');
+  console.log('[Seed] Đã tạo quan hệ liên kết DEPENDS_ON và REFERENCES');
 
-  // 6. Create Tag
-  const tagArchitecture = await prisma.tag.create({
-    data: {
-      userId: user.id,
-      name: 'KiếnTrúc',
-      color: '#3b82f6',
-    },
-  });
-  await prisma.objectTag.create({
-    data: {
-      objectId: noteThesis.id,
-      tagId: tagArchitecture.id,
-    },
-  });
-
-  // 7. Create Notification
+  // 7. Tạo Thông báo mẫu
   await prisma.notification.create({
     data: {
-      userId: user.id,
+      userId: demoUser.id,
       objectId: taskSeed.id,
+      type: 'DEADLINE',
       title: 'Nhắc nhở hạn chót',
-      message: 'Nhiệm vụ "Khởi tạo Prisma Schema" cần hoàn thành trong hôm nay.',
+      message: 'Nhiệm vụ "Khởi tạo Prisma Schema và nạp dữ liệu mẫu" sắp đến hạn trong 24 giờ tới.',
+      dedupeKey: `deadline_${taskSeed.id}`,
     },
   });
-  console.log('Seed completed successfully!');
+  console.log('[Seed] Đã tạo thông báo nhắc hạn chót mẫu');
+
+  console.log('✅ Hoàn tất nạp dữ liệu mẫu thành công!');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('Lỗi khi seed dữ liệu:', e);
     process.exit(1);
   })
   .finally(async () => {

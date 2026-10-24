@@ -25,4 +25,7 @@ export class QueryObjectsDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  unassigned?: any;
 }

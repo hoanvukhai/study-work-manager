@@ -1,9 +1,9 @@
-﻿import { IsString, IsOptional, MaxLength, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, MaxLength, IsBoolean, IsDateString } from 'class-validator';
 
 export class UpdateSpaceDto {
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
+  @IsString({ message: 'Tên Không gian phải là chuỗi ký tự' })
+  @MaxLength(100, { message: 'Tên Không gian tối đa 100 ký tự' })
   name?: string;
 
   @IsOptional()
@@ -21,10 +21,17 @@ export class UpdateSpaceDto {
   color?: string;
 
   @IsOptional()
-  @IsString()
-  parentId?: string;
-
-  @IsOptional()
   @IsBoolean()
   isArchived?: boolean;
+
+  @IsOptional()
+  settings?: any;
+
+  @IsOptional()
+  @IsString()
+  goal?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Hạn chót phải đúng định dạng ngày tháng' })
+  dueDate?: string;
 }

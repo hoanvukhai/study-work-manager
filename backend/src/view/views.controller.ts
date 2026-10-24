@@ -5,12 +5,12 @@ import { CalendarQueryDto } from './dto/calendar-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
-@Controller('views')
+@Controller()
 @UseGuards(JwtAuthGuard)
 export class ViewsController {
   constructor(private readonly viewsService: ViewsService) {}
 
-  @Get('kanban')
+  @Get('views/kanban')
   getKanban(
     @CurrentUser('id') userId: string,
     @Query() query: KanbanQueryDto,
@@ -18,7 +18,7 @@ export class ViewsController {
     return this.viewsService.getKanban(userId, query.spaceId);
   }
 
-  @Get('calendar')
+  @Get('views/calendar')
   getCalendar(
     @CurrentUser('id') userId: string,
     @Query() query: CalendarQueryDto,
@@ -26,7 +26,8 @@ export class ViewsController {
     return this.viewsService.getCalendar(userId, query.from, query.to, query.spaceId);
   }
 
-  @Get('summary')
+  // TECH-06: Hỗ trợ đồng thời cả /views/summary và /dashboard/summary
+  @Get(['views/summary', 'dashboard/summary'])
   getSummary(@CurrentUser('id') userId: string) {
     return this.viewsService.getDashboardSummary(userId);
   }

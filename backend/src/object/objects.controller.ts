@@ -8,6 +8,7 @@ import { CreateObjectDto } from './dto/create-object.dto';
 import { UpdateObjectDto } from './dto/update-object.dto';
 import { QueryObjectsDto } from './dto/query-objects.dto';
 import { LifecycleActionDto } from './dto/lifecycle-action.dto';
+import { ConvertTypeDto } from './dto/convert-type.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -24,6 +25,11 @@ export class ObjectsController {
   @Get()
   findAll(@CurrentUser('id') userId: string, @Query() query: QueryObjectsDto) {
     return this.objectsService.findAll(userId, query);
+  }
+
+  @Delete('trash/empty')
+  emptyTrash(@CurrentUser('id') userId: string) {
+    return this.objectsService.emptyTrash(userId);
   }
 
   @Get(':id')
@@ -47,6 +53,15 @@ export class ObjectsController {
     @Body() dto: LifecycleActionDto,
   ) {
     return this.objectsService.updateLifecycle(userId, id, dto.action);
+  }
+
+  @Patch(':id/convert-type')
+  convertType(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConvertTypeDto,
+  ) {
+    return this.objectsService.convertType(userId, id, dto.targetType);
   }
 
   @Delete(':id')

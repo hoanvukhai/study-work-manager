@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Body, Param, UseGuards,
+  Body, Param, Query, UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { SpacesService } from './spaces.service';
@@ -20,8 +20,11 @@ export class SpacesController {
   }
 
   @Get()
-  findAll(@CurrentUser('id') userId: string) {
-    return this.spacesService.findAll(userId);
+  findAll(
+    @CurrentUser('id') userId: string,
+    @Query('includeArchived') includeArchived?: string,
+  ) {
+    return this.spacesService.findAll(userId, includeArchived === 'true');
   }
 
   @Get(':id')

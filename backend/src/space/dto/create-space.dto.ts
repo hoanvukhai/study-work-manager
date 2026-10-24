@@ -1,9 +1,9 @@
-﻿import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength, IsDateString } from 'class-validator';
 
 export class CreateSpaceDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
+  @IsString({ message: 'Tên Không gian phải là chuỗi ký tự' })
+  @IsNotEmpty({ message: 'Tên Không gian không được để trống' })
+  @MaxLength(100, { message: 'Tên Không gian tối đa 100 ký tự' })
   name: string;
 
   @IsOptional()
@@ -21,6 +21,13 @@ export class CreateSpaceDto {
   color?: string;
 
   @IsOptional()
+  settings?: any;
+
+  @IsOptional()
   @IsString()
-  parentId?: string;
+  goal?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Hạn chót phải đúng định dạng ngày tháng' })
+  dueDate?: string;
 }
