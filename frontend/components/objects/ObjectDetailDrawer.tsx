@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { isoToLocalInput, localInputToIso } from '@/lib/datetime';
 import {
   X,
   CheckSquare,
@@ -146,15 +147,9 @@ export default function ObjectDetailDrawer({
       setDescription(object.description || '');
       setStatus(object.status || 'TODO');
       setPriority(object.priority || 'MEDIUM');
-      setDueDate(
-        object.dueDate ? new Date(object.dueDate).toISOString().slice(0, 16) : '',
-      );
-      setStartAt(
-        object.startAt ? new Date(object.startAt).toISOString().slice(0, 16) : '',
-      );
-      setEndAt(
-        object.endAt ? new Date(object.endAt).toISOString().slice(0, 16) : '',
-      );
+      setDueDate(isoToLocalInput(object.dueDate));
+      setStartAt(isoToLocalInput(object.startAt));
+      setEndAt(isoToLocalInput(object.endAt));
       setUrl(object.url || '');
       setIsDirty(false);
     }
@@ -186,12 +181,12 @@ export default function ObjectDetailDrawer({
         ...(object.type === 'TASK' && {
           status,
           priority,
-          dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+          dueDate: localInputToIso(dueDate),
         }),
         ...(object.type === 'EVENT' && {
           priority,
-          startAt: startAt ? new Date(startAt).toISOString() : null,
-          endAt: endAt ? new Date(endAt).toISOString() : null,
+          startAt: localInputToIso(startAt),
+          endAt: localInputToIso(endAt),
         }),
         ...(object.type === 'REFERENCE' && {
           url: url.trim() || null,

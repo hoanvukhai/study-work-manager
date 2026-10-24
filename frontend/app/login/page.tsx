@@ -23,6 +23,13 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
+  // Bị đưa về đây do phiên hết hạn (xem lib/api.ts)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('expired')) {
+      setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');

@@ -7,7 +7,6 @@ import { useSpaces } from '@/hooks/useSpaces';
 import { AppObject } from '@/lib/objects-api';
 import WeeklyCalendar from '@/components/views/WeeklyCalendar';
 import CreateObjectModal from '@/components/objects/CreateObjectModal';
-import EditObjectModal from '@/components/objects/EditObjectModal';
 import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
@@ -37,7 +36,6 @@ export default function GlobalCalendarPage() {
   // Modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [targetDateStr, setTargetDateStr] = useState<string>('');
-  const [editingTask, setEditingTask] = useState<AppObject | null>(null);
 
   const handleTaskUpdated = (updated: AppObject) => {
     updateObjectMutation.mutate({
@@ -113,7 +111,6 @@ export default function GlobalCalendarPage() {
           tasks={calendarItems}
           onTaskUpdated={handleTaskUpdated}
           onAddTaskOnDate={handleAddTaskOnDate}
-          onEditTask={task => setEditingTask(task)}
           onSelectTask={task => setSelectedDrawerId(task.id)}
         />
       )}
@@ -131,23 +128,6 @@ export default function GlobalCalendarPage() {
             addToast({
               title: 'Thành công',
               description: 'Đã thêm công việc vào lịch trình.',
-              variant: 'success',
-            });
-          }}
-        />
-      )}
-
-      {/* Edit Modal */}
-      {editingTask && (
-        <EditObjectModal
-          object={editingTask}
-          onClose={() => setEditingTask(null)}
-          onUpdated={updated => {
-            handleTaskUpdated(updated);
-            setEditingTask(null);
-            addToast({
-              title: 'Thành công',
-              description: 'Đã cập nhật mục lịch trình.',
               variant: 'success',
             });
           }}

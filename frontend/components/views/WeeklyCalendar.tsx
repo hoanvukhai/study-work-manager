@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { isoToLocalDateKey, localDateKey } from '@/lib/datetime';
 import { AppObject, updateObject } from '@/lib/objects-api';
 import {
   ChevronLeft,
@@ -109,15 +110,15 @@ export default function WeeklyCalendar({
   const getItemsForDate = (dateStr: string) => {
     return tasks.filter((t) => {
       if (t.type === 'EVENT') {
-        const s = t.startAt ? t.startAt.split('T')[0] : null;
-        const e = t.endAt ? t.endAt.split('T')[0] : s;
+        const s = isoToLocalDateKey(t.startAt);
+        const e = isoToLocalDateKey(t.endAt) ?? s;
         if (s && e) {
           return dateStr >= s && dateStr <= e;
         }
         return s === dateStr;
       }
       if (t.dueDate) {
-        return t.dueDate.split('T')[0] === dateStr;
+        return isoToLocalDateKey(t.dueDate) === dateStr;
       }
       return false;
     });
@@ -270,14 +271,15 @@ export default function WeeklyCalendar({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
+            gridTemplateColumns: 'repeat(7, minmax(120px, 1fr))',
             gap: '12px',
             alignItems: 'stretch',
             minHeight: '480px',
+            overflowX: 'auto',
           }}
         >
           {weekDays.map((day) => {
-            const dateStr = day.date.toISOString().split('T')[0];
+            const dateStr = localDateKey(day.date);
             const dayItems = getItemsForDate(dateStr);
 
             return (
@@ -438,12 +440,13 @@ export default function WeeklyCalendar({
 
       {/* Month View (5x7 Grid) */}
       {viewMode === 'month' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowX: 'auto' }}>
           {/* Day of week headers */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(7, 1fr)',
+              minWidth: '640px',
               gap: '8px',
               textAlign: 'center',
             }}
@@ -468,11 +471,12 @@ export default function WeeklyCalendar({
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(7, 1fr)',
+              minWidth: '640px',
               gap: '8px',
             }}
           >
             {monthDays.map((day) => {
-              const dateStr = day.date.toISOString().split('T')[0];
+              const dateStr = localDateKey(day.date);
               const dayItems = getItemsForDate(dateStr);
 
               return (

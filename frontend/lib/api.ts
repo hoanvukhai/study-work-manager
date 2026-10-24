@@ -24,6 +24,16 @@ export async function apiRequest<T = any>(
 
   const data = await response.json().catch(() => ({}));
 
+  if (response.status === 401 && typeof window !== 'undefined' && !endpoint.startsWith('/auth/login') && !endpoint.startsWith('/auth/register')) {
+    // Phiên đăng nhập hết hạn hoặc tài khoản bị khoá: xoá phiên và quay về trang đăng nhập
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login?expired=1';
+    }
+    throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  }
+
   if (!response.ok) {
     const errorMsg = data?.message || response.statusText || 'Đã có lỗi xảy ra';
     throw new Error(Array.isArray(errorMsg) ? errorMsg.join(', ') : errorMsg);

@@ -7,8 +7,6 @@ import { useSpaces } from '@/hooks/useSpaces';
 import { AppObject, TaskStatus } from '@/lib/objects-api';
 import KanbanBoard from '@/components/views/KanbanBoard';
 import CreateObjectModal from '@/components/objects/CreateObjectModal';
-import EditObjectModal from '@/components/objects/EditObjectModal';
-import ObjectRelationsModal from '@/components/relations/ObjectRelationsModal';
 import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
@@ -41,8 +39,6 @@ export default function GlobalKanbanPage() {
   // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createInitialStatus, setCreateInitialStatus] = useState<TaskStatus>('TODO');
-  const [editingTask, setEditingTask] = useState<AppObject | null>(null);
-  const [relationsTask, setRelationsTask] = useState<AppObject | null>(null);
 
   // Confirm delete dialog state
   const [taskToDelete, setTaskToDelete] = useState<AppObject | null>(null);
@@ -178,8 +174,6 @@ export default function GlobalKanbanPage() {
             tasks={tasks}
             onTaskUpdated={handleTaskUpdated}
             onTaskDeleted={task => setTaskToDelete(task)}
-            onEditTask={task => setEditingTask(task)}
-            onOpenRelations={task => setRelationsTask(task)}
             onAddTask={handleAddTaskInColumn}
             onSelectTask={task => setSelectedDrawerId(task.id)}
             showCancelled={showCancelled}
@@ -202,31 +196,6 @@ export default function GlobalKanbanPage() {
               variant: 'success',
             });
           }}
-        />
-      )}
-
-      {/* Edit Modal */}
-      {editingTask && (
-        <EditObjectModal
-          object={editingTask}
-          onClose={() => setEditingTask(null)}
-          onUpdated={updated => {
-            handleTaskUpdated(updated);
-            setEditingTask(null);
-            addToast({
-              title: 'Thành công',
-              description: 'Đã cập nhật công việc.',
-              variant: 'success',
-            });
-          }}
-        />
-      )}
-
-      {/* Relations Modal */}
-      {relationsTask && (
-        <ObjectRelationsModal
-          object={relationsTask}
-          onClose={() => setRelationsTask(null)}
         />
       )}
 

@@ -12,8 +12,6 @@ import {
 } from '@/hooks/useObjects';
 import { AppObject, Priority, TaskStatus } from '@/lib/objects-api';
 import CreateObjectModal from '@/components/objects/CreateObjectModal';
-import EditObjectModal from '@/components/objects/EditObjectModal';
-import ObjectRelationsModal from '@/components/relations/ObjectRelationsModal';
 import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
 import KanbanBoard from '@/components/views/KanbanBoard';
 import WeeklyCalendar from '@/components/views/WeeklyCalendar';
@@ -71,8 +69,6 @@ export default function SpaceDetailPage() {
   // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createModalProps, setCreateModalProps] = useState<{ initialStatus?: TaskStatus; initialDueDate?: string } | null>(null);
-  const [editingObject, setEditingObject] = useState<AppObject | null>(null);
-  const [relationsObject, setRelationsObject] = useState<AppObject | null>(null);
 
   // Dialogs state (replaces native confirms)
   const [confirmDeleteSpace, setConfirmDeleteSpace] = useState(false);
@@ -496,8 +492,6 @@ export default function SpaceDetailPage() {
               });
             }}
             onTaskDeleted={item => setObjectToDelete(item)}
-            onEditTask={setEditingObject}
-            onOpenRelations={setRelationsObject}
             onSelectTask={task => setSelectedDrawerObjectId(task.id)}
             onAddTask={status => {
               setCreateModalProps({ initialStatus: status });
@@ -513,7 +507,6 @@ export default function SpaceDetailPage() {
                 payload: { status: updated.status, dueDate: updated.dueDate },
               });
             }}
-            onEditTask={setEditingObject}
             onSelectTask={task => setSelectedDrawerObjectId(task.id)}
             onAddTaskOnDate={dateStr => {
               setCreateModalProps({ initialDueDate: dateStr });
@@ -593,7 +586,7 @@ export default function SpaceDetailPage() {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setRelationsObject(item);
+                        setSelectedDrawerObjectId(item.id);
                       }}
                       title="Liên kết tham chiếu"
                       className={styles.actionBtn}
@@ -604,7 +597,7 @@ export default function SpaceDetailPage() {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEditingObject(item);
+                        setSelectedDrawerObjectId(item.id);
                       }}
                       title="Sửa"
                       className={styles.actionBtn}
@@ -671,7 +664,7 @@ export default function SpaceDetailPage() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setRelationsObject(item);
+                            setSelectedDrawerObjectId(item.id);
                           }}
                           title="Liên kết tham chiếu"
                           className={styles.actionBtn}
@@ -682,7 +675,7 @@ export default function SpaceDetailPage() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setEditingObject(item);
+                            setSelectedDrawerObjectId(item.id);
                           }}
                           title="Sửa"
                           className={styles.actionBtn}
@@ -761,38 +754,6 @@ export default function SpaceDetailPage() {
               variant: 'success',
             });
           }}
-        />
-      )}
-
-      {editingObject && (
-        <EditObjectModal
-          object={editingObject}
-          onClose={() => setEditingObject(null)}
-          onUpdated={updated => {
-            updateObjectMutation.mutate({
-              id: updated.id,
-              payload: {
-                title: updated.title,
-                description: updated.description,
-                status: updated.status,
-                priority: updated.priority,
-                dueDate: updated.dueDate,
-              },
-            });
-            setEditingObject(null);
-            addToast({
-              title: 'Thành công',
-              description: 'Đã cập nhật mục.',
-              variant: 'success',
-            });
-          }}
-        />
-      )}
-
-      {relationsObject && (
-        <ObjectRelationsModal
-          object={relationsObject}
-          onClose={() => setRelationsObject(null)}
         />
       )}
 

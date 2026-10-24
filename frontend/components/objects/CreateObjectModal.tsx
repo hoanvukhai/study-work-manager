@@ -45,7 +45,7 @@ export default function CreateObjectModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('MEDIUM');
-  const [dueDate, setDueDate] = useState(initialDueDate);
+  const [dueDate, setDueDate] = useState(initialDueDate && initialDueDate.length === 10 ? `${initialDueDate}T09:00` : initialDueDate);
   const [startAt, setStartAt] = useState('');
   const [endAt, setEndAt] = useState('');
   const [url, setUrl] = useState('');
