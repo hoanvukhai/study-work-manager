@@ -7,12 +7,14 @@ export interface Space {
   icon: string;
   color: string;
   settings?: Record<string, any>;
-  goal?: string;
-  dueDate?: string;
+  goal?: string | null;
+  dueDate?: string | null;
   archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   _count?: { spaceObjects: number };
+  /** Chỉ có ở GET /spaces/:id */
+  progress?: { done: number; total: number };
 }
 
 export interface CreateSpacePayload {
@@ -25,7 +27,9 @@ export interface CreateSpacePayload {
   dueDate?: string;
 }
 
-export interface UpdateSpacePayload extends Partial<CreateSpacePayload> {
+export interface UpdateSpacePayload extends Partial<Omit<CreateSpacePayload, 'goal' | 'dueDate'>> {
+  goal?: string | null;
+  dueDate?: string | null;
   isArchived?: boolean;
 }
 
@@ -55,5 +59,23 @@ export async function updateSpace(id: string, payload: UpdateSpacePayload): Prom
 export async function deleteSpace(id: string): Promise<{ message: string }> {
   return apiRequest<{ message: string }>(`/spaces/${id}`, {
     method: 'DELETE',
+  });
+}
+export interface PlacementPatch {
+  isPinned?: boolean;
+  position?: number;
+}
+
+export async function updatePlacement(spaceId: string, objectId: string, patch: PlacementPatch) {
+  return apiRequest<{ spaceId: string; objectId: string; isPinned: boolean; position: number }>(
+    `/spaces/${spaceId}/objects/${objectId}`,
+    { method: 'PATCH', body: JSON.stringify(patch) },
+  );
+}
+
+export async function reorderSpace(spaceId: string, objectIds: string[]) {
+  return apiRequest<{ updated: number }>(`/spaces/${spaceId}/reorder`, {
+    method: 'POST',
+    body: JSON.stringify({ objectIds }),
   });
 }

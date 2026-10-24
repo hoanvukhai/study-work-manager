@@ -7,6 +7,9 @@ import {
   createSpace,
   updateSpace,
   deleteSpace,
+  updatePlacement,
+  reorderSpace,
+  PlacementPatch,
   CreateSpacePayload,
   UpdateSpacePayload,
 } from '@/lib/spaces-api';
@@ -61,5 +64,22 @@ export function useDeleteSpace() {
       queryClient.invalidateQueries({ queryKey: ['objects'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
+  });
+}
+
+export function useUpdatePlacement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ spaceId, objectId, patch }: { spaceId: string; objectId: string; patch: PlacementPatch }) =>
+      updatePlacement(spaceId, objectId, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['objects'] }),
+  });
+}
+
+export function useReorderSpace() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ spaceId, objectIds }: { spaceId: string; objectIds: string[] }) => reorderSpace(spaceId, objectIds),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['objects'] }),
   });
 }

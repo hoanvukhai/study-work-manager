@@ -1,5 +1,7 @@
 # 06 — Giao việc cho AI khác (Gemini)
 
+> **Cập nhật 25/10/2026:** Việc 1 (Thông báo), Việc 2 (Admin), Việc 3 (Space) và Việc 5–7 (ba trụ) **đã được Claude làm xong** — các mục này giữ lại để tham chiếu spec. Phần còn lại cho Gemini: **Việc 4 (kiểm thử thủ công)** và các việc mở rộng GĐ7.
+
 > Dùng file này làm prompt: **"Đọc `plan/06_Giao_Viec_Cho_Gemini.md` rồi làm Việc 1."** Mỗi lần giao **một việc**, làm xong và test xong mới sang việc kế tiếp.
 > Cập nhật: 24/10/2026
 

@@ -12,7 +12,7 @@
 |---|---|:-:|
 | QD-01 | Bỏ Tag | ✅ |
 | QD-02 | Bỏ Space lồng nhau | ✅ |
-| QD-03 | Space tự do, "tự lắp ghép công cụ" | 🟨 (cột `settings` đã có, chưa có giao diện bật/tắt công cụ) |
+| QD-03 | Space tự do, "tự lắp ghép công cụ" | ✅ (bật/tắt Kanban, Lịch, Tiến độ; công cụ Ôn tập/Bản đồ theo Space chưa tách) |
 | QD-04 | Xoá Space chỉ gỡ Object ra, Object không còn Space nào thì về Hộp nhận | ✅ |
 | QD-05 | Vòng đời Object: một nguồn sự thật, chỉ đổi qua một API riêng | ✅ |
 | QD-06 | Chuyển loại Object (ví dụ Note → Task) qua thao tác riêng | ✅ |

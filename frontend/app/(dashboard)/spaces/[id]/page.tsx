@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
-import { useSpace, useUpdateSpace, useDeleteSpace } from '@/hooks/useSpaces';
+import { useSpace, useUpdateSpace, useDeleteSpace, useUpdatePlacement, useReorderSpace } from '@/hooks/useSpaces';
+import SpaceSettingsDialog, { toolEnabled } from '@/components/spaces/SpaceSettingsDialog';
 import {
   useObjects,
   useUpdateObject,
@@ -24,7 +25,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import {
-  MoreHorizontal, Edit3, Archive, Trash2, Plus, LayoutGrid, List,
+  MoreHorizontal, Edit3, Pin, ArrowUp, ArrowDown, Settings, Archive, Trash2, Plus, LayoutGrid, List,
   Clock, ArrowLeft, Check, Search, KanbanSquare, Link as LinkIcon,
   Calendar,
 } from 'lucide-react';
@@ -61,6 +62,9 @@ export default function SpaceDetailPage() {
   const blockedIds = useBlockedIds();
   const updateObjectMutation = useUpdateObject();
   const updateLifecycleMutation = useUpdateObjectLifecycle();
+  const placementMutation = useUpdatePlacement();
+  const reorderMutation = useReorderSpace();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Local state
   const [editingName, setEditingName] = useState(false);
@@ -188,9 +192,28 @@ export default function SpaceDetailPage() {
     );
   };
 
-  // Filtered & searched objects
+  // Vị trí/ghim của một mục TRONG Không gian này (mục nằm ở nhiều Space có vị trí riêng ở mỗi nơi)
+  const placementOf = useCallback(
+    (o: AppObject) => {
+      const p = o.spaceObjects?.find(so => so.spaceId === spaceId);
+      return { position: p?.position ?? 0, isPinned: p?.isPinned ?? false };
+    },
+    [spaceId],
+  );
+
+  const sortedAll = useMemo(() => {
+    return [...objects].sort((a, b) => {
+      const pa = placementOf(a);
+      const pb = placementOf(b);
+      if (pa.isPinned !== pb.isPinned) return pa.isPinned ? -1 : 1;
+      if (pa.position !== pb.position) return pa.position - pb.position;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [objects, placementOf]);
+
+  // Filtered & searched objects (giữ thứ tự đã sắp)
   const filteredObjects = useMemo(() => {
-    return objects.filter(item => {
+    return sortedAll.filter(item => {
       if (typeFilter !== 'ALL' && item.type !== typeFilter) return false;
       if (statusFilter !== 'ALL' && item.type === 'TASK') {
         if (statusFilter === 'DONE' && item.status !== 'DONE') return false;
@@ -204,7 +227,31 @@ export default function SpaceDetailPage() {
       }
       return true;
     });
-  }, [objects, typeFilter, statusFilter, searchQuery]);
+  }, [sortedAll, typeFilter, statusFilter, searchQuery]);
+
+  const noFilter = typeFilter === 'ALL' && statusFilter === 'ALL' && !searchQuery.trim();
+
+  const togglePin = (item: AppObject) => {
+    const pinned = placementOf(item).isPinned;
+    placementMutation.mutate(
+      { spaceId, objectId: item.id, patch: { isPinned: !pinned } },
+      { onError: () => addToast({ title: 'Lỗi', description: 'Không ghim được mục này.', variant: 'danger' }) },
+    );
+  };
+
+  // Chỉ đổi chỗ trong cùng nhóm (ghim / không ghim) và khi không đang lọc, để thứ tự thấy được = thứ tự lưu
+  const moveItem = (item: AppObject, dir: -1 | 1) => {
+    const ids = sortedAll.map(o => o.id);
+    const i = ids.indexOf(item.id);
+    const j = i + dir;
+    if (j < 0 || j >= ids.length) return;
+    if (placementOf(sortedAll[i]).isPinned !== placementOf(sortedAll[j]).isPinned) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    reorderMutation.mutate(
+      { spaceId, objectIds: ids },
+      { onError: () => addToast({ title: 'Lỗi', description: 'Không đổi được thứ tự.', variant: 'danger' }) },
+    );
+  };
 
   // Statistics
   const tasksCount = objects.filter(o => o.type === 'TASK').length;
@@ -235,6 +282,10 @@ export default function SpaceDetailPage() {
   }
 
   const color = space.color || '#6366f1';
+  const showKanban = toolEnabled(space.settings, 'enableKanban');
+  const showCalendar = toolEnabled(space.settings, 'enableCalendar');
+  const showProgress = toolEnabled(space.settings, 'enableProgress');
+  const activeView = (viewMode === 'kanban' && !showKanban) || (viewMode === 'calendar' && !showCalendar) ? 'list' : viewMode;
 
   return (
     <div className={styles.container}>
@@ -265,22 +316,22 @@ export default function SpaceDetailPage() {
             >
               <LayoutGrid size={16} />
             </button>
-            <button
+            {showKanban && <button
               type="button"
               onClick={() => setViewMode('kanban')}
               title="Bảng Kanban"
               className={`${styles.viewModeBtn} ${viewMode === 'kanban' ? styles.viewModeBtnActive : ''}`}
             >
               <KanbanSquare size={16} />
-            </button>
-            <button
+            </button>}
+            {showCalendar && <button
               type="button"
               onClick={() => setViewMode('calendar')}
               title="Lịch trình tuần"
               className={`${styles.viewModeBtn} ${viewMode === 'calendar' ? styles.viewModeBtnActive : ''}`}
             >
               <Calendar size={16} />
-            </button>
+            </button>}
           </div>
 
           <DropdownMenu
@@ -305,6 +356,11 @@ export default function SpaceDetailPage() {
                   setNameInput(space.name);
                   setEditingName(true);
                 },
+              },
+              {
+                label: 'Mục tiêu, hạn chót & công cụ',
+                icon: <Settings size={14} />,
+                onClick: () => setSettingsOpen(true),
               },
               {
                 label: 'Lưu trữ Không gian',
@@ -373,6 +429,45 @@ export default function SpaceDetailPage() {
 
             {space.description && (
               <p className={styles.description}>{space.description}</p>
+            )}
+
+            {(space.goal || space.dueDate) && (
+              <div className={styles.metaRow} style={{ marginTop: 4 }}>
+                {space.goal && <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>🎯 {space.goal}</span>}
+                {space.dueDate && (
+                  <span
+                    className={styles.metaBadge}
+                    style={
+                      new Date(space.dueDate).getTime() < Date.now()
+                        ? { background: 'rgba(239,68,68,0.14)', color: '#dc2626' }
+                        : { background: `${color}22`, color }
+                    }
+                  >
+                    Hạn {new Date(space.dueDate).toLocaleDateString('vi-VN')}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {showProgress && space.progress && space.progress.total > 0 && (
+              <div style={{ marginTop: 10, maxWidth: 420 }} aria-label="Tiến độ Không gian">
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>
+                  <span>Tiến độ</span>
+                  <span>
+                    {space.progress.done}/{space.progress.total} việc · {Math.round((space.progress.done / space.progress.total) * 100)}%
+                  </span>
+                </div>
+                <div style={{ height: 8, borderRadius: 999, background: 'var(--border-subtle)', overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      width: `${(space.progress.done / space.progress.total) * 100}%`,
+                      height: '100%',
+                      background: color,
+                      transition: 'width 0.25s',
+                    }}
+                  />
+                </div>
+              </div>
             )}
 
             <div className={styles.metaRow}>
@@ -484,7 +579,7 @@ export default function SpaceDetailPage() {
             <Skeleton height="50px" />
             <Skeleton height="50px" />
           </div>
-        ) : viewMode === 'kanban' ? (
+        ) : activeView === 'kanban' ? (
           <KanbanBoard
             blockedIds={blockedIds}
             tasks={filteredObjects.filter(o => o.type === 'TASK')}
@@ -501,7 +596,7 @@ export default function SpaceDetailPage() {
               setShowCreateModal(true);
             }}
           />
-        ) : viewMode === 'calendar' ? (
+        ) : activeView === 'calendar' ? (
           <WeeklyCalendar
             tasks={filteredObjects.filter(o => o.type === 'TASK')}
             onTaskUpdated={updated => {
@@ -534,7 +629,7 @@ export default function SpaceDetailPage() {
               </Button>
             }
           />
-        ) : viewMode === 'list' ? (
+        ) : activeView === 'list' ? (
           /* List View */
           <div className={styles.listView}>
             {filteredObjects.map(item => {
@@ -567,6 +662,7 @@ export default function SpaceDetailPage() {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className={`${styles.itemTitle} ${isDone ? styles.itemTitleDone : ''}`}>
+                      {placementOf(item).isPinned && <span title="Đã ghim" style={{ marginRight: 4 }}>📌</span>}
                       {item.title}
                     </div>
                     {item.description && (
@@ -585,6 +681,47 @@ export default function SpaceDetailPage() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePin(item);
+                      }}
+                      title={placementOf(item).isPinned ? 'Bỏ ghim' : 'Ghim lên đầu'}
+                      aria-pressed={placementOf(item).isPinned}
+                      className={styles.actionBtn}
+                      style={placementOf(item).isPinned ? { color: color } : undefined}
+                    >
+                      <Pin size={15} />
+                    </button>
+                    {noFilter && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveItem(item, -1);
+                          }}
+                          title="Đưa lên"
+                          aria-label="Đưa lên"
+                          className={styles.actionBtn}
+                        >
+                          <ArrowUp size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveItem(item, 1);
+                          }}
+                          title="Đưa xuống"
+                          aria-label="Đưa xuống"
+                          className={styles.actionBtn}
+                        >
+                          <ArrowDown size={15} />
+                        </button>
+                      </>
+                    )}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -759,6 +896,25 @@ export default function SpaceDetailPage() {
           }}
         />
       )}
+
+      <SpaceSettingsDialog
+        space={space}
+        open={settingsOpen}
+        saving={updateSpaceMutation.isPending}
+        onClose={() => setSettingsOpen(false)}
+        onSave={payload =>
+          updateSpaceMutation.mutate(
+            { id: space.id, payload },
+            {
+              onSuccess: () => {
+                setSettingsOpen(false);
+                addToast({ title: 'Thành công', description: 'Đã lưu cài đặt Không gian.', variant: 'success' });
+              },
+              onError: () => addToast({ title: 'Lỗi', description: 'Không lưu được cài đặt.', variant: 'danger' }),
+            },
+          )
+        }
+      />
 
       {/* Confirm Delete Space Dialog */}
       <ConfirmDialog

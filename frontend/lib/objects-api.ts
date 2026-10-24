@@ -16,6 +16,8 @@ export interface SpaceObjectRelation {
   id: string;
   spaceId: string;
   objectId: string;
+  position?: number;
+  isPinned?: boolean;
   space: SpaceBadge;
 }
 

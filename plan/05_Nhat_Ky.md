@@ -139,3 +139,12 @@
 - **Vấn đề & cách xử lý:** 2 test giờ yên lặng ban đầu viết kỳ vọng sai (23:30 UTC = 06:30 VN; 00:00 UTC = đúng 07:00 VN) → sửa test, code đúng. Header đã mất chuông từ lúc làm lại giao diện → thêm `NotificationBell`.
 - **Kiểm chứng:** 9 unit test luật + 15 test API (không trùng khi quét lại, đổi hạn thì báo lại, tắt loại, khoá, giờ yên lặng, cách ly dữ liệu, broadcast). Chạy thật: chuông hiện "1 chưa đọc", danh sách thả xuống đúng.
 - **Chưa làm:** kênh ngoài app (trình duyệt/email/.ics/Telegram — GĐ7). **Chưa tự kiểm:** trang `/notifications`, thẻ cài đặt, đánh dấu đã đọc/xoá trên giao diện.
+
+---
+
+### 25/10/2026 — GĐ3 (phần 2) Admin + hoàn thiện Space
+- **Đã làm — Admin:** `backend/src/admin/`: `RolesGuard` + `@Roles('ADMIN')` (vai trò đọc lại từ CSDL mỗi request nên hạ quyền có hiệu lực ngay), danh sách tài khoản có tìm kiếm/phân trang, khoá/mở khoá (không tự khoá mình, không khoá Admin khác), thống kê tổng hợp + 14 ngày (giờ VN), thông báo hệ thống, bảng `admin_audit_logs`. Giao diện `/admin` 4 tab (bảng tự chuyển thành thẻ trên mobile), mục "Khu vực Quản trị" ở Header đã bật lại.
+- **Đã làm — Space:** `GET /spaces/:id` trả `progress {done,total}` (bỏ việc huỷ + Thùng rác); `PATCH /spaces/:sid/objects/:oid` (ghim/vị trí); `POST /spaces/:id/reorder`; `settings` chỉ nhận cờ `enableKanban|enableCalendar|enableProgress` kiểu boolean. Giao diện: mục tiêu, hạn chót, thanh tiến độ, ghim 📌, nút ↑↓, hộp thoại "Mục tiêu, hạn chót & công cụ" (tắt Kanban/Lịch thì ẩn tab).
+- **Vấn đề & cách xử lý:** test sắp xếp ban đầu fail do hàm trợ giúp trong test để `...spaceObjects` ghi đè `id` của mục (bản ghi gán cũng có `id`) — sửa test, code đúng. Header đã mất mục Admin từ trước (đang tắt bằng `false &&`) → bật lại sau khi có trang.
+- **Kiểm chứng:** 22 test API Admin (gồm test **không lộ tiêu đề/nội dung/URL/tên Space** qua mọi API admin, và Admin không đọc được dữ liệu người khác qua API thường) + 10 test API Space; tổng **94 test API + 56 unit test** xanh. Chạy thật: ghim và đổi thứ tự đúng; tắt Kanban ẩn tab; trang Admin hiện danh sách + thống kê.
+- **Chưa tự kiểm bằng mắt:** nút Khoá/Mở khoá và hộp xác nhận trong `/admin`, form gửi thông báo hệ thống, hiển thị `/admin` trên điện thoại. **Chưa làm:** kéo thả để sắp xếp (đang dùng nút ↑↓), mẫu Space dùng chung, công cụ Ôn tập/Bản đồ theo Space.

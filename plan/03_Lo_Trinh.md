@@ -6,7 +6,7 @@
 
 ---
 
-> **Ghi chú trạng thái (24/10/2026):** GĐ0 đã xong và kiểm chứng (12 unit test + 20 test API, migration chạy từ CSDL trống). GĐ1–GĐ2 đã code xong, build xanh; **các mục "Kiểm thử thủ công" vẫn chưa tick vì chưa tự chạy trên trình duyệt**. Mục Space (mục tiêu / hạn chót / ghim / kéo thả) mới có ở backend, chưa có giao diện.
+> **Ghi chú trạng thái (24/10/2026):** GĐ0 đã xong và kiểm chứng (12 unit test + 20 test API, migration chạy từ CSDL trống). GĐ1–GĐ2 đã code xong, build xanh; **các mục "Kiểm thử thủ công" vẫn chưa tick vì chưa tự chạy trên trình duyệt**. Mục Space đã có cả backend lẫn giao diện (25/10).
 
 ## Tổng quan
 
@@ -136,6 +136,8 @@ Doc 02 (gom FR-OBJ chung — DOC-09), 03 (sửa US/UC — DOC-08, luật mới �
 
 ## GĐ3 — Thông báo + Admin  `M`
 
+> **Trạng thái 25/10:** Thông báo + Admin đã xong (xem `05_Nhat_Ky.md`). Chưa làm: mẫu Space dùng chung (mục cuối của Admin), kênh ngoài app (GĐ7).
+
 ### Việc cần làm — Thông báo (QD-12)
 - [x] Schema: `notifications` thêm `type`, `data`, `dedupeKey`; bảng cài đặt thông báo; `User` thêm giờ yên lặng
 - [x] Bộ máy thông báo: một nơi nhận "chuyện xảy ra" → tra cài đặt → gửi kênh
@@ -146,10 +148,10 @@ Doc 02 (gom FR-OBJ chung — DOC-09), 03 (sửa US/UC — DOC-08, luật mới �
 - [x] Giao diện: chuông có số chưa đọc, danh sách thông báo, đánh dấu đã đọc / tất cả, xoá; trang cài đặt thông báo
 
 ### Việc cần làm — Admin (QD-11)
-- [ ] Guard theo vai trò; tài khoản bị khoá không đăng nhập được
-- [ ] Trang `/admin`: danh sách tài khoản (chỉ thông tin tài khoản + số lượng), khoá/mở khoá
-- [ ] Thống kê tổng hợp: số người dùng, Object theo loại, hoạt động theo ngày (biểu đồ)
-- [ ] Gửi thông báo hệ thống tới mọi người (dùng bộ máy thông báo)
+- [x] Guard theo vai trò; tài khoản bị khoá không đăng nhập được
+- [x] Trang `/admin`: danh sách tài khoản (chỉ thông tin tài khoản + số lượng), khoá/mở khoá
+- [x] Thống kê tổng hợp: số người dùng, Object theo loại, hoạt động theo ngày (biểu đồ)
+- [x] Gửi thông báo hệ thống tới mọi người (dùng bộ máy thông báo)
 - [ ] Quản lý mẫu Space dùng chung (nếu QD-03 được chốt)
 
 ### Kiểm thử
