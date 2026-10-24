@@ -66,13 +66,15 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  spaces           Space[]
-  objects          Object[]
-  notifications    Notification[]
-  flashcards       Flashcard[]
-  flashcardReviews FlashcardReview[]
-  studySessions    StudySession[]
+  spaces               Space[]
+  objects              Object[]
+  notifications        Notification[]
+  flashcards           Flashcard[]
+  flashcardReviews     FlashcardReview[]
+  studySessions        StudySession[]
   notificationSettings NotificationSettings?
+  adminLogs            AdminAuditLog[]       @relation("AuditAdmin")
+  auditedAsTarget      AdminAuditLog[]       @relation("AuditTarget")
 
   @@map("users")
 }
@@ -264,4 +266,22 @@ model NotificationSettings {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification_settings")
+}
+
+// ---- Quản trị ----
+
+// Nhật ký hành động quản trị (ai khoá/mở khoá ai, phát thông báo...). Không chứa nội dung cá nhân.
+model AdminAuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  adminId      String   @map("admin_id") @db.Uuid
+  action       String   @db.VarChar(50)
+  targetUserId String?  @map("target_user_id") @db.Uuid
+  detail       String   @default("") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  admin  User  @relation("AuditAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  target User? @relation("AuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }

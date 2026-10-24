@@ -11,6 +11,7 @@ import { PlanningModule } from './planning/planning.module';
 import { StudyModule } from './study/study.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     StudyModule,
     KnowledgeModule,
     NotificationsModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],
