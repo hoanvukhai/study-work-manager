@@ -1,6 +1,6 @@
 # GĐ0 — Chốt và dọn nền
 
-> Trạng thái: 🚀 **Hoàn thành xuất sắc Phiên 01 (Dọn nền tảng & Vá lỗi cốt lõi)**  
+> Trạng thái: 🚀 **Hoàn thành (Phiên 01 + bổ sung ngày 24/10: migration, CHECK, test API)**  
 > Cập nhật lúc: 12/10/2026
 
 ---
@@ -74,3 +74,9 @@
 - **Việc phiên tiếp theo:**
   - Khởi tạo migration SQL chuẩn từ schema mới khi container DB chạy.
   - Bắt đầu bước vào **GĐ1 — Bộ giao diện nền (Component dùng chung, CSS Modules, Responsive, TanStack Query)**.
+
+### Bổ sung 24/10/2026
+- Phiên 01 **chưa** tạo migration (CSDL chạy vẫn là schema cũ). Nay đã có `prisma/migrations/20261024000000_init` và `20261024000100_constraints` (CHECK theo loại, `from <> to`).
+- Đã thêm `@@unique([userId, dedupeKey])` cho `notifications` (chuẩn bị chống trùng thông báo ở GĐ3) và bỏ default `TODO`/`MEDIUM` của `status`/`priority`.
+- Xoá `prisma/seed.sql` (còn bảng `tags` cũ); `seed.ts` chạy lại nhiều lần không bị trùng.
+- 20 test API trong `backend/test/` (chạy `npm run test:e2e`, tự dựng CSDL `study_work_test`).

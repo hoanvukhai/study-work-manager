@@ -6,6 +6,8 @@
 
 ---
 
+> **Ghi chú trạng thái (24/10/2026):** GĐ0 đã xong và kiểm chứng (12 unit test + 20 test API, migration chạy từ CSDL trống). GĐ1–GĐ2 đã code xong, build xanh; **các mục "Kiểm thử thủ công" vẫn chưa tick vì chưa tự chạy trên trình duyệt**. Mục Space (mục tiêu / hạn chót / ghim / kéo thả) mới có ở backend, chưa có giao diện.
+
 ## Tổng quan
 
 | GĐ | Tên | Mục tiêu | Cỡ | Tầng |
@@ -31,33 +33,33 @@
 **Mục tiêu:** nền móng đúng và an toàn trước khi xây thêm.
 
 ### Việc cần làm
-- [ ] Chốt các quyết định QD-02 → QD-11, QD-14 → QD-17 trong `02_Quyet_Dinh.md`
-- [ ] Chuyển CSDL sang migration (QD-17): tạo migration gốc từ schema hiện tại
-- [ ] Sửa schema:
-  - [ ] Bỏ `tags`, `object_tags` (QD-01)
-  - [ ] Bỏ `Space.parentId` (QD-02)
-  - [ ] `User`: thêm `role`, `lockedAt`, `lastLoginAt` (QD-11)
-  - [ ] `Object`: `status`, `priority` cho phép rỗng; thêm `archivedAt` (QD-05, QD-07)
-  - [ ] `Space`: `isArchived` → `archivedAt`; thêm `settings` (JSON), `goal`, `dueDate` (QD-03)
-  - [ ] Ràng buộc `CHECK` theo loại + `CHECK(from <> to)` cho liên kết (viết SQL trong migration)
-  - [ ] Thêm index còn thiếu (TECH-09)
-- [ ] Viết lại `seed.ts`: mật khẩu băm thật, 1 tài khoản demo + 1 admin, dữ liệu mẫu đủ 4 loại (BUG-13)
-- [ ] Sửa lỗi nghiêm trọng:
-  - [ ] BUG-06: API sửa thường không nhận `lifecycle`, `type`
-  - [ ] SEC-01: hết khi bỏ `parentId`; rà lại mọi truy vấn có lọc theo `userId`
-  - [ ] SEC-02: bỏ giá trị dự phòng của `JWT_SECRET`
-  - [ ] SEC-03: mật khẩu tối thiểu 8
-  - [ ] SEC-06: kiểm tra dữ liệu theo loại (QD-07)
-  - [ ] BUG-07: tạo Object + gán Space trong transaction
-- [ ] Bộ xử lý lỗi chung, định dạng lỗi khớp doc 07 (TECH-04)
-- [ ] Swagger tại `/api/docs` (TECH-03)
-- [ ] Gộp endpoint trùng `/views/summary` và `/dashboard/summary` (TECH-06)
-- [ ] Dựng khung test: Jest cho service, Supertest + CSDL test riêng cho API
+- [x] Chốt các quyết định QD-02 → QD-11, QD-14 → QD-17 trong `02_Quyet_Dinh.md`
+- [x] Chuyển CSDL sang migration (QD-17): tạo migration gốc từ schema hiện tại
+- [x] Sửa schema:
+  - [x] Bỏ `tags`, `object_tags` (QD-01)
+  - [x] Bỏ `Space.parentId` (QD-02)
+  - [x] `User`: thêm `role`, `lockedAt`, `lastLoginAt` (QD-11)
+  - [x] `Object`: `status`, `priority` cho phép rỗng; thêm `archivedAt` (QD-05, QD-07)
+  - [x] `Space`: `isArchived` → `archivedAt`; thêm `settings` (JSON), `goal`, `dueDate` (QD-03)
+  - [x] Ràng buộc `CHECK` theo loại + `CHECK(from <> to)` cho liên kết (viết SQL trong migration)
+  - [x] Thêm index còn thiếu (TECH-09)
+- [x] Viết lại `seed.ts`: mật khẩu băm thật, 1 tài khoản demo + 1 admin, dữ liệu mẫu đủ 4 loại (BUG-13)
+- [x] Sửa lỗi nghiêm trọng:
+  - [x] BUG-06: API sửa thường không nhận `lifecycle`, `type`
+  - [x] SEC-01: hết khi bỏ `parentId`; rà lại mọi truy vấn có lọc theo `userId`
+  - [x] SEC-02: bỏ giá trị dự phòng của `JWT_SECRET`
+  - [x] SEC-03: mật khẩu tối thiểu 8
+  - [x] SEC-06: kiểm tra dữ liệu theo loại (QD-07)
+  - [x] BUG-07: tạo Object + gán Space trong transaction
+- [x] Bộ xử lý lỗi chung, định dạng lỗi khớp doc 07 (TECH-04)
+- [x] Swagger tại `/api/docs` (TECH-03)
+- [x] Gộp endpoint trùng `/views/summary` và `/dashboard/summary` (TECH-06)
+- [x] Dựng khung test: Jest cho service, Supertest + CSDL test riêng cho API
 
 ### Kiểm thử
-- [ ] Test tự động `ObjectsService`: tạo đúng/sai theo từng loại, đổi vòng đời đúng luồng, không đổi được vòng đời qua API sửa thường
-- [ ] Test API: người dùng A **không** đọc/sửa/xoá được Space, Object, liên kết của B (trả 404)
-- [ ] Chạy `migrate reset` + seed trên máy sạch → đăng nhập được tài khoản demo
+- [x] Test tự động `ObjectsService`: tạo đúng/sai theo từng loại, đổi vòng đời đúng luồng, không đổi được vòng đời qua API sửa thường
+- [x] Test API: người dùng A **không** đọc/sửa/xoá được Space, Object, liên kết của B (trả 404)
+- [x] Chạy `migrate reset` + seed trên máy sạch → đăng nhập được tài khoản demo
 
 ### Xong khi
 Migration chạy được từ đầu trên CSDL trống; test xanh; Swagger mở được; không còn mục 🔴 nào thuộc BUG/SEC.
@@ -72,14 +74,14 @@ Doc 02 (luật nghiệp vụ, bỏ Tag), 05 (Domain Model + vẽ lại sơ đồ
 **Mục tiêu:** giao diện đẹp, đồng bộ, dùng được trên điện thoại.
 
 ### Việc cần làm
-- [ ] Biến màu sáng/tối theo bảng màu doc 08 (`globals.css`)
-- [ ] Bộ component dùng chung (QD-16): Button, Input, Textarea, Select, DatePicker, Dialog, ConfirmDialog, Toast (có **Hoàn tác**), Badge, DropdownMenu, Tabs, EmptyState, Skeleton
-- [ ] Cài TanStack Query; viết lại các hàm gọi API thành hook (`useObjects`, `useSpaces`…)
-- [ ] Layout responsive: Sidebar thu gọn thành ngăn kéo trên điện thoại; Header gọn lại; thanh điều hướng đáy trên mobile (như wireframe mobile)
-- [ ] Thay toàn bộ `confirm()`/`alert()` bằng ConfirmDialog/Toast (UI-03)
-- [ ] Chuyển Sidebar, Header, Layout sang CSS Modules (bỏ hover bằng JavaScript)
-- [ ] Nút chuyển sáng/tối (UI-09)
-- [ ] Phím tắt: `C` tạo mới (không bắt khi đang mở hộp thoại), `Ctrl+K` mở tìm kiếm (UI-10)
+- [x] Biến màu sáng/tối theo bảng màu doc 08 (`globals.css`)
+- [x] Bộ component dùng chung (QD-16): Button, Input, Textarea, Select, DatePicker, Dialog, ConfirmDialog, Toast (có **Hoàn tác**), Badge, DropdownMenu, Tabs, EmptyState, Skeleton
+- [x] Cài TanStack Query; viết lại các hàm gọi API thành hook (`useObjects`, `useSpaces`…)
+- [x] Layout responsive: Sidebar thu gọn thành ngăn kéo trên điện thoại; Header gọn lại; thanh điều hướng đáy trên mobile (như wireframe mobile)
+- [x] Thay toàn bộ `confirm()`/`alert()` bằng ConfirmDialog/Toast (UI-03)
+- [x] Chuyển Sidebar, Header, Layout sang CSS Modules (bỏ hover bằng JavaScript)
+- [x] Nút chuyển sáng/tối (UI-09)
+- [x] Phím tắt: `C` tạo mới (không bắt khi đang mở hộp thoại), `Ctrl+K` mở tìm kiếm (UI-10)
 
 ### Kiểm thử (thủ công)
 - [ ] 375px / 768px / 1280px: không vỡ bố cục, không cuộn ngang

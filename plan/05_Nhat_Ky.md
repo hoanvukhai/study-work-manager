@@ -100,3 +100,13 @@
   - `npm run build` Frontend: **Exit code 0 (100% thành công, 13/13 static routes)**.
 - **Tiếp theo:** Bước vào **GĐ3 — Thông báo & Quản trị Admin**.
 
+
+---
+
+### 24/10/2026 — Rà soát & sửa lỗi sau GĐ2
+- **Đã làm:** Commit GĐ0–GĐ2 (3 commit). Sửa lỗi múi giờ (Drawer + Lịch), phiên đăng nhập 7 ngày + xử lý 401, bỏ 2 modal cũ, lịch cuộn ngang trên mobile. Backend: migration thật + CHECK theo loại, `@@unique([userId, dedupeKey])`, khôi phục Thùng rác về đúng trạng thái, chỉ xoá vĩnh viễn mục trong Thùng rác, Event/Reference bắt buộc trường chính, đăng nhập không lộ trạng thái khoá, Dashboard bỏ việc đã huỷ, filter lỗi không lộ chi tiết CSDL, bỏ controller trùng. Thêm 20 test API (cách ly dữ liệu A/B…). Viết `plan/06_Giao_Viec_Cho_Gemini.md`.
+- **Vấn đề & cách xử lý:**
+  - CSDL dev đang chạy vẫn là schema cũ (còn `tags`, chưa có `role`) vì schema mới chưa từng được áp → sao lưu `pg_dump` rồi dựng lại bằng migration + seed.
+  - Lỗi múi giờ do dùng `toISOString()` (UTC) để hiển thị → thêm `frontend/lib/datetime.ts`, cấm dùng cách cũ.
+  - Test unit (CSDL giả) không bắt được lỗi giao diện/ràng buộc CSDL → thêm test API chạy trên CSDL thật `study_work_test`.
+- **Tiếp theo:** Thông báo + Admin (giao Gemini, `plan/06`); tự kiểm thử thủ công trên trình duyệt trước khi tick các mục "Kiểm thử" của GĐ1–GĐ2.

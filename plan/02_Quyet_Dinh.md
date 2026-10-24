@@ -11,22 +11,22 @@
 | Mã | Quyết định | Trạng thái |
 |---|---|:-:|
 | QD-01 | Bỏ Tag | ✅ |
-| QD-02 | Bỏ Space lồng nhau | 🟨 |
-| QD-03 | Space tự do, "tự lắp ghép công cụ" | ⬜ |
-| QD-04 | Xoá Space chỉ gỡ Object ra, Object không còn Space nào thì về Hộp nhận | ⬜ |
-| QD-05 | Vòng đời Object: một nguồn sự thật, chỉ đổi qua một API riêng | ⬜ |
-| QD-06 | Chuyển loại Object (ví dụ Note → Task) qua thao tác riêng | ⬜ |
-| QD-07 | Trường dữ liệu và luật kiểm tra theo từng loại Object | ⬜ |
-| QD-08 | Bỏ luật "không tạo ở quá khứ" và "trạng thái chỉ đi theo thứ tự" | ⬜ |
-| QD-09 | Liên kết: loại cố định + nhãn tuỳ chọn, có ý nghĩa với hệ thống | ⬜ |
-| QD-10 | Trục chính của đề tài: "Một Object, ba góc nhìn" | ⬜ |
-| QD-11 | Có Admin, nhưng Admin không xem được nội dung cá nhân | ⬜ |
+| QD-02 | Bỏ Space lồng nhau | ✅ |
+| QD-03 | Space tự do, "tự lắp ghép công cụ" | 🟨 (cột `settings` đã có, chưa có giao diện bật/tắt công cụ) |
+| QD-04 | Xoá Space chỉ gỡ Object ra, Object không còn Space nào thì về Hộp nhận | ✅ |
+| QD-05 | Vòng đời Object: một nguồn sự thật, chỉ đổi qua một API riêng | ✅ |
+| QD-06 | Chuyển loại Object (ví dụ Note → Task) qua thao tác riêng | ✅ |
+| QD-07 | Trường dữ liệu và luật kiểm tra theo từng loại Object | ✅ |
+| QD-08 | Bỏ luật "không tạo ở quá khứ" và "trạng thái chỉ đi theo thứ tự" | ✅ |
+| QD-09 | Liên kết: loại cố định + nhãn tuỳ chọn, có ý nghĩa với hệ thống | 🟨 (4 loại đã có; ngữ nghĩa DEPENDS_ON/PARENT_OF làm ở GĐ4) |
+| QD-10 | Trục chính của đề tài: "Một Object, ba góc nhìn" | ✅ |
+| QD-11 | Có Admin, nhưng Admin không xem được nội dung cá nhân | ✅ |
 | QD-12 | Thông báo: một bộ máy chung, nhiều loại, nhiều kênh | ✅ (hướng) |
 | QD-13 | AI: có, làm sau cùng, chỉ gợi ý, người dùng duyệt | ✅ (hướng) |
 | QD-14 | Cộng tác nhóm | ⬜ chưa quyết |
-| QD-15 | Xác thực: giữ Access Token, sửa tài liệu; mật khẩu tối thiểu 8 | ⬜ |
-| QD-16 | Giao diện: bộ component dùng chung + CSS Modules + TanStack Query | ⬜ |
-| QD-17 | CSDL: chuyển sang migration, seed viết bằng TypeScript | ⬜ |
+| QD-15 | Xác thực: giữ Access Token, sửa tài liệu; mật khẩu tối thiểu 8 | ✅ |
+| QD-16 | Giao diện: bộ component dùng chung + CSS Modules + TanStack Query | ✅ |
+| QD-17 | CSDL: chuyển sang migration, seed viết bằng TypeScript | ✅ |
 
 ---
 

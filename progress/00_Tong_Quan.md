@@ -1,7 +1,7 @@
 # Bảng điều khiển tiến độ dự án
 
 > Thư mục này phục vụ tra cứu nhanh các thay đổi mã nguồn qua từng phiên làm việc.
-> Cập nhật lần cuối: 12/10/2026
+> Cập nhật lần cuối: 24/10/2026
 
 ---
 
@@ -9,15 +9,15 @@
 
 | GĐ | Tên giai đoạn | Trạng thái | File chi tiết |
 |:---:|---|:---:|---|
-| **GĐ0** | Chốt và dọn nền (Schema, Migration, Sửa lỗi nghiêm trọng, Swagger, Test) | 🟢 **Hoàn thành Phiên 01 (10/10 Test Xanh)** | [GD0_Don_Nen.md](GD0_Don_Nen.md) |
+| **GĐ0** | Chốt và dọn nền (Schema, Migration, Sửa lỗi nghiêm trọng, Swagger, Test) | 🟢 **Xong (12 unit + 20 test API xanh, migration chạy từ CSDL trống)** | [GD0_Don_Nen.md](GD0_Don_Nen.md) |
 | **GĐ1** | Bộ giao diện nền (Design Tokens, Components, CSS Modules, TanStack Query) | 🟢 **Hoàn thành Phiên 02 (Build Xanh 100%)** | [GD1_Giao_Dien_Nen.md](GD1_Giao_Dien_Nen.md) |
 | **GĐ2** | Hoàn thiện lõi còn thiếu (Drawer chi tiết, 4 loại Object, Gán nhiều Space, Thùng rác, Hộp nhận) | 🟢 **Hoàn thành Phiên 03 (Build Xanh 100%, 12/12 Test Xanh)** | [GD2_Loi_Chuc_Nang.md](GD2_Loi_Chuc_Nang.md) |
-| **GĐ3** | Thông báo & Quản trị Admin | ⏳ Sẵn sàng thực hiện | [GD3_Thong_Bao_Admin.md](GD3_Thong_Bao_Admin.md) |
-| **GĐ4** | Trụ Kế hoạch (Phụ thuộc, Việc con, Việc lặp lại, Hôm nay làm gì) | ⏳ Chờ | [GD4_Tru_Ke_Hoach.md](GD4_Tru_Ke_Hoach.md) |
-| **GĐ5** | Trụ Học tập (Ôn tập SM-2, Thẻ hỏi-đáp, Pomodoro, Thống kê) | ⏳ Chờ | [GD5_Tru_Hoc_Tap.md](GD5_Tru_Hoc_Tap.md) |
-| **GĐ6** | Trụ Tri thức (Liên kết nhanh `[[ ]]`, Backlink, Bản đồ tri thức) | ⏳ Chờ | [GD6_Tru_Tri_Thuc.md](GD6_Tru_Tri_Thuc.md) |
-| **GĐ7** | Mở rộng (iCal, PWA, Email, AI) | ⏳ Chờ | [GD7_Mo_Rong.md](GD7_Mo_Rong.md) |
-| **GĐ8** | Hoàn thiện & Bảo vệ tốt nghiệp (Test tổng, Triển khai, Đồng bộ tài liệu, Slide) | ⏳ Chờ | [GD8_Bao_Ve.md](GD8_Bao_Ve.md) |
+| **GĐ3** | Thông báo & Quản trị Admin | ⏳ Sẵn sàng thực hiện | [plan/06_Giao_Viec_Cho_Gemini.md](../plan/06_Giao_Viec_Cho_Gemini.md) |
+| **GĐ4** | Trụ Kế hoạch (Phụ thuộc, Việc con, Việc lặp lại, Hôm nay làm gì) | ⏳ Chờ | (chưa có — xem plan/03_Lo_Trinh.md) |
+| **GĐ5** | Trụ Học tập (Ôn tập SM-2, Thẻ hỏi-đáp, Pomodoro, Thống kê) | ⏳ Chờ | (chưa có — xem plan/03_Lo_Trinh.md) |
+| **GĐ6** | Trụ Tri thức (Liên kết nhanh `[[ ]]`, Backlink, Bản đồ tri thức) | ⏳ Chờ | (chưa có — xem plan/03_Lo_Trinh.md) |
+| **GĐ7** | Mở rộng (iCal, PWA, Email, AI) | ⏳ Chờ | (chưa có — xem plan/03_Lo_Trinh.md) |
+| **GĐ8** | Hoàn thiện & Bảo vệ tốt nghiệp (Test tổng, Triển khai, Đồng bộ tài liệu, Slide) | ⏳ Chờ | (chưa có — xem plan/03_Lo_Trinh.md) |
 
 ---
 
@@ -36,3 +36,16 @@
   9. Nâng cấp **Lịch trình (BUG-04, BUG-05)**: bộ chuyển đổi chế độ xem Tuần / Tháng, hiển thị cả Task và Event có khoảng thời gian trải dài.
   10. Tích hợp Drawer vào tất cả các màn hình: Dashboard, Space Detail, Kanban, Calendar, Inbox.
   11. Toàn bộ **12/12 Unit Tests backend PASS (100% xanh)**, biên dịch **NestJS và Next.js (13/13 static routes) thành công 100% không lỗi**.
+
+---
+
+## 3. Phiên rà soát & sửa lỗi (24/10/2026)
+
+- Commit toàn bộ GĐ0–GĐ2 (trước đó chưa commit từ 04/10).
+- **Sửa lỗi múi giờ** (Drawer lưu lùi 7 tiếng mỗi lần; Lịch hiện lệch 1 ngày) bằng `frontend/lib/datetime.ts`.
+- **Phiên đăng nhập**: access token 7 ngày (QD-15) + xử lý 401 ở `lib/api.ts`.
+- **Migration thật** (`backend/prisma/migrations/`) + ràng buộc `CHECK` theo loại Object; CSDL cũ (còn bảng `tags`) đã sao lưu rồi dựng lại bằng migration.
+- **Test API** (`backend/test/api.e2e-spec.ts`, 20 test, chạy bằng `npm run test:e2e`): cách ly dữ liệu A/B, vòng đời, ràng buộc loại, tài khoản bị khoá.
+- Sửa logic: Khôi phục từ Thùng rác về đúng trạng thái trước; chỉ xoá vĩnh viễn mục trong Thùng rác; Event bắt buộc có giờ bắt đầu, Reference bắt buộc có URL; đăng nhập không lộ trạng thái khoá; Dashboard không tính việc đã huỷ; bộ lọc lỗi không lộ chi tiết CSDL.
+- Bỏ `EditObjectModal` và `ObjectRelationsModal`; mọi nơi dùng `ObjectDetailDrawer`.
+- **Chưa làm / còn lại:** kiểm thử thủ công trên trình duyệt, giao diện Space (mục tiêu/ghim/kéo thả), Thông báo, Admin → giao cho Gemini theo `plan/06_Giao_Viec_Cho_Gemini.md`.
