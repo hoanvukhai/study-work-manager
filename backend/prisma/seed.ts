@@ -274,10 +274,10 @@ async function main() {
     data: {
       userId: demoUser.id,
       objectId: taskSeed.id,
-      type: 'DEADLINE',
+      type: 'DEADLINE_SOON',
       title: 'Nhắc nhở hạn chót',
       message: 'Nhiệm vụ "Khởi tạo Prisma Schema và nạp dữ liệu mẫu" sắp đến hạn trong 24 giờ tới.',
-      dedupeKey: `deadline_${taskSeed.id}`,
+      dedupeKey: `DEADLINE_SOON:${taskSeed.id}:seed`,
     },
   });
   console.log('[Seed] Đã tạo thông báo nhắc hạn chót mẫu');

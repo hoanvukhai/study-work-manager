@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import { useLayout } from '@/lib/layout-context';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import CreateObjectModal from '../objects/CreateObjectModal';
 import ObjectDetailDrawer from '../objects/ObjectDetailDrawer';
 import CommandPalette from './CommandPalette';
@@ -107,6 +108,9 @@ export default function Header() {
 
       {/* Hành động: Đổi Theme, Tạo nhanh, Profile */}
       <div className={styles.rightSection}>
+        {/* Chuông thông báo */}
+        <NotificationBell />
+
         {/* Nút chuyển chế độ Sáng / Tối (UI-09) */}
         <button
           className={styles.iconBtn}

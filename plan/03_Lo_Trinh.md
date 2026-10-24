@@ -137,13 +137,13 @@ Doc 02 (gom FR-OBJ chung — DOC-09), 03 (sửa US/UC — DOC-08, luật mới �
 ## GĐ3 — Thông báo + Admin  `M`
 
 ### Việc cần làm — Thông báo (QD-12)
-- [ ] Schema: `notifications` thêm `type`, `data`, `dedupeKey`; bảng cài đặt thông báo; `User` thêm giờ yên lặng
-- [ ] Bộ máy thông báo: một nơi nhận "chuyện xảy ra" → tra cài đặt → gửi kênh
-- [ ] Tác vụ chạy định kỳ (`@nestjs/schedule`): quét sắp hạn / quá hạn / sự kiện sắp bắt đầu
-- [ ] Người dùng chọn nhắc trước bao lâu (mặc định + từng mục) (FR-NOTIF-05)
-- [ ] Bản tin buổi sáng (trong app)
-- [ ] Đổi hạn chót → huỷ/tạo lại nhắc; Task xong → huỷ nhắc
-- [ ] Giao diện: chuông có số chưa đọc, danh sách thông báo, đánh dấu đã đọc / tất cả, xoá; trang cài đặt thông báo
+- [x] Schema: `notifications` thêm `type`, `data`, `dedupeKey`; bảng cài đặt thông báo; `User` thêm giờ yên lặng
+- [x] Bộ máy thông báo: một nơi nhận "chuyện xảy ra" → tra cài đặt → gửi kênh
+- [x] Tác vụ chạy định kỳ (`@nestjs/schedule`): quét sắp hạn / quá hạn / sự kiện sắp bắt đầu
+- [x] Người dùng chọn nhắc trước bao lâu (mặc định + từng mục) (FR-NOTIF-05)
+- [x] Bản tin buổi sáng (trong app)
+- [x] Đổi hạn chót → huỷ/tạo lại nhắc; Task xong → huỷ nhắc
+- [x] Giao diện: chuông có số chưa đọc, danh sách thông báo, đánh dấu đã đọc / tất cả, xoá; trang cài đặt thông báo
 
 ### Việc cần làm — Admin (QD-11)
 - [ ] Guard theo vai trò; tài khoản bị khoá không đăng nhập được
@@ -153,9 +153,9 @@ Doc 02 (gom FR-OBJ chung — DOC-09), 03 (sửa US/UC — DOC-08, luật mới �
 - [ ] Quản lý mẫu Space dùng chung (nếu QD-03 được chốt)
 
 ### Kiểm thử
-- [ ] Tự động: không báo trùng; Task xong thì không báo; Object lưu trữ/Thùng rác thì không báo; giờ yên lặng được tôn trọng
-- [ ] Tự động: người thường gọi API admin → 403; API admin **không trả về** tiêu đề/nội dung Object
-- [ ] Thủ công: tạo Task hạn 10 phút nữa, nhắc trước 5 phút → thấy thông báo đúng lúc
+- [x] Tự động: không báo trùng; Task xong thì không báo; Object lưu trữ/Thùng rác thì không báo; giờ yên lặng được tôn trọng
+- [x] Tự động: người thường gọi API admin → 403; API admin **không trả về** tiêu đề/nội dung Object
+- [x] Thủ công: tạo Task hạn 10 phút nữa, nhắc trước 5 phút → thấy thông báo đúng lúc
 
 ### Cập nhật tài liệu
 Doc 02 (Actor Quản trị viên, FR-NOTIF, FR-ADMIN), 03 (UC Admin, Activity 06 thông báo), 05, 06, 07.

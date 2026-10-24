@@ -6,6 +6,7 @@ import styles from './Profile.module.css';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
+import NotificationSettingsCard from '@/components/notifications/NotificationSettingsCard';
 
 export default function ProfilePage() {
   const { user, updateProfile, changePassword } = useAuth();
@@ -187,6 +188,8 @@ export default function ProfilePage() {
           </div>
         </form>
       </div>
+
+      <NotificationSettingsCard />
 
       {/* Change Password Card */}
       <div className={styles.card}>

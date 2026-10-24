@@ -131,3 +131,11 @@
 - **Đã làm:** Backend `src/knowledge/` (`mentions.ts` tách `[[Tiêu đề]]`, `syncMentions` tự tạo/xoá liên kết RELATES_TO có cờ `auto`, `GET /knowledge/graph`); cột mới `object_relations.auto`. Giao diện: ô gõ có gợi ý khi gõ `[[` (↑↓ Enter Esc), chip liên kết trong nội dung, nhãn Backlink trong Drawer, nút "Xem trên bản đồ", trang `/graph` (bố cục Fruchterman–Reingold tự viết, phóng/dịch/kéo nút, lọc Space + loại, tìm, ẩn mục chưa liên kết, chế độ xem quanh một mục 1–3 bước).
 - **Vấn đề & cách xử lý:** bố cục lần đầu tràn ra ngoài khung nhìn (ít nút nên lực đẩy quá lớn) → thêm bước tự căn vừa khung và nút "Căn lại". Liên kết tự sinh không được xoá liên kết tạo tay → cờ `auto` + `skipDuplicates`.
 - **Kiểm chứng:** 5 unit test + 9 test API (kể cả cách ly dữ liệu, mục Thùng rác/Lưu trữ không lên bản đồ). Chạy thật: bản đồ hiện đúng 8 mục, bấm chấm mở khung chi tiết, gõ `[[` hiện gợi ý và chèn đúng. **Chưa tự kiểm:** kéo thả nút, phóng to bằng cuộn, màn hình điện thoại.
+
+---
+
+### 25/10/2026 — GĐ3 (phần 1) Thông báo
+- **Đã làm:** `backend/src/notifications/`: bảng `notification_settings` (+CHECK), quét mỗi 5 phút (sắp hạn / quá hạn / sự kiện / thẻ cần ôn), bản tin buổi sáng 07:00 giờ VN, chống trùng bằng `@@unique([userId, dedupeKey])`, giờ yên lặng (vắt qua nửa đêm), thông báo "được mở khoá" chỉ khi mọi tiền đề xong, dọn nhắc hạn khi Task xong/huỷ/Thùng rác/Lưu trữ, `broadcast()` cho Admin. Giao diện: chuông có số chưa đọc (poll 60s), danh sách thả xuống, trang `/notifications`, thẻ cài đặt trong `/profile`.
+- **Vấn đề & cách xử lý:** 2 test giờ yên lặng ban đầu viết kỳ vọng sai (23:30 UTC = 06:30 VN; 00:00 UTC = đúng 07:00 VN) → sửa test, code đúng. Header đã mất chuông từ lúc làm lại giao diện → thêm `NotificationBell`.
+- **Kiểm chứng:** 9 unit test luật + 15 test API (không trùng khi quét lại, đổi hạn thì báo lại, tắt loại, khoá, giờ yên lặng, cách ly dữ liệu, broadcast). Chạy thật: chuông hiện "1 chưa đọc", danh sách thả xuống đúng.
+- **Chưa làm:** kênh ngoài app (trình duyệt/email/.ics/Telegram — GĐ7). **Chưa tự kiểm:** trang `/notifications`, thẻ cài đặt, đánh dấu đã đọc/xoá trên giao diện.
