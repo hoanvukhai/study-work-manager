@@ -1,196 +1,209 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getSpace, updateSpace, deleteSpace, Space } from '../../../../lib/spaces-api';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSpace, useUpdateSpace, useDeleteSpace } from '@/hooks/useSpaces';
 import {
-  getObjects, updateObject, deleteObject, AppObject, ObjectType, TaskStatus, Priority,
-} from '../../../../lib/objects-api';
-import CreateObjectModal from '../../../../components/objects/CreateObjectModal';
-import EditObjectModal from '../../../../components/objects/EditObjectModal';
+  useObjects,
+  useUpdateObject,
+  useUpdateObjectLifecycle,
+} from '@/hooks/useObjects';
+import { AppObject, Priority, TaskStatus } from '@/lib/objects-api';
+import CreateObjectModal from '@/components/objects/CreateObjectModal';
+import EditObjectModal from '@/components/objects/EditObjectModal';
+import ObjectRelationsModal from '@/components/relations/ObjectRelationsModal';
+import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
 import KanbanBoard from '@/components/views/KanbanBoard';
 import WeeklyCalendar from '@/components/views/WeeklyCalendar';
-import ObjectRelationsModal from '@/components/relations/ObjectRelationsModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast } from '@/components/ui/Toast';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import {
   MoreHorizontal, Edit3, Archive, Trash2, Plus, LayoutGrid, List,
-  Clock, Loader2, ArrowLeft, Check, CheckSquare, Square, FileText,
-  Calendar, Search, Filter, AlertCircle, KanbanSquare, Link as LinkIcon,
+  Clock, ArrowLeft, Check, Search, KanbanSquare, Link as LinkIcon,
+  Calendar,
 } from 'lucide-react';
+import styles from './SpaceDetail.module.css';
 
-const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: string }> = {
-  LOW: { label: 'Thấp', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
-  MEDIUM: { label: 'Trung bình', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
-  HIGH: { label: 'Cao', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' },
-  URGENT: { label: 'Khẩn cấp', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+const PRIORITY_BADGE_VARIANT: Record<Priority, 'default' | 'success' | 'warning' | 'danger'> = {
+  LOW: 'success',
+  MEDIUM: 'default',
+  HIGH: 'warning',
+  URGENT: 'danger',
+};
+
+const PRIORITY_LABELS: Record<Priority, string> = {
+  LOW: 'Thấp',
+  MEDIUM: 'Trung bình',
+  HIGH: 'Cao',
+  URGENT: 'Khẩn cấp',
 };
 
 export default function SpaceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
   const spaceId = params.id as string;
 
-  // Space state
-  const [space, setSpace] = useState<Space | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Space queries & mutations
+  const { data: space, isLoading: loadingSpace, error } = useSpace(spaceId);
+  const updateSpaceMutation = useUpdateSpace();
+  const deleteSpaceMutation = useDeleteSpace();
+
+  // Objects queries & mutations
+  const { data: objects = [], isLoading: loadingObjects } = useObjects({ spaceId });
+  const updateObjectMutation = useUpdateObject();
+  const updateLifecycleMutation = useUpdateObjectLifecycle();
+
+  // Local state
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
-  const [showSpaceMenu, setShowSpaceMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban' | 'calendar'>('list');
+  const [selectedDrawerObjectId, setSelectedDrawerObjectId] = useState<string | null>(null);
 
-  // Objects state
-  const [objects, setObjects] = useState<AppObject[]>([]);
-  const [loadingObjects, setLoadingObjects] = useState(true);
+  // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createModalProps, setCreateModalProps] = useState<{ initialStatus?: TaskStatus; initialDueDate?: string } | null>(null);
   const [editingObject, setEditingObject] = useState<AppObject | null>(null);
   const [relationsObject, setRelationsObject] = useState<AppObject | null>(null);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // Dialogs state (replaces native confirms)
+  const [confirmDeleteSpace, setConfirmDeleteSpace] = useState(false);
+  const [objectToDelete, setObjectToDelete] = useState<AppObject | null>(null);
 
   // Filters & Search
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'TASK' | 'NOTE'>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'DONE'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load space info
-  const loadSpace = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getSpace(spaceId);
-      setSpace(data);
-      setNameInput(data.name);
-    } catch (err: any) {
-      setError(err?.message || 'Không thể tải thông tin Không gian');
-    } finally {
-      setLoading(false);
-    }
-  }, [spaceId]);
-
-  // Load objects for this space
-  const loadObjects = useCallback(async () => {
-    try {
-      setLoadingObjects(true);
-      const data = await getObjects({ spaceId });
-      setObjects(data);
-    } catch {
-      setObjects([]);
-    } finally {
-      setLoadingObjects(false);
-    }
-  }, [spaceId]);
-
-  useEffect(() => {
-    loadSpace();
-    loadObjects();
-  }, [loadSpace, loadObjects]);
-
-  // Close menus on outside click
-  useEffect(() => {
-    const close = () => {
-      setShowSpaceMenu(false);
-      setActiveMenuId(null);
-    };
-    window.addEventListener('click', close);
-    return () => window.removeEventListener('click', close);
-  }, []);
-
-  const handleSaveName = async () => {
+  const handleSaveName = () => {
     if (!space || !nameInput.trim()) return;
-    try {
-      const u = await updateSpace(space.id, { name: nameInput.trim() });
-      setSpace(u);
-    } catch {}
-    setEditingName(false);
+    updateSpaceMutation.mutate(
+      { id: space.id, payload: { name: nameInput.trim() } },
+      {
+        onSuccess: () => {
+          setEditingName(false);
+          addToast({
+            title: 'Thành công',
+            description: 'Đã đổi tên Không gian.',
+            variant: 'success',
+          });
+        },
+      },
+    );
   };
 
-  const handleArchiveSpace = async () => {
+  const handleArchiveSpace = () => {
     if (!space) return;
-    try {
-      await updateSpace(space.id, { isArchived: true });
-      router.push('/');
-    } catch {}
+    updateSpaceMutation.mutate(
+      { id: space.id, payload: { isArchived: true } },
+      {
+        onSuccess: () => {
+          addToast({
+            title: 'Đã lưu trữ',
+            description: `Không gian "${space.name}" đã được lưu trữ.`,
+            variant: 'info',
+          });
+          router.push('/');
+        },
+      },
+    );
   };
 
-  const handleDeleteSpace = async () => {
-    if (!space || !confirm('Xoá Không gian này? Các mục trong Không gian sẽ được đưa về mục Chung.')) return;
-    try {
-      await deleteSpace(space.id);
-      router.push('/');
-    } catch {}
+  const handleDeleteSpaceConfirm = () => {
+    if (!space) return;
+    setConfirmDeleteSpace(false);
+    deleteSpaceMutation.mutate(space.id, {
+      onSuccess: () => {
+        addToast({
+          title: 'Đã xoá Không gian',
+          description: `Không gian "${space.name}" đã được xoá. Các mục được đưa về Hộp nhận.`,
+          variant: 'info',
+        });
+        router.push('/');
+      },
+      onError: () => {
+        addToast({
+          title: 'Lỗi',
+          description: 'Không thể xoá Không gian này.',
+          variant: 'danger',
+        });
+      },
+    });
   };
 
   // Toggle task DONE <-> TODO
-  const handleToggleTaskStatus = async (item: AppObject) => {
+  const handleToggleTaskStatus = (item: AppObject) => {
     if (item.type !== 'TASK') return;
     const nextStatus: TaskStatus = item.status === 'DONE' ? 'TODO' : 'DONE';
-
-    // Optimistic update
-    setObjects(prev => prev.map(o => (o.id === item.id ? { ...o, status: nextStatus } : o)));
-
-    try {
-      const updated = await updateObject(item.id, { status: nextStatus });
-      setObjects(prev => prev.map(o => (o.id === item.id ? updated : o)));
-    } catch {
-      // Revert on failure
-      setObjects(prev => prev.map(o => (o.id === item.id ? item : o)));
-    }
+    updateObjectMutation.mutate(
+      { id: item.id, payload: { status: nextStatus } },
+      {
+        onSuccess: () => {
+          addToast({
+            title: nextStatus === 'DONE' ? 'Đã hoàn thành' : 'Đã mở lại công việc',
+            description: `"${item.title}"`,
+            variant: 'info',
+          });
+        },
+      },
+    );
   };
 
-  // Delete object
-  const handleDeleteObject = async (item: AppObject) => {
-    if (!confirm(`Xoá ${item.type === 'TASK' ? 'công việc' : 'ghi chú'} "${item.title}"?`)) return;
-    try {
-      await deleteObject(item.id);
-      setObjects(prev => prev.filter(o => o.id !== item.id));
-      if (space) {
-        setSpace(prev => prev ? {
-          ...prev,
-          _count: { spaceObjects: Math.max(0, (prev._count?.spaceObjects ?? 1) - 1) },
-        } : null);
-      }
-    } catch (err: any) {
-      alert(err?.message || 'Không thể xoá mục');
-    }
-  };
+  // Move object to Trash (Fixing BUG-01: Soft delete with Undo)
+  const handleConfirmDeleteObject = () => {
+    if (!objectToDelete) return;
+    const item = objectToDelete;
+    setObjectToDelete(null);
 
-  // Callback after creating object
-  const handleObjectCreated = (newObj: AppObject) => {
-    setObjects(prev => [newObj, ...prev]);
-    if (space) {
-      setSpace(prev => prev ? {
-        ...prev,
-        _count: { spaceObjects: (prev._count?.spaceObjects ?? 0) + 1 },
-      } : null);
-    }
-  };
-
-  // Callback after updating object
-  const handleObjectUpdated = (updated: AppObject) => {
-    setObjects(prev => prev.map(o => (o.id === updated.id ? updated : o)));
+    updateLifecycleMutation.mutate(
+      { id: item.id, action: 'TRASH' },
+      {
+        onSuccess: () => {
+          addToast({
+            title: 'Đã chuyển vào Thùng rác',
+            description: `Mục "${item.title}" đã được đưa vào Thùng rác.`,
+            variant: 'info',
+            action: {
+              label: 'Hoàn tác',
+              onClick: () => {
+                updateLifecycleMutation.mutate({ id: item.id, action: 'RESTORE' });
+              },
+            },
+          });
+        },
+        onError: () => {
+          addToast({
+            title: 'Lỗi',
+            description: 'Không thể xoá mục này.',
+            variant: 'danger',
+          });
+        },
+      },
+    );
   };
 
   // Filtered & searched objects
   const filteredObjects = useMemo(() => {
     return objects.filter(item => {
-      // Type filter
       if (typeFilter !== 'ALL' && item.type !== typeFilter) return false;
-
-      // Status filter (applies to Task)
       if (statusFilter !== 'ALL' && item.type === 'TASK') {
         if (statusFilter === 'DONE' && item.status !== 'DONE') return false;
         if (statusFilter === 'TODO' && item.status === 'DONE') return false;
       }
-
-      // Search filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const inTitle = item.title.toLowerCase().includes(q);
         const inDesc = item.description?.toLowerCase().includes(q);
         if (!inTitle && !inDesc) return false;
       }
-
       return true;
     });
   }, [objects, typeFilter, statusFilter, searchQuery]);
@@ -200,173 +213,130 @@ export default function SpaceDetailPage() {
   const tasksDoneCount = objects.filter(o => o.type === 'TASK' && o.status === 'DONE').length;
   const notesCount = objects.filter(o => o.type === 'NOTE').length;
 
-  if (loading) {
+  if (loadingSpace) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--text-secondary)', gap: '8px', minHeight: '300px' }}>
-        <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
-        <span>Đang tải Không gian...</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px' }}>
+        <Skeleton height="100px" />
+        <Skeleton height="300px" />
       </div>
     );
   }
 
   if (error || !space) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '16px', padding: '60px 20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '48px' }}>🔍</div>
-        <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-          {error || 'Không tìm thấy Không gian'}
-        </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, maxWidth: '400px' }}>
-          Không gian này có thể đã bị xoá hoặc bạn không có quyền truy cập.
-        </p>
-        <Link href="/" style={{
-          display: 'inline-flex', alignItems: 'center', gap: '8px',
-          padding: '10px 20px', borderRadius: '8px',
-          background: 'var(--primary-blue)', color: 'white',
-          textDecoration: 'none', fontSize: '14px', fontWeight: 500,
-        }}>
-          <ArrowLeft size={16} /> Quay lại Dashboard
-        </Link>
-      </div>
+      <EmptyState
+        title="Không tìm thấy Không gian"
+        description="Không gian này có thể đã bị xoá hoặc bạn không có quyền truy cập."
+        action={
+          <Button variant="primary" onClick={() => router.push('/')}>
+            <ArrowLeft size={16} /> Quay lại Dashboard
+          </Button>
+        }
+      />
     );
   }
 
   const color = space.color || '#6366f1';
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className={styles.container}>
       {/* Header Banner */}
-      <div style={{
-        background: color + '15',
-        borderBottom: '1px solid ' + color + '33',
-        padding: '30px 32px 20px',
-        position: 'relative',
-      }}>
+      <div
+        className={styles.headerBanner}
+        style={{
+          background: `${color}15`,
+          borderBottomColor: `${color}33`,
+        }}
+      >
         {/* Top actions: View mode & More */}
-        <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', gap: '8px' }}>
-          <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden' }}>
+        <div className={styles.topActions}>
+          <div className={styles.viewModeGroup}>
             <button
+              type="button"
               onClick={() => setViewMode('list')}
               title="Xem danh sách"
-              style={{
-                padding: '6px 10px', border: 'none', cursor: 'pointer', display: 'flex',
-                background: viewMode === 'list' ? color + '33' : 'transparent',
-                color: viewMode === 'list' ? color : 'var(--text-secondary)',
-              }}
+              className={`${styles.viewModeBtn} ${viewMode === 'list' ? styles.viewModeBtnActive : ''}`}
             >
               <List size={16} />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('grid')}
               title="Xem lưới"
-              style={{
-                padding: '6px 10px', border: 'none', cursor: 'pointer', display: 'flex',
-                background: viewMode === 'grid' ? color + '33' : 'transparent',
-                color: viewMode === 'grid' ? color : 'var(--text-secondary)',
-              }}
+              className={`${styles.viewModeBtn} ${viewMode === 'grid' ? styles.viewModeBtnActive : ''}`}
             >
               <LayoutGrid size={16} />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('kanban')}
-              title="Bảng Kanban kéo thả"
-              style={{
-                padding: '6px 10px', border: 'none', cursor: 'pointer', display: 'flex',
-                background: viewMode === 'kanban' ? color + '33' : 'transparent',
-                color: viewMode === 'kanban' ? color : 'var(--text-secondary)',
-              }}
+              title="Bảng Kanban"
+              className={`${styles.viewModeBtn} ${viewMode === 'kanban' ? styles.viewModeBtnActive : ''}`}
             >
               <KanbanSquare size={16} />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('calendar')}
               title="Lịch trình tuần"
-              style={{
-                padding: '6px 10px', border: 'none', cursor: 'pointer', display: 'flex',
-                background: viewMode === 'calendar' ? color + '33' : 'transparent',
-                color: viewMode === 'calendar' ? color : 'var(--text-secondary)',
-              }}
+              className={`${styles.viewModeBtn} ${viewMode === 'calendar' ? styles.viewModeBtnActive : ''}`}
             >
               <Calendar size={16} />
             </button>
           </div>
 
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowSpaceMenu(p => !p); }}
-              style={{
-                background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-                borderRadius: '8px', padding: '6px 10px', cursor: 'pointer',
-                color: 'var(--text-secondary)', display: 'flex',
-              }}
-            >
-              <MoreHorizontal size={16} />
-            </button>
-
-            {showSpaceMenu && (
-              <div
-                onClick={e => e.stopPropagation()}
+          <DropdownMenu
+            trigger={
+              <button
+                type="button"
+                className={styles.viewModeBtn}
                 style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: '4px', zIndex: 100,
-                  background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-                  borderRadius: '10px', padding: '4px', minWidth: '180px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
                 }}
               >
-                <button
-                  onClick={() => { setEditingName(true); setShowSpaceMenu(false); }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
-                    padding: '8px 12px', borderRadius: '6px', background: 'none', border: 'none',
-                    color: 'var(--text-primary)', fontSize: '14px', cursor: 'pointer', textAlign: 'left',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                >
-                  <Edit3 size={14} /> Đổi tên
-                </button>
-                <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
-                <button
-                  onClick={handleArchiveSpace}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
-                    padding: '8px 12px', borderRadius: '6px', background: 'none', border: 'none',
-                    color: 'var(--text-secondary)', fontSize: '14px', cursor: 'pointer', textAlign: 'left',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                >
-                  <Archive size={14} /> Lưu trữ
-                </button>
-                <button
-                  onClick={handleDeleteSpace}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
-                    padding: '8px 12px', borderRadius: '6px', background: 'none', border: 'none',
-                    color: '#ef4444', fontSize: '14px', cursor: 'pointer', textAlign: 'left',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                >
-                  <Trash2 size={14} /> Xoá
-                </button>
-              </div>
-            )}
-          </div>
+                <MoreHorizontal size={16} />
+              </button>
+            }
+            items={[
+              {
+                label: 'Đổi tên',
+                icon: <Edit3 size={14} />,
+                onClick: () => {
+                  setNameInput(space.name);
+                  setEditingName(true);
+                },
+              },
+              {
+                label: 'Lưu trữ Không gian',
+                icon: <Archive size={14} />,
+                onClick: handleArchiveSpace,
+              },
+              {
+                label: 'Xoá Không gian',
+                icon: <Trash2 size={14} />,
+                danger: true,
+                dividerAfter: false,
+                onClick: () => setConfirmDeleteSpace(true),
+              },
+            ]}
+          />
         </div>
 
         {/* Space Identity */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
-          <div style={{
-            width: '64px', height: '64px', borderRadius: '16px',
-            background: color + '33', border: '2px solid ' + color + '55',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '32px', flexShrink: 0,
-          }}>
+        <div className={styles.identityArea}>
+          <div
+            className={styles.iconBox}
+            style={{
+              background: `${color}33`,
+              border: `2px solid ${color}55`,
+            }}
+          >
             {space.icon}
           </div>
 
-          <div style={{ flex: 1 }}>
+          <div className={styles.spaceInfo}>
             {editingName ? (
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <input
@@ -378,28 +348,25 @@ export default function SpaceDetailPage() {
                     if (e.key === 'Escape') setEditingName(false);
                   }}
                   style={{
-                    fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)',
-                    background: 'var(--background)', border: '2px solid ' + color,
-                    borderRadius: '8px', padding: '4px 12px', outline: 'none', maxWidth: '400px',
+                    fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)',
+                    background: 'var(--surface)', border: `2px solid ${color}`,
+                    borderRadius: 'var(--radius-sm)', padding: '4px 12px', outline: 'none',
                   }}
                 />
-                <button onClick={handleSaveName} style={{
-                  padding: '8px 16px', background: color, color: 'white',
-                  border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600,
-                }}>
+                <Button variant="primary" size="sm" onClick={handleSaveName}>
                   Lưu
-                </button>
-                <button onClick={() => setEditingName(false)} style={{
-                  padding: '8px 16px', background: 'transparent', color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-subtle)', borderRadius: '8px', cursor: 'pointer',
-                }}>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setEditingName(false)}>
                   Huỷ
-                </button>
+                </Button>
               </div>
             ) : (
               <h1
-                style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, cursor: 'pointer' }}
-                onDoubleClick={() => setEditingName(true)}
+                className={styles.title}
+                onDoubleClick={() => {
+                  setNameInput(space.name);
+                  setEditingName(true);
+                }}
                 title="Nhấp đúp để đổi tên"
               >
                 {space.name}
@@ -407,36 +374,31 @@ export default function SpaceDetailPage() {
             )}
 
             {space.description && (
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '6px 0 0' }}>
-                {space.description}
-              </p>
+              <p className={styles.description}>{space.description}</p>
             )}
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '12px', alignItems: 'center' }}>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: '4px',
-                padding: '3px 10px', borderRadius: '20px',
-                background: color + '22', color: color, fontSize: '12px', fontWeight: 600,
-              }}>
+            <div className={styles.metaRow}>
+              <span
+                className={styles.metaBadge}
+                style={{ background: `${color}22`, color }}
+              >
                 {objects.length} mục
               </span>
 
               {tasksCount > 0 && (
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  padding: '3px 10px', borderRadius: '20px',
-                  background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', fontSize: '12px', fontWeight: 600,
-                }}>
+                <span
+                  className={styles.metaBadge}
+                  style={{ background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6' }}
+                >
                   {tasksDoneCount}/{tasksCount} việc hoàn thành
                 </span>
               )}
 
               {notesCount > 0 && (
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  padding: '3px 10px', borderRadius: '20px',
-                  background: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', fontSize: '12px', fontWeight: 600,
-                }}>
+                <span
+                  className={styles.metaBadge}
+                  style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#a855f7' }}
+                >
                   {notesCount} ghi chú
                 </span>
               )}
@@ -450,60 +412,36 @@ export default function SpaceDetailPage() {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, padding: '24px 32px', overflowY: 'auto' }}>
+      <div className={styles.contentArea}>
         {/* Controls Toolbar: Filters & Add Button */}
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
-          alignItems: 'center', gap: '16px', marginBottom: '20px',
-        }}>
-          {/* Left filters: Type tabs & Status */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
+        <div className={styles.controlsToolbar}>
+          <div className={styles.filterGroup}>
             {/* Type tabs */}
-            <div style={{
-              display: 'flex', background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-              borderRadius: '8px', padding: '3px', gap: '2px',
-            }}>
+            <div className={styles.typeTabs}>
               <button
+                type="button"
                 onClick={() => setTypeFilter('ALL')}
-                style={{
-                  padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: typeFilter === 'ALL' ? 600 : 500,
-                  background: typeFilter === 'ALL' ? 'var(--primary-blue)' : 'transparent',
-                  color: typeFilter === 'ALL' ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all 0.15s',
-                }}
+                className={`${styles.typeTabBtn} ${typeFilter === 'ALL' ? styles.typeTabBtnActive : ''}`}
               >
                 Tất cả ({objects.length})
               </button>
-
               <button
+                type="button"
                 onClick={() => setTypeFilter('TASK')}
-                style={{
-                  padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: typeFilter === 'TASK' ? 600 : 500,
-                  background: typeFilter === 'TASK' ? 'var(--primary-blue)' : 'transparent',
-                  color: typeFilter === 'TASK' ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all 0.15s',
-                }}
+                className={`${styles.typeTabBtn} ${typeFilter === 'TASK' ? styles.typeTabBtnActive : ''}`}
               >
                 Công việc ({tasksCount})
               </button>
-
               <button
+                type="button"
                 onClick={() => setTypeFilter('NOTE')}
-                style={{
-                  padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: typeFilter === 'NOTE' ? 600 : 500,
-                  background: typeFilter === 'NOTE' ? 'var(--primary-blue)' : 'transparent',
-                  color: typeFilter === 'NOTE' ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all 0.15s',
-                }}
+                className={`${styles.typeTabBtn} ${typeFilter === 'NOTE' ? styles.typeTabBtnActive : ''}`}
               >
                 Ghi chú ({notesCount})
               </button>
             </div>
 
-            {/* Status filter (if Tasks included) */}
+            {/* Status filter */}
             {typeFilter !== 'NOTE' && tasksCount > 0 && (
               <select
                 value={statusFilter}
@@ -521,56 +459,47 @@ export default function SpaceDetailPage() {
             )}
 
             {/* Search Input */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '6px 12px', borderRadius: '8px',
-              background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-              width: '220px',
-            }}>
+            <div className={styles.searchBox}>
               <Search size={14} color="var(--text-secondary)" />
               <input
                 type="text"
                 placeholder="Tìm kiếm mục..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                style={{
-                  border: 'none', background: 'transparent', outline: 'none',
-                  fontSize: '13px', color: 'var(--text-primary)', width: '100%',
-                }}
+                className={styles.searchInput}
               />
             </div>
           </div>
 
-          {/* Right: Add new button */}
-          <button
+          <Button
+            variant="primary"
             onClick={() => setShowCreateModal(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 18px', borderRadius: '8px', fontWeight: 600, fontSize: '14px',
-              background: color, color: '#ffffff', border: 'none', cursor: 'pointer',
-              boxShadow: '0 2px 8px ' + color + '44', transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
             <Plus size={16} /> Thêm mục mới
-          </button>
+          </Button>
         </div>
 
-        {/* Content list / grid / empty */}
+        {/* Views */}
         {loadingObjects ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px', color: 'var(--text-secondary)', gap: '8px' }}>
-            <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-            <span>Đang tải danh sách công việc và ghi chú...</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <Skeleton height="50px" />
+            <Skeleton height="50px" />
+            <Skeleton height="50px" />
           </div>
         ) : viewMode === 'kanban' ? (
           <KanbanBoard
             tasks={filteredObjects.filter(o => o.type === 'TASK')}
-            onTaskUpdated={handleObjectUpdated}
-            onTaskDeleted={handleDeleteObject}
+            onTaskUpdated={updated => {
+              updateObjectMutation.mutate({
+                id: updated.id,
+                payload: { status: updated.status, title: updated.title },
+              });
+            }}
+            onTaskDeleted={item => setObjectToDelete(item)}
             onEditTask={setEditingObject}
             onOpenRelations={setRelationsObject}
-            onAddTask={(status) => {
+            onSelectTask={task => setSelectedDrawerObjectId(task.id)}
+            onAddTask={status => {
               setCreateModalProps({ initialStatus: status });
               setShowCreateModal(true);
             }}
@@ -578,271 +507,154 @@ export default function SpaceDetailPage() {
         ) : viewMode === 'calendar' ? (
           <WeeklyCalendar
             tasks={filteredObjects.filter(o => o.type === 'TASK')}
-            onTaskUpdated={handleObjectUpdated}
+            onTaskUpdated={updated => {
+              updateObjectMutation.mutate({
+                id: updated.id,
+                payload: { status: updated.status, dueDate: updated.dueDate },
+              });
+            }}
             onEditTask={setEditingObject}
-            onAddTaskOnDate={(dateStr) => {
+            onSelectTask={task => setSelectedDrawerObjectId(task.id)}
+            onAddTaskOnDate={dateStr => {
               setCreateModalProps({ initialDueDate: dateStr });
               setShowCreateModal(true);
             }}
           />
         ) : filteredObjects.length === 0 ? (
-          /* Empty state */
-          <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', minHeight: '300px', textAlign: 'center',
-            border: '2px dashed ' + color + '44', borderRadius: '16px', padding: '40px',
-          }}>
-            <div style={{ fontSize: '56px', marginBottom: '16px' }}>{space.icon}</div>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-              {searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL'
-                ? 'Không tìm thấy mục nào phù hợp với bộ lọc'
-                : 'Không gian còn trống'}
-            </h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 20px', maxWidth: '360px' }}>
-              {searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL'
-                ? 'Hãy thử thay đổi từ khoá tìm kiếm hoặc đặt lại các bộ lọc.'
-                : `Thêm Công việc hoặc Ghi chú vào ${space.name} để bắt đầu quản lý tiến độ.`}
-            </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 24px', borderRadius: '10px', fontWeight: 600, fontSize: '14px',
-                background: color, color: '#ffffff', border: 'none', cursor: 'pointer',
-                transition: 'transform 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
-              onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
-            >
-              <Plus size={16} /> Thêm mục mới
-            </button>
-          </div>
+          <EmptyState
+            title={
+              searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL'
+                ? 'Không tìm thấy mục nào phù hợp'
+                : 'Không gian còn trống'
+            }
+            description={
+              searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL'
+                ? 'Hãy thử thay đổi từ khoá tìm kiếm hoặc bộ lọc.'
+                : `Thêm công việc hoặc ghi chú vào ${space.name} để bắt đầu.`
+            }
+            action={
+              <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                <Plus size={16} /> Thêm mục mới
+              </Button>
+            }
+          />
         ) : viewMode === 'list' ? (
-          /* LIST VIEW */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          /* List View */
+          <div className={styles.listView}>
             {filteredObjects.map(item => {
               const isTask = item.type === 'TASK';
               const isDone = isTask && item.status === 'DONE';
-              const pConfig = isTask ? PRIORITY_CONFIG[item.priority] : null;
-              const isOverdue = isTask && !isDone && item.dueDate && new Date(item.dueDate) < new Date();
+              const pVariant = item.priority ? PRIORITY_BADGE_VARIANT[item.priority] : 'default';
+              const pLabel = item.priority ? PRIORITY_LABELS[item.priority] : null;
 
               return (
                 <div
                   key={item.id}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '14px',
-                    padding: '12px 16px', borderRadius: '10px',
-                    background: isDone ? 'var(--canvas-bg)' : 'var(--surface)',
-                    border: '1px solid var(--border-subtle)',
-                    transition: 'all 0.15s', position: 'relative',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = color + '88')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+                  className={`${styles.listItem} ${isDone ? styles.listItemDone : ''}`}
+                  onClick={() => setSelectedDrawerObjectId(item.id)}
+                  style={{ cursor: 'pointer' }}
                 >
-                  {/* Task Checkbox / Note Icon */}
                   {isTask ? (
                     <button
-                      onClick={() => handleToggleTaskStatus(item)}
-                      title={isDone ? 'Đánh dấu chưa hoàn thành' : 'Đánh dấu hoàn thành'}
-                      style={{
-                        width: '22px', height: '22px', borderRadius: '6px',
-                        border: isDone ? 'none' : '2px solid var(--border-subtle)',
-                        background: isDone ? '#10b981' : 'transparent',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', flexShrink: 0, padding: 0,
-                        transition: 'all 0.15s',
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleTaskStatus(item);
                       }}
+                      className={`${styles.checkboxBtn} ${isDone ? styles.checkboxBtnDone : ''}`}
                     >
                       {isDone && <Check size={14} color="#ffffff" strokeWidth={3} />}
                     </button>
                   ) : (
-                    <div style={{
-                      width: '26px', height: '26px', borderRadius: '6px',
-                      background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '13px', flexShrink: 0,
-                    }}>
-                      📝
-                    </div>
+                    <span style={{ fontSize: '18px' }}>📝</span>
                   )}
 
-                  {/* Title & Description */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '14px', fontWeight: 600,
-                      color: isDone ? 'var(--text-secondary)' : 'var(--text-primary)',
-                      textDecoration: isDone ? 'line-through' : 'none',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
+                    <div className={`${styles.itemTitle} ${isDone ? styles.itemTitleDone : ''}`}>
                       {item.title}
                     </div>
-
                     {item.description && (
-                      <div style={{
-                        fontSize: '12px', color: 'var(--text-secondary)',
-                        marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
-                        {item.description}
-                      </div>
+                      <div className={styles.itemDesc}>{item.description}</div>
                     )}
                   </div>
 
-                  {/* Badges: Priority, Due Date, Type */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    {/* Priority badge */}
-                    {pConfig && (
-                      <span style={{
-                        fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px',
-                        background: pConfig.bg, color: pConfig.color,
-                      }}>
-                        {pConfig.label}
-                      </span>
-                    )}
-
-                    {/* Due date badge */}
+                  <div className={styles.badgeGroup}>
+                    {pLabel && <Badge variant={pVariant}>{pLabel}</Badge>}
                     {item.dueDate && (
-                      <span style={{
-                        display: 'flex', alignItems: 'center', gap: '4px',
-                        fontSize: '11px', padding: '2px 8px', borderRadius: '12px',
-                        background: isOverdue ? 'rgba(239, 68, 68, 0.15)' : 'var(--border-subtle)',
-                        color: isOverdue ? '#ef4444' : 'var(--text-secondary)',
-                        fontWeight: isOverdue ? 600 : 400,
-                      }}>
-                        <Calendar size={11} />
-                        {new Date(item.dueDate).toLocaleDateString('vi-VN')}
-                        {isOverdue && ' (Quá hạn)'}
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={11} /> {new Date(item.dueDate).toLocaleDateString('vi-VN')}
                       </span>
                     )}
-
-                    {/* Note Tag */}
-                    {!isTask && (
-                      <span style={{
-                        fontSize: '11px', padding: '2px 8px', borderRadius: '12px',
-                        background: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', fontWeight: 500,
-                      }}>
-                        Ghi chú
-                      </span>
-                    )}
+                    {!isTask && <Badge variant="default">Ghi chú</Badge>}
                   </div>
 
-                  {/* Action buttons: Relations & Menu */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
-                      onClick={() => setRelationsObject(item)}
-                      title="Liên kết tham chiếu"
-                      style={{
-                        background: 'transparent', border: 'none', cursor: 'pointer',
-                        color: 'var(--text-secondary)', padding: '4px', borderRadius: '4px',
-                        display: 'flex', alignItems: 'center',
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRelationsObject(item);
                       }}
-                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary-blue)')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                      title="Liên kết tham chiếu"
+                      className={styles.actionBtn}
                     >
                       <LinkIcon size={15} />
                     </button>
-
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setActiveMenuId(activeMenuId === item.id ? null : item.id);
+                        setEditingObject(item);
                       }}
-                      style={{
-                        background: 'transparent', border: 'none', cursor: 'pointer',
-                        color: 'var(--text-secondary)', padding: '4px', borderRadius: '4px',
-                        display: 'flex', alignItems: 'center',
-                      }}
+                      title="Sửa"
+                      className={styles.actionBtn}
                     >
-                      <MoreHorizontal size={16} />
+                      <Edit3 size={15} />
                     </button>
-
-                    {activeMenuId === item.id && (
-                      <div
-                        onClick={e => e.stopPropagation()}
-                        style={{
-                          position: 'absolute', top: '100%', right: 0, marginTop: '4px', zIndex: 50,
-                          background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px', padding: '4px', minWidth: '150px',
-                          boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-                        }}
-                      >
-                        <button
-                          onClick={() => { setRelationsObject(item); setActiveMenuId(null); }}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-                            padding: '6px 10px', borderRadius: '4px', background: 'none', border: 'none',
-                            color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', textAlign: 'left',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                        >
-                          <LinkIcon size={13} /> Liên kết tham chiếu
-                        </button>
-                        <button
-                          onClick={() => { setEditingObject(item); setActiveMenuId(null); }}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-                            padding: '6px 10px', borderRadius: '4px', background: 'none', border: 'none',
-                            color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', textAlign: 'left',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                        >
-                          <Edit3 size={13} /> Sửa
-                        </button>
-                        <button
-                          onClick={() => { handleDeleteObject(item); setActiveMenuId(null); }}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-                            padding: '6px 10px', borderRadius: '4px', background: 'none', border: 'none',
-                            color: '#ef4444', fontSize: '13px', cursor: 'pointer', textAlign: 'left',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                        >
-                          <Trash2 size={13} /> Xoá
-                        </button>
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setObjectToDelete(item);
+                      }}
+                      title="Xoá"
+                      className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          /* GRID VIEW */
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px',
-          }}>
+          /* Grid View */
+          <div className={styles.gridView}>
             {filteredObjects.map(item => {
               const isTask = item.type === 'TASK';
               const isDone = isTask && item.status === 'DONE';
-              const pConfig = isTask ? PRIORITY_CONFIG[item.priority] : null;
+              const pVariant = item.priority ? PRIORITY_BADGE_VARIANT[item.priority] : 'default';
+              const pLabel = item.priority ? PRIORITY_LABELS[item.priority] : null;
 
               return (
                 <div
                   key={item.id}
-                  style={{
-                    background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-                    borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column',
-                    justifyContent: 'space-between', gap: '12px', transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = color + '88')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+                  className={styles.gridCard}
+                  onClick={() => setSelectedDrawerObjectId(item.id)}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div>
-                    {/* Card Header: Type badge & actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div className={styles.cardTop}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {isTask ? (
                           <button
-                            onClick={() => handleToggleTaskStatus(item)}
-                            style={{
-                              width: '18px', height: '18px', borderRadius: '4px',
-                              border: isDone ? 'none' : '1.5px solid var(--border-subtle)',
-                              background: isDone ? '#10b981' : 'transparent',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              cursor: 'pointer', padding: 0,
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleTaskStatus(item);
                             }}
+                            className={`${styles.checkboxBtn} ${isDone ? styles.checkboxBtnDone : ''}`}
+                            style={{ width: '18px', height: '18px' }}
                           >
                             {isDone && <Check size={12} color="#ffffff" strokeWidth={3} />}
                           </button>
@@ -856,45 +668,48 @@ export default function SpaceDetailPage() {
 
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button
-                          onClick={() => setRelationsObject(item)}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRelationsObject(item);
+                          }}
                           title="Liên kết tham chiếu"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px' }}
-                          onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary-blue)')}
-                          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                          className={styles.actionBtn}
                         >
                           <LinkIcon size={14} />
                         </button>
                         <button
-                          onClick={() => setEditingObject(item)}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingObject(item);
+                          }}
                           title="Sửa"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px' }}
+                          className={styles.actionBtn}
                         >
                           <Edit3 size={14} />
                         </button>
                         <button
-                          onClick={() => handleDeleteObject(item)}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setObjectToDelete(item);
+                          }}
                           title="Xoá"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '2px' }}
+                          className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
 
-                    {/* Card Title */}
-                    <div style={{
-                      fontSize: '15px', fontWeight: 600,
-                      color: isDone ? 'var(--text-secondary)' : 'var(--text-primary)',
-                      textDecoration: isDone ? 'line-through' : 'none',
-                      marginBottom: '6px',
-                    }}>
+                    <div className={`${styles.itemTitle} ${isDone ? styles.itemTitleDone : ''}`}>
                       {item.title}
                     </div>
 
-                    {/* Card Description */}
                     {item.description && (
                       <p style={{
-                        fontSize: '13px', color: 'var(--text-secondary)', margin: 0,
+                        fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0',
                         lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical', overflow: 'hidden',
                       }}>
@@ -903,26 +718,20 @@ export default function SpaceDetailPage() {
                     )}
                   </div>
 
-                  {/* Card Footer */}
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     paddingTop: '8px', borderTop: '1px solid var(--border-subtle)',
                     fontSize: '11px', color: 'var(--text-secondary)',
                   }}>
-                    {pConfig ? (
-                      <span style={{
-                        padding: '2px 6px', borderRadius: '10px',
-                        background: pConfig.bg, color: pConfig.color, fontWeight: 600,
-                      }}>
-                        {pConfig.label}
-                      </span>
+                    {pLabel ? (
+                      <Badge variant={pVariant}>{pLabel}</Badge>
                     ) : (
                       <span>{new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
                     )}
 
                     {item.dueDate && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Calendar size={11} /> {new Date(item.dueDate).toLocaleDateString('vi-VN')}
+                        <Clock size={11} /> {new Date(item.dueDate).toLocaleDateString('vi-VN')}
                       </span>
                     )}
                   </div>
@@ -936,14 +745,22 @@ export default function SpaceDetailPage() {
       {/* Modals */}
       {showCreateModal && (
         <CreateObjectModal
-          initialSpaceId={spaceId}
+          spaceId={spaceId}
           initialStatus={createModalProps?.initialStatus}
           initialDueDate={createModalProps?.initialDueDate}
           onClose={() => {
             setShowCreateModal(false);
             setCreateModalProps(null);
           }}
-          onCreated={handleObjectCreated}
+          onCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ['objects'] });
+            queryClient.invalidateQueries({ queryKey: ['spaces'] });
+            addToast({
+              title: 'Thành công',
+              description: 'Đã thêm mục mới vào Không gian.',
+              variant: 'success',
+            });
+          }}
         />
       )}
 
@@ -951,14 +768,62 @@ export default function SpaceDetailPage() {
         <EditObjectModal
           object={editingObject}
           onClose={() => setEditingObject(null)}
-          onUpdated={handleObjectUpdated}
+          onUpdated={updated => {
+            updateObjectMutation.mutate({
+              id: updated.id,
+              payload: {
+                title: updated.title,
+                description: updated.description,
+                status: updated.status,
+                priority: updated.priority,
+                dueDate: updated.dueDate,
+              },
+            });
+            setEditingObject(null);
+            addToast({
+              title: 'Thành công',
+              description: 'Đã cập nhật mục.',
+              variant: 'success',
+            });
+          }}
         />
       )}
 
       {relationsObject && (
         <ObjectRelationsModal
-          currentObject={relationsObject}
+          object={relationsObject}
           onClose={() => setRelationsObject(null)}
+        />
+      )}
+
+      {/* Confirm Delete Space Dialog */}
+      <ConfirmDialog
+        open={confirmDeleteSpace}
+        title="Xoá Không gian?"
+        description={`Bạn có chắc muốn xoá Không gian "${space.name}"? Các mục thuộc Không gian này sẽ không bị xoá mà chuyển về Hộp nhận chung.`}
+        confirmLabel="Xoá Không gian"
+        variant="danger"
+        onConfirm={handleDeleteSpaceConfirm}
+        onCancel={() => setConfirmDeleteSpace(false)}
+      />
+
+      {/* Confirm Delete Object Dialog */}
+      <ConfirmDialog
+        open={Boolean(objectToDelete)}
+        title="Xoá mục này?"
+        description={`Bạn có chắc muốn chuyển "${objectToDelete?.title}" vào Thùng rác? Bạn có thể hoàn tác hoặc khôi phục từ Thùng rác.`}
+        confirmLabel="Chuyển vào Thùng rác"
+        variant="danger"
+        onConfirm={handleConfirmDeleteObject}
+        onCancel={() => setObjectToDelete(null)}
+      />
+
+      {/* Object Detail Drawer */}
+      {selectedDrawerObjectId && (
+        <ObjectDetailDrawer
+          objectId={selectedDrawerObjectId}
+          onClose={() => setSelectedDrawerObjectId(null)}
+          onSelectObject={id => setSelectedDrawerObjectId(id)}
         />
       )}
     </div>

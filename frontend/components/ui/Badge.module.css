@@ -1,0 +1,61 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.task {
+  background-color: var(--tag-task-bg);
+  color: var(--tag-task-text);
+}
+
+.note {
+  background-color: var(--tag-note-bg);
+  color: var(--tag-note-text);
+}
+
+.event {
+  background-color: var(--tag-event-bg);
+  color: var(--tag-event-text);
+}
+
+.reference {
+  background-color: var(--tag-ref-bg);
+  color: var(--tag-ref-text);
+}
+
+.urgent {
+  background-color: var(--tag-urgent-bg);
+  color: var(--tag-urgent-text);
+}
+
+.neutral {
+  background-color: var(--surface-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.default {
+  background-color: var(--primary-blue-subtle, rgba(59, 130, 246, 0.15));
+  color: var(--primary-blue);
+}
+
+.success {
+  background-color: var(--success-subtle, rgba(16, 185, 129, 0.15));
+  color: var(--success);
+}
+
+.warning {
+  background-color: var(--warning-subtle, rgba(245, 158, 11, 0.15));
+  color: var(--warning);
+}
+
+.danger {
+  background-color: var(--danger-subtle, rgba(239, 68, 68, 0.15));
+  color: var(--danger);
+}

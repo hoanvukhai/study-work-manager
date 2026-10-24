@@ -9,6 +9,8 @@ export interface User {
   email: string;
   fullName: string;
   avatarUrl?: string;
+  role?: 'USER' | 'ADMIN';
+  lockedAt?: string | null;
   createdAt: string;
 }
 
@@ -19,6 +21,8 @@ interface AuthContextType {
   register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: { fullName?: string; avatarUrl?: string }) => Promise<User>;
+  changePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,13 +97,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const userData = await apiRequest<User>('/auth/me');
       setUser(userData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
     } catch {
       logout();
     }
   };
 
+  const updateProfile = async (data: { fullName?: string; avatarUrl?: string }): Promise<User> => {
+    const updated = await apiRequest<User>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    setUser(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(updated));
+    }
+    return updated;
+  };
+
+  const changePassword = async (data: { currentPassword: string; newPassword: string }): Promise<void> => {
+    await apiRequest<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, updateProfile, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

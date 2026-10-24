@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import styles from '../Auth.module.css';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,8 +33,8 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Mật khẩu phải có tối thiểu 6 ký tự');
+    if (password.length < 8) {
+      setError('Mật khẩu phải có tối thiểu 8 ký tự');
       return;
     }
 
@@ -47,177 +50,69 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100vw',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'var(--canvas-bg, #f8f9fa)',
-      padding: '24px',
-      boxSizing: 'border-box',
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '440px',
-        backgroundColor: '#ffffff',
-        border: '1px solid var(--border-subtle, #e0e0e0)',
-        borderRadius: '16px',
-        padding: '36px 32px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-      }}>
+    <div className={styles.pageWrapper}>
+      <div className={styles.authCard}>
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'var(--primary-blue, #1a73e8)',
-            color: '#ffffff',
-            fontWeight: 700,
-            fontSize: '22px',
-            marginBottom: '12px',
-          }}>
-            S
-          </div>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary, #202124)', margin: '0 0 6px 0' }}>
-            Tạo tài khoản mới
-          </h1>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary, #5f6368)', margin: 0 }}>
+        <div className={styles.brandHeader}>
+          <div className={styles.brandIcon}>S</div>
+          <h1 className={styles.brandTitle}>Tạo tài khoản mới</h1>
+          <p className={styles.brandSubtitle}>
             Bắt đầu tổ chức học tập và công việc theo cách thông minh
           </p>
         </div>
 
-        {error && (
-          <div style={{
-            backgroundColor: '#fce8e6',
-            color: '#c5221f',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            marginBottom: '18px',
-            border: '1px solid #fad2cf',
-          }}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.errorBox}>{error}</div>}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary, #202124)', marginBottom: '6px' }}>
-              Họ và tên
-            </label>
-            <input
-              type="text"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="ví dụ: Nguyễn Văn An"
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle, #dadce0)',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <Input
+            label="Họ và tên"
+            type="text"
+            required
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            placeholder="ví dụ: Nguyễn Văn An"
+          />
 
-          <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary, #202124)', marginBottom: '6px' }}>
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ví dụ: user@example.com"
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle, #dadce0)',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="ví dụ: user@example.com"
+          />
 
-          <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary, #202124)', marginBottom: '6px' }}>
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Tối thiểu 6 ký tự..."
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle, #dadce0)',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          <Input
+            label="Mật khẩu"
+            type="password"
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Tối thiểu 8 ký tự..."
+          />
 
-          <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary, #202124)', marginBottom: '6px' }}>
-              Xác nhận mật khẩu
-            </label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Nhập lại mật khẩu..."
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle, #dadce0)',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          <Input
+            label="Xác nhận mật khẩu"
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            placeholder="Nhập lại mật khẩu..."
+          />
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--primary-blue, #1a73e8)',
-              color: '#ffffff',
-              fontSize: '14px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              marginTop: '4px',
-            }}
+            style={{ width: '100%', marginTop: '6px' }}
           >
             {loading ? 'Đang tạo tài khoản...' : 'Đăng ký tài khoản'}
-          </button>
+          </Button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '22px', fontSize: '13px', color: 'var(--text-secondary, #5f6368)' }}>
+        <div className={styles.footerText}>
           Đã có tài khoản?{' '}
-          <Link href="/login" style={{ color: 'var(--primary-blue, #1a73e8)', fontWeight: 600, textDecoration: 'none' }}>
+          <Link href="/login" className={styles.footerLink}>
             Đăng nhập ngay
           </Link>
         </div>

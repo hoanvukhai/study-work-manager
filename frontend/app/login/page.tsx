@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import styles from '../Auth.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,134 +38,51 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100vw',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'var(--canvas-bg, #f8f9fa)',
-      padding: '24px',
-      boxSizing: 'border-box',
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '420px',
-        backgroundColor: '#ffffff',
-        border: '1px solid var(--border-subtle, #e0e0e0)',
-        borderRadius: '16px',
-        padding: '36px 32px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-      }}>
+    <div className={styles.pageWrapper}>
+      <div className={styles.authCard}>
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'var(--primary-blue, #1a73e8)',
-            color: '#ffffff',
-            fontWeight: 700,
-            fontSize: '22px',
-            marginBottom: '12px',
-          }}>
-            S
-          </div>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary, #202124)', margin: '0 0 6px 0' }}>
-            Đăng nhập Study & Work
-          </h1>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary, #5f6368)', margin: 0 }}>
+        <div className={styles.brandHeader}>
+          <div className={styles.brandIcon}>S</div>
+          <h1 className={styles.brandTitle}>Đăng nhập Study & Work</h1>
+          <p className={styles.brandSubtitle}>
             Hệ thống Quản lý Học tập & Công việc Cá nhân
           </p>
         </div>
 
-        {error && (
-          <div style={{
-            backgroundColor: '#fce8e6',
-            color: '#c5221f',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            marginBottom: '18px',
-            border: '1px solid #fad2cf',
-          }}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.errorBox}>{error}</div>}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary, #202124)', marginBottom: '6px' }}>
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Nhập email của bạn (ví dụ: hoan@example.com)"
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle, #dadce0)',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <Input
+            label="Email"
+            type="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="ví dụ: demo@example.com"
+          />
 
-          <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary, #202124)', marginBottom: '6px' }}>
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu..."
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle, #dadce0)',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          <Input
+            label="Mật khẩu"
+            type="password"
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Nhập mật khẩu..."
+          />
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--primary-blue, #1a73e8)',
-              color: '#ffffff',
-              fontSize: '14px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              marginTop: '4px',
-              transition: 'background 0.2s',
-            }}
+            style={{ width: '100%', marginTop: '6px' }}
           >
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-          </button>
+          </Button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '22px', fontSize: '13px', color: 'var(--text-secondary, #5f6368)' }}>
+        <div className={styles.footerText}>
           Chưa có tài khoản?{' '}
-          <Link href="/register" style={{ color: 'var(--primary-blue, #1a73e8)', fontWeight: 600, textDecoration: 'none' }}>
+          <Link href="/register" className={styles.footerLink}>
             Đăng ký ngay
           </Link>
         </div>

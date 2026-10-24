@@ -11,12 +11,15 @@ interface Props {
   onEditTask?: (task: AppObject) => void;
   onOpenRelations?: (task: AppObject) => void;
   onAddTask?: (status: TaskStatus) => void;
+  onSelectTask?: (task: AppObject) => void;
+  showCancelled?: boolean;
 }
 
-const COLUMNS: { status: TaskStatus; title: string; color: string; bg: string }[] = [
+const ALL_COLUMNS: { status: TaskStatus; title: string; color: string; bg: string }[] = [
   { status: 'TODO', title: 'Cần làm', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.08)' },
   { status: 'IN_PROGRESS', title: 'Đang thực hiện', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.08)' },
   { status: 'DONE', title: 'Hoàn thành', color: '#10b981', bg: 'rgba(16, 185, 129, 0.08)' },
+  { status: 'CANCELLED', title: 'Đã hủy', color: '#64748b', bg: 'rgba(100, 116, 139, 0.08)' },
 ];
 
 const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: string }> = {
@@ -33,9 +36,15 @@ export default function KanbanBoard({
   onEditTask,
   onOpenRelations,
   onAddTask,
+  onSelectTask,
+  showCancelled = false,
 }: Props) {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
+
+  const columns = showCancelled
+    ? ALL_COLUMNS
+    : ALL_COLUMNS.filter(c => c.status !== 'CANCELLED');
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData('text/plain', taskId);
@@ -80,12 +89,12 @@ export default function KanbanBoard({
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '20px',
+      gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
+      gap: '16px',
       alignItems: 'start',
       minHeight: '520px',
     }}>
-      {COLUMNS.map(col => {
+      {columns.map(col => {
         const colTasks = tasks.filter(t => t.status === col.status);
         const isTarget = dragOverCol === col.status;
 
@@ -149,22 +158,24 @@ export default function KanbanBoard({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
               {colTasks.map(task => {
                 const isDragging = draggedTaskId === task.id;
-                const pConfig = PRIORITY_CONFIG[task.priority];
+                const pConfig = task.priority ? PRIORITY_CONFIG[task.priority] : null;
                 const isDone = task.status === 'DONE';
-                const isOverdue = !isDone && task.dueDate && new Date(task.dueDate) < new Date();
+                const isCancelled = task.status === 'CANCELLED';
+                const isOverdue = !isDone && !isCancelled && task.dueDate && new Date(task.dueDate) < new Date();
 
                 return (
                   <div
                     key={task.id}
                     draggable
                     onDragStart={e => handleDragStart(e, task.id)}
+                    onClick={() => onSelectTask && onSelectTask(task)}
                     style={{
                       background: 'var(--background)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: '10px',
                       padding: '14px',
-                      cursor: 'grab',
-                      opacity: isDragging ? 0.4 : 1,
+                      cursor: 'pointer',
+                      opacity: isDragging ? 0.4 : isCancelled ? 0.6 : 1,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                       transition: 'all 0.15s',
                       position: 'relative',
@@ -176,8 +187,8 @@ export default function KanbanBoard({
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
                       <div style={{
                         fontSize: '14px', fontWeight: 600,
-                        color: isDone ? 'var(--text-secondary)' : 'var(--text-primary)',
-                        textDecoration: isDone ? 'line-through' : 'none',
+                        color: isDone || isCancelled ? 'var(--text-secondary)' : 'var(--text-primary)',
+                        textDecoration: isDone || isCancelled ? 'line-through' : 'none',
                         lineHeight: '1.3',
                       }}>
                         {task.title}
@@ -186,7 +197,10 @@ export default function KanbanBoard({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
                         {onOpenRelations && (
                           <button
-                            onClick={() => onOpenRelations(task)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenRelations(task);
+                            }}
                             title="Liên kết chéo"
                             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px' }}
                           >
@@ -195,7 +209,10 @@ export default function KanbanBoard({
                         )}
                         {onEditTask && (
                           <button
-                            onClick={() => onEditTask(task)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditTask(task);
+                            }}
                             title="Sửa"
                             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px' }}
                           >
@@ -204,7 +221,10 @@ export default function KanbanBoard({
                         )}
                         {onTaskDeleted && (
                           <button
-                            onClick={() => onTaskDeleted(task)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTaskDeleted(task);
+                            }}
                             title="Xoá"
                             style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '2px' }}
                           >

@@ -1,5 +1,8 @@
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
+import { ThemeProvider } from '@/lib/theme-context';
+import { ReactQueryProvider } from '@/lib/query-provider';
+import { ToastProvider } from '@/components/ui/Toast';
 
 export const metadata = {
   title: 'Study & Work Manager — Hệ thống Quản lý Học tập & Công việc',
@@ -12,11 +15,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ThemeProvider>
+          <ReactQueryProvider>
+            <AuthProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </AuthProvider>
+          </ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

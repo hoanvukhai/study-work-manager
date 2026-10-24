@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
-import { updateObject, AppObject, Priority, TaskStatus, UpdateObjectPayload } from '@/lib/objects-api';
+import { AppObject, Priority, TaskStatus, UpdateObjectPayload } from '@/lib/objects-api';
+import { useUpdateObject } from '@/hooks/useObjects';
+import { useToast } from '@/components/ui/Toast';
 
 interface Props {
   object: AppObject;
@@ -27,13 +29,22 @@ const STATUSES: { value: TaskStatus; label: string }[] = [
 export default function EditObjectModal({ object, onClose, onUpdated }: Props) {
   const [title, setTitle] = useState(object.title);
   const [description, setDescription] = useState(object.description || '');
-  const [status, setStatus] = useState<TaskStatus>(object.status);
-  const [priority, setPriority] = useState<Priority>(object.priority);
+  const [status, setStatus] = useState<TaskStatus>(object.status || 'TODO');
+  const [priority, setPriority] = useState<Priority>(object.priority || 'MEDIUM');
   const [dueDate, setDueDate] = useState(
-    object.dueDate ? new Date(object.dueDate).toISOString().split('T')[0] : '',
+    object.dueDate ? new Date(object.dueDate).toISOString().slice(0, 16) : '',
   );
-  const [loading, setLoading] = useState(false);
+  const [startAt, setStartAt] = useState(
+    object.startAt ? new Date(object.startAt).toISOString().slice(0, 16) : '',
+  );
+  const [endAt, setEndAt] = useState(
+    object.endAt ? new Date(object.endAt).toISOString().slice(0, 16) : '',
+  );
+  const [url, setUrl] = useState(object.url || '');
   const [error, setError] = useState('');
+
+  const updateObjectMutation = useUpdateObject();
+  const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +53,22 @@ export default function EditObjectModal({ object, onClose, onUpdated }: Props) {
       return;
     }
 
-    setLoading(true);
+    if (object.type === 'EVENT' && startAt && endAt) {
+      if (new Date(endAt).getTime() <= new Date(startAt).getTime()) {
+        setError('Thời gian kết thúc phải sau thời gian bắt đầu');
+        return;
+      }
+    }
+
+    if (object.type === 'REFERENCE' && url) {
+      try {
+        new URL(url);
+      } catch {
+        setError('Vui lòng nhập đường dẫn URL hợp lệ');
+        return;
+      }
+    }
+
     setError('');
 
     try {
@@ -54,67 +80,114 @@ export default function EditObjectModal({ object, onClose, onUpdated }: Props) {
           priority,
           dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         }),
+        ...(object.type === 'EVENT' && {
+          priority,
+          startAt: startAt ? new Date(startAt).toISOString() : null,
+          endAt: endAt ? new Date(endAt).toISOString() : null,
+        }),
+        ...(object.type === 'REFERENCE' && {
+          url: url.trim() || null,
+        }),
       };
 
-      const updated = await updateObject(object.id, payload);
+      const updated = await updateObjectMutation.mutateAsync({
+        id: object.id,
+        payload,
+      });
+
+      toast.success('Đã lưu thay đổi thành công!');
       onUpdated(updated);
       onClose();
     } catch (err: any) {
       setError(err?.message || 'Không thể cập nhật. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const getTypeName = () => {
+    switch (object.type) {
+      case 'TASK':
+        return 'Công việc';
+      case 'NOTE':
+        return 'Ghi chú';
+      case 'EVENT':
+        return 'Sự kiện';
+      case 'REFERENCE':
+        return 'Tài liệu tham khảo';
     }
   };
 
   return (
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: '16px',
-        width: '520px',
-        maxWidth: '95vw',
-        maxHeight: '90vh',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        background: 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(3px)',
         display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
-        animation: 'slideIn 0.2s ease-out',
-        overflow: 'hidden',
-      }}>
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        animation: 'fadeIn 0.15s ease',
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !updateObjectMutation.isPending) onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-object-modal-title"
+    >
+      <div
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          width: '540px',
+          maxWidth: '100%',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: 'var(--shadow-lg)',
+          animation: 'slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+          overflow: 'hidden',
+        }}
+      >
         {/* Header */}
-        <div style={{
-          padding: '20px 24px 16px',
-          borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
+        <div
+          style={{
+            padding: '18px 24px 14px',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              Chỉnh sửa {object.type === 'TASK' ? 'Công việc' : 'Ghi chú'}
+            <h2 id="edit-object-modal-title" style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+              Chỉnh sửa {getTypeName()}
             </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+              Cập nhật thông tin chi tiết
+            </p>
           </div>
           <button
             onClick={onClose}
+            disabled={updateObjectMutation.isPending}
             style={{
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--text-secondary)', padding: '6px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '6px', transition: 'all 0.2s',
+              padding: '6px',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            aria-label="Đóng"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: '20px 24px', overflowY: 'auto', flex: 1 }}>
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px', overflowY: 'auto' }}>
           {/* Title */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -122,149 +195,238 @@ export default function EditObjectModal({ object, onClose, onUpdated }: Props) {
             </label>
             <input
               type="text"
-              autoFocus
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               maxLength={255}
+              required
               style={{
-                width: '100%', padding: '10px 12px', fontSize: '14px',
-                background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                boxSizing: 'border-box',
+                width: '100%',
+                padding: '9px 12px',
+                fontSize: '14px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                outline: 'none',
               }}
             />
           </div>
+
+          {/* Reference URL */}
+          {object.type === 'REFERENCE' && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                Đường dẫn URL
+              </label>
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://..."
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  fontSize: '14px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Status (cho Task) */}
+          {object.type === 'TASK' && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                Trạng thái
+              </label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {STATUSES.map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setStatus(s.value)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '13px',
+                      fontWeight: status === s.value ? 600 : 500,
+                      border: status === s.value ? '2px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
+                      background: status === s.value ? 'var(--primary-blue-subtle)' : 'var(--surface)',
+                      color: status === s.value ? 'var(--primary-blue)' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              Mô tả / Nội dung
+              {object.type === 'NOTE' ? 'Nội dung ghi chú' : 'Mô tả chi tiết'}
             </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               rows={object.type === 'NOTE' ? 6 : 3}
               style={{
-                width: '100%', padding: '10px 12px', fontSize: '14px',
-                background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit',
+                width: '100%',
+                padding: '9px 12px',
+                fontSize: '14px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                resize: 'vertical',
+                fontFamily: 'inherit',
               }}
             />
           </div>
 
+          {/* Task Due Date */}
           {object.type === 'TASK' && (
-            <>
-              {/* Status */}
-              <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                Hạn chót hoàn thành
+              </label>
+              <input
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  fontSize: '14px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Event start & end */}
+          {object.type === 'EVENT' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  Trạng thái
+                  Bắt đầu
                 </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {STATUSES.map(s => (
+                <input
+                  type="datetime-local"
+                  value={startAt}
+                  onChange={(e) => setStartAt(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    fontSize: '13px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                  Kết thúc
+                </label>
+                <input
+                  type="datetime-local"
+                  value={endAt}
+                  onChange={(e) => setEndAt(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    fontSize: '13px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Priority (Task, Event) */}
+          {(object.type === 'TASK' || object.type === 'EVENT') && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                Mức độ ưu tiên
+              </label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {PRIORITIES.map((p) => {
+                  const selected = priority === p.value;
+                  return (
                     <button
-                      key={s.value}
+                      key={p.value}
                       type="button"
-                      onClick={() => setStatus(s.value)}
+                      onClick={() => setPriority(p.value)}
                       style={{
-                        flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600,
-                        borderRadius: '6px', cursor: 'pointer', textAlign: 'center',
-                        background: status === s.value ? 'var(--primary-blue)' : 'var(--background)',
-                        color: status === s.value ? '#ffffff' : 'var(--text-secondary)',
-                        border: status === s.value ? '1px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
-                        transition: 'all 0.15s',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '13px',
+                        fontWeight: selected ? 600 : 500,
+                        border: selected ? `2px solid ${p.color}` : '1px solid var(--border-subtle)',
+                        background: selected ? p.bg : 'var(--surface)',
+                        color: selected ? p.color : 'var(--text-secondary)',
                       }}
                     >
-                      {s.label}
+                      {p.label}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-
-              {/* Priority & Due Date */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                {/* Priority */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                    Độ ưu tiên
-                  </label>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {PRIORITIES.map(p => (
-                      <button
-                        key={p.value}
-                        type="button"
-                        onClick={() => setPriority(p.value)}
-                        style={{
-                          flex: 1, padding: '7px 2px', fontSize: '11px', fontWeight: 600,
-                          borderRadius: '6px', cursor: 'pointer', textAlign: 'center',
-                          background: priority === p.value ? p.bg : 'var(--background)',
-                          color: priority === p.value ? p.color : 'var(--text-secondary)',
-                          border: priority === p.value ? `1.5px solid ${p.color}` : '1px solid var(--border-subtle)',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Due Date */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                    Hạn chót
-                  </label>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={e => setDueDate(e.target.value)}
-                    style={{
-                      width: '100%', padding: '8px 12px', fontSize: '13px',
-                      background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                      borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
           {error && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              marginBottom: '16px', padding: '10px 14px', borderRadius: '8px',
-              background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-              color: '#ef4444', fontSize: '13px',
-            }}>
+            <div
+              style={{
+                marginBottom: '16px',
+                padding: '10px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--danger-subtle)',
+                color: 'var(--danger)',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <AlertCircle size={16} />
               <span>{error}</span>
             </div>
           )}
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '8px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{
-                padding: '9px 18px', borderRadius: '8px', fontWeight: 500, fontSize: '14px',
-                background: 'transparent', border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)', cursor: 'pointer',
-              }}
+              disabled={updateObjectMutation.isPending}
+              className="btn-secondary"
             >
               Huỷ
             </button>
             <button
               type="submit"
-              disabled={loading}
-              style={{
-                padding: '9px 22px', borderRadius: '8px', fontWeight: 600, fontSize: '14px',
-                background: 'var(--primary-blue)', border: 'none', color: 'white',
-                cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
-              }}
+              disabled={updateObjectMutation.isPending}
+              className="btn-primary"
             >
-              {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
+              {updateObjectMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
             </button>
           </div>
         </form>

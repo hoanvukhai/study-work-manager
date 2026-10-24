@@ -1,24 +1,40 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Plus, FolderOpen, Loader2, CheckSquare, Check, Calendar,
+  Plus, FolderOpen, CheckSquare, Check, Calendar,
   Clock, AlertTriangle, CheckCircle2, TrendingUp, KanbanSquare,
-  ArrowRight, Sparkles, FileText, ChevronRight,
+  ArrowRight, Sparkles, ChevronRight, Play,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { getSpaces, Space } from '@/lib/spaces-api';
-import { updateObject, AppObject, Priority } from '@/lib/objects-api';
-import { getDashboardSummary, DashboardSummaryResponse } from '@/lib/views-api';
+import { useDashboardSummary } from '@/hooks/useViews';
+import { useSpaces } from '@/hooks/useSpaces';
+import { useUpdateObject, useCreateObject } from '@/hooks/useObjects';
+import { useToast } from '@/components/ui/Toast';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import CreateSpaceModal from '@/components/spaces/CreateSpaceModal';
+import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
+import { AppObject, Priority } from '@/lib/objects-api';
+import { Space } from '@/lib/spaces-api';
+import styles from './Dashboard.module.css';
 
-const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: string }> = {
-  LOW: { label: 'Thấp', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
-  MEDIUM: { label: 'Trung bình', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
-  HIGH: { label: 'Cao', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' },
-  URGENT: { label: 'Khẩn cấp', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+const PRIORITY_BADGE_VARIANT: Record<Priority, 'default' | 'success' | 'warning' | 'danger'> = {
+  LOW: 'success',
+  MEDIUM: 'default',
+  HIGH: 'warning',
+  URGENT: 'danger',
+};
+
+const PRIORITY_LABELS: Record<Priority, string> = {
+  LOW: 'Thấp',
+  MEDIUM: 'Trung bình',
+  HIGH: 'Cao',
+  URGENT: 'Khẩn cấp',
 };
 
 function formatDeadlineRelative(dateStr: string) {
@@ -39,51 +55,58 @@ function formatDeadlineRelative(dateStr: string) {
 export default function Dashboard() {
   const { user } = useAuth();
   const router = useRouter();
+  const toast = useToast();
 
-  const [summary, setSummary] = useState<DashboardSummaryResponse | null>(null);
-  const [spaces, setSpaces] = useState<Space[]>([]);
-  const [tasks, setTasks] = useState<AppObject[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: summary, isLoading: loadingSummary } = useDashboardSummary();
+  const { data: spacesData = [], isLoading: loadingSpaces } = useSpaces();
+  const updateObjectMutation = useUpdateObject();
+  const createObjectMutation = useCreateObject();
+
   const [showModal, setShowModal] = useState(false);
+  const [quickTitle, setQuickTitle] = useState('');
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [sumData, spacesData] = await Promise.all([
-        getDashboardSummary().catch(() => null),
-        getSpaces().catch(() => []),
-      ]);
-
-      if (sumData) {
-        setSummary(sumData);
-        setTasks(sumData.recentTasks || []);
-      }
-      setSpaces(spacesData.filter(s => !s.parentId));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const spaces = spacesData.filter(s => !s.archivedAt);
+  const tasks = summary?.recentTasks || [];
+  const upcoming = summary?.upcomingDeadlines || [];
+  const inProgressTasks = tasks.filter(t => t.status === 'IN_PROGRESS');
 
   const handleSpaceCreated = (space: Space) => {
-    setSpaces(prev => [...prev, space]);
+    toast.success(`Không gian "${space.name}" đã được tạo thành công.`);
     router.push(`/spaces/${space.id}`);
   };
 
-  const handleToggleTask = async (task: AppObject) => {
-    const nextStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
-    setTasks(prev => prev.map(t => (t.id === task.id ? { ...t, status: nextStatus } : t)));
-
+  const handleQuickAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickTitle.trim()) return;
     try {
-      await updateObject(task.id, { status: nextStatus });
-      // Refresh summary numbers
-      getDashboardSummary().then(res => setSummary(res)).catch(() => {});
+      await createObjectMutation.mutateAsync({
+        title: quickTitle.trim(),
+        type: 'TASK',
+        status: 'TODO',
+        priority: 'MEDIUM',
+      });
+      setQuickTitle('');
+      toast.success('Đã thêm việc mới vào Hộp nhận');
     } catch {
-      setTasks(prev => prev.map(t => (t.id === task.id ? task : t)));
+      toast.error('Không thể tạo việc nhanh');
     }
+  };
+
+  const handleToggleTask = (e: React.MouseEvent, task: AppObject) => {
+    e.stopPropagation();
+    const nextStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
+    updateObjectMutation.mutate(
+      { id: task.id, payload: { status: nextStatus } },
+      {
+        onSuccess: () => {
+          toast.success(nextStatus === 'DONE' ? 'Đã hoàn thành công việc' : 'Đã mở lại công việc');
+        },
+        onError: () => {
+          toast.error('Không thể cập nhật trạng thái công việc');
+        },
+      },
+    );
   };
 
   const firstName = user?.fullName?.split(' ').pop() || 'bạn';
@@ -98,211 +121,216 @@ export default function Dashboard() {
     completionRate: 0,
   };
 
-  const upcoming = summary?.upcomingDeadlines || [];
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className={styles.container}>
       {/* Welcome & Progress Overview Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%)',
-        border: '1px solid rgba(99, 102, 241, 0.25)',
-        borderRadius: 'var(--radius-lg, 16px)',
-        padding: '24px 28px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '20px',
-      }}>
-        <div style={{ minWidth: '260px', flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <Sparkles size={18} color="#6366f1" />
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Tổng quan ngày mới
-            </span>
+      <div className={styles.welcomeBanner}>
+        <div className={styles.bannerText}>
+          <div className={styles.badgeHeader}>
+            <Sparkles size={18} color="var(--primary-blue)" />
+            <span className={styles.badgeLabel}>Tổng quan ngày mới</span>
           </div>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-            Xin chào {firstName} 👋
-          </h1>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+          <h1 className={styles.bannerTitle}>Xin chào {firstName} 👋</h1>
+          <p className={styles.bannerSubtitle}>
             Chào mừng bạn trở lại! Dưới đây là tiến độ học tập và các hạn chót cần lưu ý hôm nay.
           </p>
         </div>
 
         {/* Completion Rate Pill */}
-        <div style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '12px',
-          padding: '16px 20px',
-          minWidth: '220px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Tiến độ công việc
-            </span>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#10b981' }}>
-              {counts.completionRate}%
-            </span>
+        <div className={styles.progressPill}>
+          <div className={styles.progressHeader}>
+            <span className={styles.progressLabel}>Tiến độ công việc</span>
+            <span className={styles.progressPercent}>{counts.completionRate}%</span>
           </div>
-          <div style={{
-            height: '8px',
-            background: 'var(--border-subtle)',
-            borderRadius: '4px',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              width: `${counts.completionRate}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #3b82f6, #10b981)',
-              borderRadius: '4px',
-              transition: 'width 0.4s ease',
-            }} />
+          <div className={styles.progressBarTrack}>
+            <div
+              className={styles.progressBarFill}
+              style={{ width: `${counts.completionRate}%` }}
+            />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: 'var(--text-secondary)' }}>
+          <div className={styles.progressFooter}>
             <span>Đã làm: {counts.done}/{counts.tasksTotal} việc</span>
             <span>{counts.notesTotal} ghi chú</span>
           </div>
         </div>
       </div>
 
+      {/* Quick Add Bar (UI-06) */}
+      <form onSubmit={handleQuickAdd} className={styles.quickAddCard}>
+        <input
+          type="text"
+          className={styles.quickAddInput}
+          placeholder="Thêm nhanh việc cần làm hôm nay... (Nhấn Enter để tạo)"
+          value={quickTitle}
+          onChange={(e) => setQuickTitle(e.target.value)}
+        />
+        <Button
+          type="submit"
+          variant="primary"
+          size="sm"
+          disabled={!quickTitle.trim() || createObjectMutation.isPending}
+        >
+          <Plus size={16} /> Thêm việc
+        </Button>
+      </form>
+
+      {/* Tiếp tục dở dang (Resume In-Progress Tasks - UI-06) */}
+      {inProgressTasks.length > 0 && (
+        <div className={styles.resumeCard}>
+          <div className={styles.resumeHeader}>
+            <div className={styles.resumeTitle}>
+              <span className={styles.pulseDot} />
+              <span>Tiếp tục dở dang ({inProgressTasks.length})</span>
+            </div>
+            <Link
+              href="/kanban"
+              style={{
+                fontSize: 12,
+                color: 'var(--primary-blue)',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              Xem bảng Kanban <ChevronRight size={12} />
+            </Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+            {inProgressTasks.slice(0, 4).map((task) => (
+              <div
+                key={task.id}
+                onClick={() => setSelectedObjectId(task.id)}
+                style={{
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {task.title}
+                  </div>
+                  {task.spaceObjects?.[0]?.space && (
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {task.spaceObjects[0].space.icon} {task.spaceObjects[0].space.name}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => handleToggleTask(e, task)}
+                  title="Đánh dấu hoàn thành"
+                >
+                  <Check size={12} /> Xong
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* KPI Stat Cards (5 metrics) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '14px',
-      }}>
+      <div className={styles.kpiGrid}>
         {/* Card 1: Spaces */}
-        <div style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '12px',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: '10px',
-            background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+        <div className={styles.kpiCard}>
+          <div
+            className={styles.kpiIconWrapper}
+            style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' }}
+          >
             <FolderOpen size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {counts.spacesTotal}
+            <div className={styles.kpiValue}>
+              {loadingSummary ? <Skeleton width="30px" height="24px" /> : counts.spacesTotal}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Không gian
-            </div>
+            <div className={styles.kpiLabel}>Không gian</div>
           </div>
         </div>
 
         {/* Card 2: To Do */}
-        <div style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '12px',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: '10px',
-            background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+        <div className={styles.kpiCard}>
+          <div
+            className={styles.kpiIconWrapper}
+            style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}
+          >
             <Clock size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {counts.todo}
+            <div className={styles.kpiValue}>
+              {loadingSummary ? <Skeleton width="30px" height="24px" /> : counts.todo}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Cần làm
-            </div>
+            <div className={styles.kpiLabel}>Cần làm</div>
           </div>
         </div>
 
         {/* Card 3: In Progress */}
-        <div style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '12px',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: '10px',
-            background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+        <div className={styles.kpiCard}>
+          <div
+            className={styles.kpiIconWrapper}
+            style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}
+          >
             <TrendingUp size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {counts.inProgress}
+            <div className={styles.kpiValue}>
+              {loadingSummary ? <Skeleton width="30px" height="24px" /> : counts.inProgress}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Đang thực hiện
-            </div>
+            <div className={styles.kpiLabel}>Đang thực hiện</div>
           </div>
         </div>
 
         {/* Card 4: Done */}
-        <div style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '12px',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: '10px',
-            background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+        <div className={styles.kpiCard}>
+          <div
+            className={styles.kpiIconWrapper}
+            style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}
+          >
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {counts.done}
+            <div className={styles.kpiValue}>
+              {loadingSummary ? <Skeleton width="30px" height="24px" /> : counts.done}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Hoàn thành
-            </div>
+            <div className={styles.kpiLabel}>Hoàn thành</div>
           </div>
         </div>
 
         {/* Card 5: Overdue */}
-        <div style={{
-          background: counts.overdue > 0 ? 'rgba(239, 68, 68, 0.08)' : 'var(--surface)',
-          border: `1px solid ${counts.overdue > 0 ? 'rgba(239, 68, 68, 0.3)' : 'var(--border-subtle)'}`,
-          borderRadius: '12px',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: '10px',
-            background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+        <div className={`${styles.kpiCard} ${counts.overdue > 0 ? styles.kpiCardOverdue : ''}`}>
+          <div
+            className={styles.kpiIconWrapper}
+            style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}
+          >
             <AlertTriangle size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: counts.overdue > 0 ? '#ef4444' : 'var(--text-primary)' }}>
-              {counts.overdue}
+            <div
+              className={styles.kpiValue}
+              style={counts.overdue > 0 ? { color: 'var(--danger)' } : undefined}
+            >
+              {loadingSummary ? <Skeleton width="30px" height="24px" /> : counts.overdue}
             </div>
-            <div style={{ fontSize: '12px', color: counts.overdue > 0 ? '#ef4444' : 'var(--text-secondary)', fontWeight: 500 }}>
+            <div
+              className={styles.kpiLabel}
+              style={counts.overdue > 0 ? { color: 'var(--danger)' } : undefined}
+            >
               Việc quá hạn
             </div>
           </div>
@@ -310,34 +338,16 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Access to Views: Kanban & Weekly Calendar */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '12px',
-      }}>
-        <Link
-          href="/kanban"
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 18px', borderRadius: '12px',
-            background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-            textDecoration: 'none', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = '#6366f1';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border-subtle)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
+      <div className={styles.quickNavGrid}>
+        <Link href="/kanban" className={styles.quickNavLink}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '8px',
-              background: 'rgba(99, 102, 241, 0.12)', color: '#6366f1',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+            <div
+              style={{
+                width: '36px', height: '36px', borderRadius: '8px',
+                background: 'rgba(99, 102, 241, 0.12)', color: '#6366f1',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
               <KanbanSquare size={18} />
             </div>
             <div>
@@ -352,29 +362,15 @@ export default function Dashboard() {
           <ChevronRight size={18} color="var(--text-secondary)" />
         </Link>
 
-        <Link
-          href="/calendar"
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 18px', borderRadius: '12px',
-            background: 'var(--surface)', border: '1px solid var(--border-subtle)',
-            textDecoration: 'none', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = '#3b82f6';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border-subtle)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
+        <Link href="/calendar" className={styles.quickNavLink}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '8px',
-              background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+            <div
+              style={{
+                width: '36px', height: '36px', borderRadius: '8px',
+                background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
               <Calendar size={18} />
             </div>
             <div>
@@ -391,97 +387,66 @@ export default function Dashboard() {
       </div>
 
       {/* Main Grid: Spaces & Active Tasks on Left, Upcoming Deadlines on Right */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.8fr) minmax(0, 1.2fr)',
-        gap: '20px',
-      }}>
-        {/* Left Column: Spaces & Recent Active Tasks */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className={styles.mainGrid}>
+        {/* Left Column */}
+        <div className={styles.leftColumn}>
           {/* Spaces Section */}
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>
                 <FolderOpen size={18} color="var(--primary-blue)" />
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-                  Không gian của bạn ({spaces.length})
-                </h2>
-              </div>
-              <button
+                Không gian của bạn ({spaces.length})
+              </h2>
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => setShowModal(true)}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                  background: 'var(--primary-blue)', color: 'white', border: 'none', cursor: 'pointer',
-                  transition: 'opacity 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
               >
                 <Plus size={15} /> Thêm Không gian
-              </button>
+              </Button>
             </div>
 
-            {loading ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '14px', padding: '20px 0' }}>
-                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                Đang tải dữ liệu...
+            {loadingSpaces ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Skeleton height="56px" />
+                <Skeleton height="56px" />
               </div>
             ) : spaces.length === 0 ? (
-              <div style={{
-                textAlign: 'center', padding: '36px 20px',
-                border: '2px dashed var(--border-subtle)', borderRadius: 'var(--radius-md)',
-              }}>
-                <FolderOpen size={40} color="var(--border-subtle)" style={{ marginBottom: '12px' }} />
-                <p style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '4px', fontWeight: 600 }}>
-                  Chưa có Không gian nào
-                </p>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                  Tạo Không gian để phân loại môn học và công việc cá nhân.
-                </p>
-                <button
-                  onClick={() => setShowModal(true)}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '6px',
-                    padding: '8px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                    background: 'var(--primary-blue)', color: 'white', border: 'none', cursor: 'pointer',
-                  }}
-                >
-                  <Plus size={15} /> Tạo Không gian đầu tiên
-                </button>
-              </div>
+              <EmptyState
+                icon={<FolderOpen size={36} />}
+                title="Chưa có Không gian nào"
+                description="Tạo Không gian để phân loại môn học và công việc cá nhân."
+                action={
+                  <Button variant="primary" size="sm" onClick={() => setShowModal(true)}>
+                    <Plus size={15} /> Tạo Không gian đầu tiên
+                  </Button>
+                }
+              />
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+              <div className={styles.spacesGrid}>
                 {spaces.map(space => (
                   <Link
                     key={space.id}
                     href={`/spaces/${space.id}`}
+                    className={styles.spaceItem}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      padding: '12px 14px',
-                      border: `1px solid ${space.color}44`,
-                      borderRadius: 'var(--radius-md)',
-                      background: space.color + '0d',
-                      textDecoration: 'none', transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = space.color + '22';
-                      e.currentTarget.style.borderColor = space.color + '88';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = space.color + '0d';
-                      e.currentTarget.style.borderColor = space.color + '44';
+                      border: `1px solid ${space.color || '#3b82f6'}44`,
+                      backgroundColor: `${space.color || '#3b82f6'}0d`,
                     }}
                   >
-                    <div style={{
-                      width: '38px', height: '38px', borderRadius: '10px',
-                      background: space.color + '33', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0,
-                    }}>
+                    <div
+                      className={styles.spaceItemIcon}
+                      style={{ background: `${space.color || '#3b82f6'}26` }}
+                    >
                       {space.icon}
                     </div>
                     <div style={{ flex: 1, overflow: 'hidden' }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div
+                        style={{
+                          fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}
+                      >
                         {space.name}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -495,90 +460,91 @@ export default function Dashboard() {
           </div>
 
           {/* Active Tasks Widget */}
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>
                 <CheckSquare size={18} color="var(--primary-blue)" />
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-                  Công việc gần đây
-                </h2>
-              </div>
+                Công việc gần đây
+              </h2>
               <Link
                 href="/kanban"
-                style={{ fontSize: '13px', color: 'var(--primary-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{
+                  fontSize: '13px', color: 'var(--primary-blue)', textDecoration: 'none',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                }}
               >
                 Xem tất cả trên Kanban <ArrowRight size={13} />
               </Link>
             </div>
 
-            {tasks.length === 0 ? (
+            {loadingSummary ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Skeleton height="40px" />
+                <Skeleton height="40px" />
+                <Skeleton height="40px" />
+              </div>
+            ) : tasks.length === 0 ? (
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '12px 0' }}>
                 Chưa có công việc nào. Bạn hãy vào từng Không gian để thêm việc mới.
               </p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div className={styles.taskList}>
                 {tasks.slice(0, 6).map(task => {
                   const isDone = task.status === 'DONE';
-                  const pConfig = PRIORITY_CONFIG[task.priority];
+                  const pVariant = task.priority ? PRIORITY_BADGE_VARIANT[task.priority] : 'default';
+                  const pLabel = task.priority ? PRIORITY_LABELS[task.priority] : null;
                   const spaceObj = task.spaceObjects?.[0]?.space;
 
                   return (
                     <div
                       key={task.id}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '12px',
-                        padding: '10px 14px', borderRadius: '8px',
-                        background: isDone ? 'var(--canvas-bg)' : 'var(--surface)',
-                        border: '1px solid var(--border-subtle)',
-                        transition: 'all 0.15s',
-                      }}
+                      className={`${styles.taskItem} ${isDone ? styles.taskItemDone : ''}`}
+                      onClick={() => setSelectedObjectId(task.id)}
+                      style={{ cursor: 'pointer' }}
                     >
                       <button
-                        onClick={() => handleToggleTask(task)}
-                        style={{
-                          width: '20px', height: '20px', borderRadius: '5px',
-                          border: isDone ? 'none' : '2px solid var(--border-subtle)',
-                          background: isDone ? '#10b981' : 'transparent',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer', flexShrink: 0, padding: 0,
-                        }}
+                        type="button"
+                        onClick={(e) => handleToggleTask(e, task)}
+                        className={`${styles.checkboxBtn} ${isDone ? styles.checkboxBtnDone : ''}`}
                       >
                         {isDone && <Check size={13} color="#ffffff" strokeWidth={3} />}
                       </button>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{
-                          fontSize: '14px', fontWeight: 500,
-                          color: isDone ? 'var(--text-secondary)' : 'var(--text-primary)',
-                          textDecoration: isDone ? 'line-through' : 'none',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
+                        <div
+                          style={{
+                            fontSize: '14px', fontWeight: 500,
+                            color: isDone ? 'var(--text-secondary)' : 'var(--text-primary)',
+                            textDecoration: isDone ? 'line-through' : 'none',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          }}
+                        >
                           {task.title}
                         </div>
                       </div>
 
                       {spaceObj && (
-                        <Link
-                          href={`/spaces/${spaceObj.id}`}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/spaces/${spaceObj.id}`);
+                          }}
                           style={{
                             display: 'flex', alignItems: 'center', gap: '4px',
                             padding: '2px 8px', borderRadius: '12px',
-                            background: spaceObj.color + '22', color: 'var(--text-primary)',
+                            background: `${spaceObj.color || '#3b82f6'}22`,
+                            color: 'var(--text-primary)',
                             fontSize: '11px', textDecoration: 'none', flexShrink: 0,
+                            cursor: 'pointer',
                           }}
                         >
                           <span>{spaceObj.icon}</span>
                           <span>{spaceObj.name}</span>
-                        </Link>
+                        </div>
                       )}
 
-                      {pConfig && (
-                        <span style={{
-                          fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px',
-                          background: pConfig.bg, color: pConfig.color, flexShrink: 0,
-                        }}>
-                          {pConfig.label}
-                        </span>
+                      {pLabel && (
+                        <Badge variant={pVariant}>{pLabel}</Badge>
                       )}
                     </div>
                   );
@@ -588,82 +554,75 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right Column: Upcoming Deadlines Widget */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={18} color="#f59e0b" />
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-                  Hạn chót 7 ngày tới ({upcoming.length})
-                </h2>
-              </div>
+        {/* Right Column */}
+        <div className={styles.rightColumn}>
+          {/* Upcoming Deadlines Widget */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>
+                <Clock size={18} color="var(--warning)" />
+                Hạn chót 7 ngày tới ({upcoming.length})
+              </h2>
               <Link
                 href="/calendar"
-                style={{ fontSize: '13px', color: 'var(--primary-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{
+                  fontSize: '13px', color: 'var(--primary-blue)', textDecoration: 'none',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                }}
               >
                 Xem Lịch <ArrowRight size={13} />
               </Link>
             </div>
 
-            {upcoming.length === 0 ? (
-              <div style={{
-                textAlign: 'center', padding: '32px 16px',
-                border: '1px dashed var(--border-subtle)', borderRadius: '10px',
-              }}>
-                <CheckCircle2 size={32} color="#10b981" style={{ marginBottom: '8px' }} />
-                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-                  Không có hạn chót gấp!
-                </p>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-                  Bạn không có công việc nào đến hạn trong vòng 7 ngày tới.
-                </p>
+            {loadingSummary ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Skeleton height="50px" />
+                <Skeleton height="50px" />
               </div>
+            ) : upcoming.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircle2 size={32} color="var(--success)" />}
+                title="Không có hạn chót gấp!"
+                description="Bạn không có công việc nào đến hạn trong vòng 7 ngày tới."
+              />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className={styles.deadlinesList}>
                 {upcoming.map(task => {
                   const rel = task.dueDate ? formatDeadlineRelative(task.dueDate) : null;
                   const spaceObj = task.spaceObjects?.[0]?.space;
-                  const pConfig = PRIORITY_CONFIG[task.priority];
+                  const pVariant = task.priority ? PRIORITY_BADGE_VARIANT[task.priority] : 'default';
+                  const pLabel = task.priority ? PRIORITY_LABELS[task.priority] : null;
 
                   return (
                     <div
                       key={task.id}
-                      style={{
-                        padding: '12px',
-                        borderRadius: '10px',
-                        background: rel?.isOverdue ? 'rgba(239, 68, 68, 0.06)' : 'var(--surface)',
-                        border: `1px solid ${rel?.isOverdue ? 'rgba(239, 68, 68, 0.25)' : 'var(--border-subtle)'}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                      }}
+                      className={`${styles.deadlineItem} ${rel?.isOverdue ? styles.deadlineItemOverdue : ''}`}
+                      onClick={() => setSelectedObjectId(task.id)}
+                      style={{ cursor: 'pointer' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                        <div style={{
-                          fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
-                        }}>
+                        <div
+                          style={{
+                            fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
+                          }}
+                        >
                           {task.title}
                         </div>
 
                         {rel && (
-                          <span style={{
-                            fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '10px',
-                            background: rel.isOverdue
-                              ? 'rgba(239, 68, 68, 0.15)'
-                              : rel.isToday
-                              ? 'rgba(245, 158, 11, 0.15)'
-                              : 'var(--border-subtle)',
-                            color: rel.isOverdue ? '#ef4444' : rel.isToday ? '#f59e0b' : 'var(--text-secondary)',
-                            flexShrink: 0,
-                          }}>
+                          <Badge variant={rel.isOverdue ? 'danger' : rel.isToday ? 'warning' : 'default'}>
                             {rel.text}
-                          </span>
+                          </Badge>
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-secondary)' }}>
+                      <div
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          fontSize: '11px', color: 'var(--text-secondary)',
+                        }}
+                      >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {spaceObj && (
                             <span>{spaceObj.icon} {spaceObj.name}</span>
@@ -671,11 +630,7 @@ export default function Dashboard() {
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {pConfig && (
-                            <span style={{ color: pConfig.color, fontWeight: 600 }}>
-                              {pConfig.label}
-                            </span>
-                          )}
+                          {pLabel && <Badge variant={pVariant}>{pLabel}</Badge>}
                           <span>•</span>
                           <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : ''}</span>
                         </div>
@@ -687,20 +642,14 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Quick Tips / Info card */}
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '12px',
-            padding: '16px 18px',
-          }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-              💡 Mẹo quản lý hiệu quả
-            </h3>
-            <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          {/* Quick Tips */}
+          <div className={styles.tipCard}>
+            <h3 className={styles.tipTitle}>💡 Mẹo quản lý hiệu quả</h3>
+            <ul className={styles.tipList}>
               <li>Dùng <strong>Bảng Kanban</strong> để kéo thả chuyển trạng thái công việc nhanh chóng.</li>
               <li>Sử dụng nút <strong>🔗 Liên kết</strong> để đính kèm tài liệu tham khảo vào từng bài tập/dự án.</li>
               <li>Đặt <strong>Hạn chót</strong> để được nhắc nhở kịp thời trên Lịch trình tuần.</li>
+              <li>Nhấn phím <strong>C</strong> bất kỳ lúc nào để tạo nhanh đối tượng mới.</li>
             </ul>
           </div>
         </div>
@@ -710,6 +659,14 @@ export default function Dashboard() {
         <CreateSpaceModal
           onClose={() => setShowModal(false)}
           onCreated={handleSpaceCreated}
+        />
+      )}
+
+      {selectedObjectId && (
+        <ObjectDetailDrawer
+          objectId={selectedObjectId}
+          onClose={() => setSelectedObjectId(null)}
+          onSelectObject={(id) => setSelectedObjectId(id)}
         />
       )}
     </div>

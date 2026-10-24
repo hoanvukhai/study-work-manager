@@ -1,17 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, CheckSquare, FileText, Calendar, AlertCircle } from 'lucide-react';
-import { createObject, ObjectType, Priority, TaskStatus, AppObject, CreateObjectPayload } from '@/lib/objects-api';
-import { getSpaces, Space } from '@/lib/spaces-api';
+import React, { useState } from 'react';
+import {
+  X,
+  CheckSquare,
+  FileText,
+  Calendar,
+  Link2,
+  AlertCircle,
+  Clock,
+} from 'lucide-react';
+import { ObjectType, Priority, TaskStatus, AppObject, CreateObjectPayload } from '@/lib/objects-api';
+import { useSpaces } from '@/hooks/useSpaces';
+import { useCreateObject } from '@/hooks/useObjects';
+import { useToast } from '@/components/ui/Toast';
 
 interface Props {
   initialSpaceId?: string;
+  spaceId?: string;
   initialType?: ObjectType;
   initialStatus?: TaskStatus;
   initialDueDate?: string;
   onClose: () => void;
-  onCreated: (object: AppObject) => void;
+  onCreated?: (object: AppObject) => void;
 }
 
 const PRIORITIES: { value: Priority; label: string; color: string; bg: string }[] = [
@@ -23,6 +34,7 @@ const PRIORITIES: { value: Priority; label: string; color: string; bg: string }[
 
 export default function CreateObjectModal({
   initialSpaceId,
+  spaceId: propSpaceId,
   initialType = 'TASK',
   initialStatus,
   initialDueDate = '',
@@ -34,16 +46,15 @@ export default function CreateObjectModal({
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('MEDIUM');
   const [dueDate, setDueDate] = useState(initialDueDate);
-  const [spaceId, setSpaceId] = useState<string>(initialSpaceId || '');
-  const [spaces, setSpaces] = useState<Space[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [startAt, setStartAt] = useState('');
+  const [endAt, setEndAt] = useState('');
+  const [url, setUrl] = useState('');
+  const [spaceId, setSpaceId] = useState<string>(initialSpaceId || propSpaceId || '');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    getSpaces()
-      .then(data => setSpaces(data.filter(s => !s.parentId)))
-      .catch(() => setSpaces([]));
-  }, []);
+  const { data: spaces = [] } = useSpaces();
+  const createObjectMutation = useCreateObject();
+  const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +63,22 @@ export default function CreateObjectModal({
       return;
     }
 
-    setLoading(true);
+    if (type === 'EVENT') {
+      if (startAt && endAt && new Date(endAt).getTime() <= new Date(startAt).getTime()) {
+        setError('Thời gian kết thúc phải sau thời gian bắt đầu');
+        return;
+      }
+    }
+
+    if (type === 'REFERENCE' && url) {
+      try {
+        new URL(url);
+      } catch {
+        setError('Vui lòng nhập đường dẫn URL hợp lệ (ví dụ: https://...)');
+        return;
+      }
+    }
+
     setError('');
 
     try {
@@ -62,270 +88,461 @@ export default function CreateObjectModal({
         description: description.trim() || undefined,
         ...(type === 'TASK' && {
           priority,
-          status: initialStatus,
+          status: initialStatus || 'TODO',
           dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+        }),
+        ...(type === 'EVENT' && {
+          priority,
+          startAt: startAt ? new Date(startAt).toISOString() : undefined,
+          endAt: endAt ? new Date(endAt).toISOString() : undefined,
+        }),
+        ...(type === 'REFERENCE' && {
+          url: url.trim() || undefined,
         }),
         spaceId: spaceId || undefined,
       };
 
-      const created = await createObject(payload);
-      onCreated(created);
+      const created = await createObjectMutation.mutateAsync(payload);
+      toast.success(`Đã tạo "${created.title}" thành công!`);
+      onCreated?.(created);
       onClose();
     } catch (err: any) {
       setError(err?.message || 'Không thể tạo mới. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const getTypeName = () => {
+    switch (type) {
+      case 'TASK':
+        return 'Công việc';
+      case 'NOTE':
+        return 'Ghi chú';
+      case 'EVENT':
+        return 'Sự kiện';
+      case 'REFERENCE':
+        return 'Tài liệu tham khảo';
     }
   };
 
   return (
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: '16px',
-        width: '540px',
-        maxWidth: '95vw',
-        maxHeight: '90vh',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        background: 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(3px)',
         display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
-        animation: 'slideIn 0.2s ease-out',
-        overflow: 'hidden',
-      }}>
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        animation: 'fadeIn 0.15s ease',
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !createObjectMutation.isPending) onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-object-modal-title"
+    >
+      <div
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          width: '560px',
+          maxWidth: '100%',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: 'var(--shadow-lg)',
+          animation: 'slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
         {/* Header */}
-        <div style={{
-          padding: '20px 24px 16px',
-          borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
+        <div
+          style={{
+            padding: '18px 24px 14px',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              {type === 'TASK' ? 'Tạo Công việc mới' : 'Tạo Ghi chú mới'}
+            <h2 id="create-object-modal-title" style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+              Tạo {getTypeName()} mới
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-              Quản lý và theo dõi tiến độ một cách có hệ thống
+              Kiến trúc Hybrid Object — Độc lập và liên kết chéo linh hoạt
             </p>
           </div>
           <button
             onClick={onClose}
+            disabled={createObjectMutation.isPending}
             style={{
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--text-secondary)', padding: '6px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '6px', transition: 'all 0.2s',
+              padding: '6px',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--border-subtle)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            aria-label="Đóng"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Tab selection */}
-        <div style={{
-          display: 'flex', borderBottom: '1px solid var(--border-subtle)',
-          background: 'var(--canvas-bg)', padding: '6px 24px', gap: '8px',
-        }}>
+        {/* 4 Tabs: Task, Note, Event, Reference */}
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--canvas-bg)',
+            padding: '6px 16px',
+            gap: '6px',
+            overflowX: 'auto',
+          }}
+        >
           <button
             type="button"
             onClick={() => setType('TASK')}
             style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 12px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '13px',
+              fontWeight: 600,
               background: type === 'TASK' ? 'var(--surface)' : 'transparent',
-              color: type === 'TASK' ? 'var(--primary-blue)' : 'var(--text-secondary)',
+              color: type === 'TASK' ? 'var(--tag-task-text)' : 'var(--text-secondary)',
               border: type === 'TASK' ? '1px solid var(--border-subtle)' : '1px solid transparent',
-              cursor: 'pointer', transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
             }}
           >
-            <CheckSquare size={16} />
-            Công việc (Task)
+            <CheckSquare size={15} />
+            Công việc
           </button>
 
           <button
             type="button"
             onClick={() => setType('NOTE')}
             style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 12px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '13px',
+              fontWeight: 600,
               background: type === 'NOTE' ? 'var(--surface)' : 'transparent',
-              color: type === 'NOTE' ? 'var(--primary-blue)' : 'var(--text-secondary)',
+              color: type === 'NOTE' ? 'var(--tag-note-text)' : 'var(--text-secondary)',
               border: type === 'NOTE' ? '1px solid var(--border-subtle)' : '1px solid transparent',
-              cursor: 'pointer', transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
             }}
           >
-            <FileText size={16} />
-            Ghi chú (Note)
+            <FileText size={15} />
+            Ghi chú
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setType('EVENT')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 12px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '13px',
+              fontWeight: 600,
+              background: type === 'EVENT' ? 'var(--surface)' : 'transparent',
+              color: type === 'EVENT' ? 'var(--tag-event-text)' : 'var(--text-secondary)',
+              border: type === 'EVENT' ? '1px solid var(--border-subtle)' : '1px solid transparent',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Calendar size={15} />
+            Sự kiện
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setType('REFERENCE')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 12px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '13px',
+              fontWeight: 600,
+              background: type === 'REFERENCE' ? 'var(--surface)' : 'transparent',
+              color: type === 'REFERENCE' ? 'var(--tag-ref-text)' : 'var(--text-secondary)',
+              border: type === 'REFERENCE' ? '1px solid var(--border-subtle)' : '1px solid transparent',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Link2 size={15} />
+            Tài liệu
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: '20px 24px', overflowY: 'auto', flex: 1 }}>
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px', overflowY: 'auto' }}>
           {/* Title */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              Tiêu đề {type === 'TASK' ? 'công việc' : 'ghi chú'} *
+              Tiêu đề *
             </label>
             <input
               type="text"
-              autoFocus
               value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder={type === 'TASK' ? 'VD: Hoàn thiện báo cáo Chương 2...' : 'VD: Tóm tắt bài giảng tuần 3...'}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={
+                type === 'TASK'
+                  ? 'VD: Viết tài liệu chương 3...'
+                  : type === 'NOTE'
+                  ? 'VD: Tổng hợp kiến trúc Clean Architecture...'
+                  : type === 'EVENT'
+                  ? 'VD: Họp báo cáo tiến độ tuần với GVHD...'
+                  : 'VD: React Documentation v18...'
+              }
               maxLength={255}
+              required
               style={{
-                width: '100%', padding: '10px 12px', fontSize: '14px',
-                background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                boxSizing: 'border-box', transition: 'border-color 0.2s',
+                width: '100%',
+                padding: '9px 12px',
+                fontSize: '14px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                outline: 'none',
               }}
-              onFocus={e => (e.target.style.borderColor = 'var(--primary-blue)')}
-              onBlur={e => (e.target.style.borderColor = 'var(--border-subtle)')}
             />
           </div>
 
-          {/* Description */}
+          {/* Reference URL Field */}
+          {type === 'REFERENCE' && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                Đường dẫn liên kết (URL) *
+              </label>
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://..."
+                required
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  fontSize: '14px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Description / Content */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              {type === 'TASK' ? 'Mô tả chi tiết' : 'Nội dung ghi chú'}
+              {type === 'NOTE' ? 'Nội dung ghi chú' : 'Mô tả chi tiết'}
             </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder={type === 'TASK' ? 'Các bước thực hiện, ghi chú bổ sung...' : 'Nội dung chi tiết, các ý chính...'}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Chi tiết nội dung (hỗ trợ văn bản nhiều dòng)..."
               rows={type === 'NOTE' ? 5 : 3}
               style={{
-                width: '100%', padding: '10px 12px', fontSize: '14px',
-                background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit',
-                transition: 'border-color 0.2s',
+                width: '100%',
+                padding: '9px 12px',
+                fontSize: '14px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                resize: 'vertical',
+                fontFamily: 'inherit',
               }}
-              onFocus={e => (e.target.style.borderColor = 'var(--primary-blue)')}
-              onBlur={e => (e.target.style.borderColor = 'var(--border-subtle)')}
             />
           </div>
 
-          {/* Priority & Due Date (For Task) */}
+          {/* Task Due Date */}
           {type === 'TASK' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-              {/* Priority */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                Hạn chót hoàn thành (Deadline)
+              </label>
+              <input
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  fontSize: '14px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Event Start & End Date */}
+          {type === 'EVENT' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  Độ ưu tiên
+                  Bắt đầu *
                 </label>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {PRIORITIES.map(p => (
+                <input
+                  type="datetime-local"
+                  value={startAt}
+                  onChange={(e) => setStartAt(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    fontSize: '13px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                  Kết thúc *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={endAt}
+                  onChange={(e) => setEndAt(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    fontSize: '13px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Priority (cho Task và Event) */}
+          {(type === 'TASK' || type === 'EVENT') && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                Mức độ ưu tiên
+              </label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {PRIORITIES.map((p) => {
+                  const selected = priority === p.value;
+                  return (
                     <button
                       key={p.value}
                       type="button"
                       onClick={() => setPriority(p.value)}
                       style={{
-                        flex: 1, padding: '7px 4px', fontSize: '12px', fontWeight: 600,
-                        borderRadius: '6px', cursor: 'pointer', textAlign: 'center',
-                        background: priority === p.value ? p.bg : 'var(--background)',
-                        color: priority === p.value ? p.color : 'var(--text-secondary)',
-                        border: priority === p.value ? `1.5px solid ${p.color}` : '1px solid var(--border-subtle)',
-                        transition: 'all 0.15s',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '13px',
+                        fontWeight: selected ? 600 : 500,
+                        border: selected ? `2px solid ${p.color}` : '1px solid var(--border-subtle)',
+                        background: selected ? p.bg : 'var(--surface)',
+                        color: selected ? p.color : 'var(--text-secondary)',
                       }}
                     >
                       {p.label}
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Due Date */}
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  Hạn chót
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={e => setDueDate(e.target.value)}
-                    style={{
-                      width: '100%', padding: '8px 12px', fontSize: '13px',
-                      background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                      borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Space Selection */}
+          {/* Space Assignment */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              Gắn vào Không gian
+              Gán vào Không gian
             </label>
             <select
               value={spaceId}
-              onChange={e => setSpaceId(e.target.value)}
+              onChange={(e) => setSpaceId(e.target.value)}
               style={{
-                width: '100%', padding: '9px 12px', fontSize: '14px',
-                background: 'var(--background)', border: '1px solid var(--border-subtle)',
-                borderRadius: '8px', color: 'var(--text-primary)', outline: 'none',
-                boxSizing: 'border-box', cursor: 'pointer',
+                width: '100%',
+                padding: '9px 12px',
+                fontSize: '14px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                outline: 'none',
               }}
             >
-              <option value="">-- Không gán Không gian (Chung) --</option>
-              {spaces.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.icon} {s.name}
+              <option value="">Không gán (Lưu vào Hộp nhận tự do / Unassigned)</option>
+              {spaces.map((sp) => (
+                <option key={sp.id} value={sp.id}>
+                  {sp.icon} {sp.name}
                 </option>
               ))}
             </select>
           </div>
 
           {error && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              marginBottom: '16px', padding: '10px 14px', borderRadius: '8px',
-              background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-              color: '#ef4444', fontSize: '13px',
-            }}>
+            <div
+              style={{
+                marginBottom: '16px',
+                padding: '10px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--danger-subtle)',
+                color: 'var(--danger)',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <AlertCircle size={16} />
               <span>{error}</span>
             </div>
           )}
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '8px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{
-                padding: '9px 18px', borderRadius: '8px', fontWeight: 500, fontSize: '14px',
-                background: 'transparent', border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--background)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              disabled={createObjectMutation.isPending}
+              className="btn-secondary"
             >
               Huỷ
             </button>
             <button
               type="submit"
-              disabled={loading}
-              style={{
-                padding: '9px 22px', borderRadius: '8px', fontWeight: 600, fontSize: '14px',
-                background: 'var(--primary-blue)', border: 'none', color: 'white',
-                cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
-                transition: 'all 0.15s',
-              }}
+              disabled={createObjectMutation.isPending}
+              className="btn-primary"
             >
-              {loading ? 'Đang tạo...' : type === 'TASK' ? '✨ Tạo Công việc' : '✨ Tạo Ghi chú'}
+              {createObjectMutation.isPending ? 'Đang tạo...' : `✨ Tạo ${getTypeName()}`}
             </button>
           </div>
         </form>

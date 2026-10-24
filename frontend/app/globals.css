@@ -1,34 +1,109 @@
+/* Design Tokens — Google Minimalist Neutral Palette (doc 08) */
 :root {
-  /* Google Minimalist Neutral Palette */
+  /* Light Mode (Default) */
   --canvas-bg: #f8f9fa;
   --surface: #ffffff;
+  --surface-hover: #f1f3f4;
+  --surface-active: #e8eaed;
   --border-subtle: #dadce0;
+  --border-strong: #bdc1c6;
+  --border-focus: #1a73e8;
+
   --text-primary: #202124;
   --text-secondary: #5f6368;
+  --text-muted: #80868b;
+  --text-inverse: #ffffff;
+
   --primary-blue: #1a73e8;
   --primary-blue-hover: #1557b0;
-  --primary-dark: #202124;
-  
-  /* Soft Pastel Semantic Badges */
+  --primary-blue-subtle: #e8f0fe;
+  --danger: #d93025;
+  --danger-hover: #b3261e;
+  --danger-subtle: #fce8e6;
+  --success: #1e8e3e;
+  --success-subtle: #e6f4ea;
+  --warning: #f29900;
+  --warning-subtle: #fef7e0;
+
+  /* Semantic Object Badges */
   --tag-task-bg: #e8f0fe;
   --tag-task-text: #1967d2;
   --tag-note-bg: #fef7e0;
   --tag-note-text: #b06000;
   --tag-event-bg: #e6f4ea;
   --tag-event-text: #137333;
+  --tag-ref-bg: #f3e8fd;
+  --tag-ref-text: #7b1fa2;
   --tag-urgent-bg: #fce8e6;
   --tag-urgent-text: #c5221f;
 
-  --sidebar-width: 240px;
+  /* Layout Dimensions */
+  --sidebar-width: 250px;
   --header-height: 60px;
+  --bottom-nav-height: 60px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.1), 0 1px 3px 1px rgba(60, 64, 67, 0.05);
+  --shadow-md: 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+  --shadow-lg: 0 4px 16px rgba(60, 64, 67, 0.2);
 }
 
+/* Dark Mode Tokens (Google Dark Palette) */
+[data-theme='dark'] {
+  --canvas-bg: #121212;
+  --surface: #202124;
+  --surface-hover: #2d2f31;
+  --surface-active: #3c4043;
+  --border-subtle: #3c4043;
+  --border-strong: #5f6368;
+  --border-focus: #8ab4f8;
+
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-muted: #5f6368;
+  --text-inverse: #202124;
+
+  --primary-blue: #8ab4f8;
+  --primary-blue-hover: #aecbfa;
+  --primary-blue-subtle: #1c355e;
+  --danger: #f28b82;
+  --danger-hover: #f6aea9;
+  --danger-subtle: #441b19;
+  --success: #81c995;
+  --success-subtle: #133926;
+  --warning: #fdd663;
+  --warning-subtle: #3c3014;
+
+  /* Semantic Object Badges in Dark */
+  --tag-task-bg: #1c355e;
+  --tag-task-text: #8ab4f8;
+  --tag-note-bg: #3c3014;
+  --tag-note-text: #fdd663;
+  --tag-event-bg: #133926;
+  --tag-event-text: #81c995;
+  --tag-ref-bg: #311b58;
+  --tag-ref-text: #d7aefb;
+  --tag-urgent-bg: #441b19;
+  --tag-urgent-text: #f28b82;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 2px 6px 2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Base Styles */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
@@ -37,6 +112,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 a {
@@ -44,35 +120,43 @@ a {
   text-decoration: none;
 }
 
-button {
+button, input, textarea, select {
   font-family: inherit;
+}
+
+button {
   cursor: pointer;
   border: none;
   outline: none;
+  background: none;
 }
 
-/* App Layout */
-.app-container {
-  display: flex;
-  min-height: 100vh;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.content-container {
-  flex: 1;
-  padding: 24px 32px;
-  max-width: 1360px;
-  width: 100%;
-  margin: 0 auto;
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
-/* Card primitives */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Global utility classes */
 .card {
   background: var(--surface);
   border: 1px solid var(--border-subtle);
@@ -82,71 +166,36 @@ button {
 }
 
 .card:hover {
-  border-color: #bdc1c6;
+  border-color: var(--border-strong);
 }
 
-/* Buttons */
-.btn-primary {
-  background: var(--primary-blue);
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.15s ease;
+/* Responsive App Shell */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
 }
 
-.btn-primary:hover {
-  background: var(--primary-blue-hover);
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-bottom: 0;
 }
 
-.btn-secondary {
-  background: #ffffff;
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.content-container {
+  flex: 1;
+  padding: 24px 32px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-.btn-secondary:hover {
-  background: #f1f3f4;
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .content-container {
+    padding: 16px;
+    padding-bottom: calc(var(--bottom-nav-height) + 24px);
+  }
 }
-
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.badge-task { background: var(--tag-task-bg); color: var(--tag-task-text); }
-.badge-note { background: var(--tag-note-bg); color: var(--tag-note-text); }
-.badge-event { background: var(--tag-event-bg); color: var(--tag-event-text); }
-.badge-urgent { background: var(--tag-urgent-bg); color: var(--tag-urgent-text); }
-
-/* Background color variable for inputs / modals */
-:root {
-  --background: #f8f9fa;
-}
-
-/* Global Animations */
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0)     scale(1);    }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-

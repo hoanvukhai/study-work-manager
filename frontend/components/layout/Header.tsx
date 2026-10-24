@@ -1,34 +1,60 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { Search, Plus, LogOut, Menu, Moon, Sun, Shield, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
+import { useLayout } from '@/lib/layout-context';
 import CreateObjectModal from '../objects/CreateObjectModal';
+import ObjectDetailDrawer from '../objects/ObjectDetailDrawer';
+import CommandPalette from './CommandPalette';
+import styles from './Header.module.css';
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { toggleSidebar } = useLayout();
   const router = useRouter();
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [drawerObjectId, setDrawerObjectId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Keyboard shortcut 'c'
+  // Phím tắt: 'C' để tạo nhanh, 'Ctrl+K' để tìm kiếm (UI-10)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl + K hoặc Cmd + K để mở Command Palette
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+        return;
+      }
+
+      // 'C' để tạo mới (chỉ kích hoạt khi không gõ text và không có modal mở)
       if (
         e.key.toLowerCase() === 'c' &&
-        !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName) &&
+        !document.querySelector('[role="dialog"]') &&
+        !document.querySelector('[role="alertdialog"]') &&
+        !commandPaletteOpen &&
+        !drawerObjectId
       ) {
         e.preventDefault();
         setCreateModalOpen(true);
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [commandPaletteOpen, drawerObjectId]);
 
-  // Close dropdown when clicking outside
+  // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -39,7 +65,6 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Lấy chữ cái của Tên gọi chính (từ cuối cùng theo tiếng Việt, ví dụ: "Vũ Khải Hoàn" -> lấy "H")
   const getInitials = (fullName?: string) => {
     if (!fullName) return 'U';
     const parts = fullName.trim().split(/\s+/);
@@ -50,172 +75,133 @@ export default function Header() {
   const initial = getInitials(user?.fullName);
 
   return (
-    <header style={{
-      height: 'var(--header-height)',
-      backgroundColor: 'var(--surface)',
-      borderBottom: '1px solid var(--border-subtle)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 32px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 10,
-    }}>
-      {/* Search Bar (Quick Command) */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        backgroundColor: 'var(--canvas-bg)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        padding: '6px 12px',
-        width: '320px',
-        color: 'var(--text-secondary)',
-        fontSize: '13px',
-      }}>
-        <Search size={16} />
-        <input 
-          type="text" 
-          placeholder="Tìm kiếm hoặc gõ lệnh... (Ctrl + K)" 
-          style={{
-            border: 'none',
-            background: 'transparent',
-            outline: 'none',
-            width: '100%',
-            fontSize: '13px',
-            color: 'var(--text-primary)',
-          }}
-        />
+    <header className={styles.header}>
+      {/* Nút Hamburger menu trên mobile + Ô tìm kiếm */}
+      <div className={styles.leftSection}>
+        <button
+          className={styles.menuBtn}
+          onClick={toggleSidebar}
+          aria-label="Mở thanh điều hướng"
+        >
+          <Menu size={20} />
+        </button>
+
+        <div
+          className={styles.searchBar}
+          onClick={() => setCommandPaletteOpen(true)}
+          style={{ cursor: 'pointer' }}
+          role="button"
+          tabIndex={0}
+          title="Nhấn để tìm kiếm hoặc dùng phím tắt Ctrl + K"
+        >
+          <Search size={16} />
+          <input
+            readOnly
+            type="text"
+            placeholder="Tìm kiếm hoặc gõ lệnh... (Ctrl + K)"
+            className={styles.searchInput}
+            style={{ cursor: 'pointer' }}
+          />
+        </div>
       </div>
 
-      {/* Actions & Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Hành động: Đổi Theme, Tạo nhanh, Profile */}
+      <div className={styles.rightSection}>
+        {/* Nút chuyển chế độ Sáng / Tối (UI-09) */}
+        <button
+          className={styles.iconBtn}
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Chuyển sang chế độ Sáng' : 'Chuyển sang chế độ Tối'}
+          aria-label="Đổi giao diện sáng tối"
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
+        {/* Nút Tạo nhanh */}
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="btn-primary"
-          style={{ padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}
+          className={styles.createBtn}
+          title="Tạo mục mới (Phím tắt: C)"
         >
           <Plus size={16} />
-          <span>Tạo mới (C)</span>
+          <span className={styles.createText}>Tạo mới</span>
         </button>
 
-        <button style={{
-          position: 'relative',
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
-          <Bell size={20} />
-          <span style={{
-            position: 'absolute',
-            top: '-2px',
-            right: '-2px',
-            width: '8px',
-            height: '8px',
-            backgroundColor: '#ea4335',
-            borderRadius: '50%',
-          }}></span>
-        </button>
-
-        {/* User Profile Dropdown */}
+        {/* Profile Avatar & Dropdown */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
-          <button 
+          <div
+            className={styles.userBtn}
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              paddingLeft: '8px',
-              borderLeft: '1px solid var(--border-subtle)',
-              background: 'transparent',
-              borderTop: 'none',
-              borderRight: 'none',
-              borderBottom: 'none',
-              cursor: 'pointer',
-              textAlign: 'left',
-            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Menu tài khoản"
           >
-            <div style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '50%',
-              backgroundColor: '#e8f0fe',
-              color: 'var(--primary-blue, #1a73e8)',
-              fontWeight: 600,
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              {initial}
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {user?.fullName || 'Người dùng'}
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                {user?.email || 'user@example.com'}
-              </div>
-            </div>
-          </button>
+            <div className={styles.avatar}>{initial}</div>
+          </div>
 
-          {/* Dropdown Menu */}
           {dropdownOpen && (
-            <div style={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
-              right: 0,
-              width: '200px',
-              backgroundColor: '#ffffff',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '8px',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-              padding: '6px',
-              zIndex: 100,
-            }}>
-              <div style={{
-                padding: '8px 12px',
-                borderBottom: '1px solid var(--border-subtle)',
-                marginBottom: '4px',
-              }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {user?.fullName}
+            <div className={styles.profileDropdown}>
+              <div className={styles.dropdownHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className={styles.dropdownName}>{user?.fullName || 'Người dùng'}</span>
+                  {user?.role === 'ADMIN' && (
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: 'var(--primary-blue-subtle)',
+                        color: 'var(--primary-blue)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Admin
+                    </span>
+                  )}
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {user?.email}
-                </div>
+                <div className={styles.dropdownEmail}>{user?.email}</div>
               </div>
 
               <button
+                className={styles.dropdownItem}
+                onClick={() => {
+                  setDropdownOpen(false);
+                  router.push('/profile');
+                }}
+              >
+                <UserIcon size={16} />
+                <span>Hồ sơ & Bảo mật</span>
+              </button>
+
+              {user?.role === 'ADMIN' && (
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    router.push('/admin');
+                  }}
+                >
+                  <Shield size={16} />
+                  <span>Khu vực Quản trị</span>
+                </button>
+              )}
+
+              <button
+                className={styles.dropdownItem}
+                onClick={toggleTheme}
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                <span>Giao diện: {theme === 'dark' ? 'Tối' : 'Sáng'}</span>
+              </button>
+
+              <button
+                className={`${styles.dropdownItem} ${styles.dangerItem}`}
                 onClick={() => {
                   setDropdownOpen(false);
                   logout();
                 }}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#d93025',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fce8e6')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
-                <LogOut size={15} />
+                <LogOut size={16} />
                 <span>Đăng xuất</span>
               </button>
             </div>
@@ -223,16 +209,28 @@ export default function Header() {
         </div>
       </div>
 
+      {/* Modal Tạo Object */}
       {createModalOpen && (
         <CreateObjectModal
           onClose={() => setCreateModalOpen(false)}
-          onCreated={(newObj) => {
-            if (newObj.spaceObjects && newObj.spaceObjects.length > 0) {
-              router.push(`/spaces/${newObj.spaceObjects[0].spaceId}`);
-            } else {
-              window.location.reload();
-            }
-          }}
+          onCreated={() => setCreateModalOpen(false)}
+        />
+      )}
+
+      {/* Command Palette (Ctrl+K) */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onSelectObject={(id) => setDrawerObjectId(id)}
+        onCreateObject={() => setCreateModalOpen(true)}
+      />
+
+      {/* Object Detail Drawer */}
+      {drawerObjectId && (
+        <ObjectDetailDrawer
+          objectId={drawerObjectId}
+          onClose={() => setDrawerObjectId(null)}
+          onSelectObject={(id) => setDrawerObjectId(id)}
         />
       )}
     </header>

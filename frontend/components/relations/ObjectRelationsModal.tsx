@@ -7,13 +7,16 @@ import {
   getObjectRelations, createRelation, deleteRelation,
   ObjectRelationItem, RelationType, RELATION_LABELS,
 } from '@/lib/relations-api';
+import { useToast } from '@/components/ui/Toast';
 
 interface Props {
-  currentObject: AppObject;
+  currentObject?: AppObject;
+  object?: AppObject;
   onClose: () => void;
 }
 
-export default function ObjectRelationsModal({ currentObject, onClose }: Props) {
+export default function ObjectRelationsModal({ currentObject: propCurrent, object: propObj, onClose }: Props) {
+  const currentObject = (propCurrent || propObj)!;
   const [outgoing, setOutgoing] = useState<ObjectRelationItem[]>([]);
   const [incoming, setIncoming] = useState<ObjectRelationItem[]>([]);
   const [candidates, setCandidates] = useState<AppObject[]>([]);
@@ -71,13 +74,16 @@ export default function ObjectRelationsModal({ currentObject, onClose }: Props) 
     }
   };
 
+  const toast = useToast();
+
   const handleDelete = async (relId: string) => {
     try {
       await deleteRelation(relId);
       setOutgoing(prev => prev.filter(r => r.id !== relId));
       setIncoming(prev => prev.filter(r => r.id !== relId));
+      toast.success('Đã xoá liên kết');
     } catch (err: any) {
-      alert(err?.message || 'Không thể xoá liên kết');
+      toast.error(err?.message || 'Không thể xoá liên kết');
     }
   };
 

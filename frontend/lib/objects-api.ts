@@ -25,14 +25,15 @@ export interface AppObject {
   type: ObjectType;
   title: string;
   description: string | null;
-  status: TaskStatus;
-  priority: Priority;
+  status: TaskStatus | null;
+  priority: Priority | null;
   lifecycle: ObjectLifecycle;
   dueDate: string | null;
   startAt: string | null;
   endAt: string | null;
   url: string | null;
   metadata: any;
+  archivedAt: string | null;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -54,12 +55,10 @@ export interface CreateObjectPayload {
 }
 
 export interface UpdateObjectPayload {
-  type?: ObjectType;
   title?: string;
   description?: string | null;
-  status?: TaskStatus;
-  priority?: Priority;
-  lifecycle?: ObjectLifecycle;
+  status?: TaskStatus | null;
+  priority?: Priority | null;
   dueDate?: string | null;
   startAt?: string | null;
   endAt?: string | null;
@@ -74,6 +73,7 @@ export interface QueryObjectsParams {
   priority?: Priority;
   lifecycle?: ObjectLifecycle;
   search?: string;
+  unassigned?: boolean;
 }
 
 export async function getObjects(params?: QueryObjectsParams): Promise<AppObject[]> {
@@ -84,6 +84,7 @@ export async function getObjects(params?: QueryObjectsParams): Promise<AppObject
   if (params?.priority) query.set('priority', params.priority);
   if (params?.lifecycle) query.set('lifecycle', params.lifecycle);
   if (params?.search) query.set('search', params.search);
+  if (params?.unassigned) query.set('unassigned', 'true');
 
   const qs = query.toString();
   return apiRequest<AppObject[]>(`/objects${qs ? `?${qs}` : ''}`);
@@ -117,8 +118,21 @@ export async function updateObjectLifecycle(
   });
 }
 
+export async function convertObjectType(id: string, targetType: ObjectType): Promise<AppObject> {
+  return apiRequest<AppObject>(`/objects/${id}/convert-type`, {
+    method: 'PATCH',
+    body: JSON.stringify({ targetType }),
+  });
+}
+
 export async function deleteObject(id: string): Promise<{ message: string }> {
   return apiRequest<{ message: string }>(`/objects/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function emptyTrash(): Promise<{ message: string; count: number }> {
+  return apiRequest<{ message: string; count: number }>('/objects/trash/empty', {
     method: 'DELETE',
   });
 }

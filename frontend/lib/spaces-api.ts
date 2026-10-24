@@ -6,11 +6,12 @@ export interface Space {
   description?: string;
   icon: string;
   color: string;
-  parentId?: string;
-  isArchived: boolean;
+  settings?: Record<string, any>;
+  goal?: string;
+  dueDate?: string;
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  children?: Space[];
   _count?: { spaceObjects: number };
 }
 
@@ -19,15 +20,18 @@ export interface CreateSpacePayload {
   description?: string;
   icon?: string;
   color?: string;
-  parentId?: string;
+  settings?: Record<string, any>;
+  goal?: string;
+  dueDate?: string;
 }
 
 export interface UpdateSpacePayload extends Partial<CreateSpacePayload> {
   isArchived?: boolean;
 }
 
-export async function getSpaces(): Promise<Space[]> {
-  return apiRequest<Space[]>('/spaces');
+export async function getSpaces(includeArchived = false): Promise<Space[]> {
+  const query = includeArchived ? '?includeArchived=true' : '';
+  return apiRequest<Space[]>(`/spaces${query}`);
 }
 
 export async function getSpace(id: string): Promise<Space> {
