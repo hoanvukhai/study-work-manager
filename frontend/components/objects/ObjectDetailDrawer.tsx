@@ -43,6 +43,7 @@ import {
   useDeleteRelation,
 } from '@/hooks/useRelations';
 import { RelationType, RELATION_LABELS } from '@/lib/relations-api';
+import NoteCards from '@/components/study/NoteCards';
 import { useToast } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Button } from '@/components/ui/Button';
@@ -767,6 +768,13 @@ export default function ObjectDetailDrawer({
                 }}
               />
             </div>
+
+            {object.type === 'NOTE' && (
+              <div className={styles.section}>
+                <span className={styles.sectionTitle}>Thẻ ôn tập</span>
+                <NoteCards noteId={object.id} dirty={isDirty} />
+              </div>
+            )}
 
             {/* 2-Way Cross-Linking Section (BUG-11, BUG-15) */}
             <div className={styles.section}>

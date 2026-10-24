@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, KanbanSquare, Calendar, Inbox } from 'lucide-react';
+import { LayoutDashboard, KanbanSquare, Calendar, Inbox, BookOpenCheck } from 'lucide-react';
 import styles from './MobileNav.module.css';
 
 export default function MobileNav() {
@@ -13,6 +13,7 @@ export default function MobileNav() {
     { label: 'Tổng quan', href: '/', icon: <LayoutDashboard size={20} /> },
     { label: 'Kanban', href: '/kanban', icon: <KanbanSquare size={20} /> },
     { label: 'Lịch trình', href: '/calendar', icon: <Calendar size={20} /> },
+    { label: 'Học tập', href: '/study', icon: <BookOpenCheck size={20} /> },
     { label: 'Hộp nhận', href: '/inbox', icon: <Inbox size={20} /> },
   ];
 

@@ -59,7 +59,7 @@ Bảng `notifications` đã có: `type`, `title`, `message`, `data(JSON)`, `dedu
    - Task: `lifecycle=ACTIVE`, `status` ∉ {DONE, CANCELLED}, `dueDate` trong `(now, now + remindBefore]` → loại `DEADLINE_SOON`.
    - Task: tương tự nhưng `dueDate < now` → loại `OVERDUE`, mỗi task **chỉ báo 1 lần mỗi ngày** (dedupeKey chứa ngày địa phương).
    - Event: `lifecycle=ACTIVE`, `startAt` trong `(now, now + remindBefore]` → loại `EVENT_SOON`.
-   - Bỏ qua loại người dùng đã tắt; **không tạo trong giờ yên lặng** (tính theo giờ Việt Nam UTC+7 — để hằng số `APP_TIMEZONE_OFFSET_MIN = 420`, có comment).
+   - Bỏ qua loại người dùng đã tắt; **không tạo trong giờ yên lặng** (tính theo giờ Việt Nam UTC+7 — **dùng lại** `backend/src/common/timezone.ts`: `APP_TIMEZONE_OFFSET_MIN`, `toLocalDateKey`, `startOfLocalDay`; không tự định nghĩa lại).
    - `dedupeKey`: `DEADLINE_SOON:<objectId>:<dueDate ISO>`, `OVERDUE:<objectId>:<YYYY-MM-DD>`, `EVENT_SOON:<objectId>:<startAt ISO>`. Dùng `createMany({ skipDuplicates: true })` hoặc bắt lỗi P2002. **Đổi hạn chót ⇒ dedupeKey đổi ⇒ được báo lại; không báo trùng khi quét lại.**
    - Mục ở Thùng rác / Lưu trữ / đã xong **không** được báo. Khi task chuyển DONE, xoá các thông báo **chưa đọc** loại DEADLINE_SOON/OVERDUE của task đó (làm trong `ObjectsService.update` hoặc lắng nghe qua EventEmitter — chọn cách đơn giản, nhất quán).
 4. **Bản tin buổi sáng** (làm sau khi phần trên chạy): cron 07:00 giờ VN, tạo 1 thông báo `DAILY_DIGEST` (dedupeKey theo ngày) gồm số việc đến hạn hôm nay, số sự kiện hôm nay, số việc quá hạn. Có công tắc `enableDigest` trong settings.

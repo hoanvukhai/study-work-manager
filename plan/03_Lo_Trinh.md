@@ -185,14 +185,16 @@ Doc 02 (Actor Quản trị viên, FR-NOTIF, FR-ADMIN), 03 (UC Admin, Activity 06
 
 ## GĐ5 — Trụ Học tập  `M`
 
+> **Trạng thái 25/10:** đã xong thẻ hỏi–đáp (`::`), SM-2, phiên ôn lật thẻ, Pomodoro, thống kê + chuỗi ngày, ôn theo ngữ cảnh (Note liên kết với việc sắp đến hạn được ôn trước). 16 unit test + 10 test API. **Chưa làm:** lượt ôn hiện trên Lịch, thông báo "đến lúc ôn" (chờ module Thông báo), bật/tắt công cụ Ôn tập theo Space (chờ Việc 3).
+
 ### Việc cần làm
-- [ ] Đánh dấu Note là "cần ôn"; tạo thẻ hỏi–đáp bằng cú pháp `Câu hỏi :: Trả lời`
-- [ ] Bảng thẻ ôn + lịch sử ôn; thuật toán **SM-2** (nhớ tốt → giãn lịch, quên → ôn lại sớm)
-- [ ] Màn hình phiên ôn: lật thẻ, tự chấm "Quên / Khó / Nhớ / Dễ"
+- [x] Đánh dấu Note là "cần ôn"; tạo thẻ hỏi–đáp bằng cú pháp `Câu hỏi :: Trả lời`
+- [x] Bảng thẻ ôn + lịch sử ôn; thuật toán **SM-2** (nhớ tốt → giãn lịch, quên → ôn lại sớm)
+- [x] Màn hình phiên ôn: lật thẻ, tự chấm "Quên / Khó / Nhớ / Dễ"
 - [ ] Lượt ôn đến hạn hiện trong Lịch, Dashboard và bản tin buổi sáng; thông báo "đến lúc ôn"
-- [ ] Kết hợp với Kế hoạch: Note liên kết với Task sắp làm → ưu tiên ôn trước
-- [ ] **Pomodoro / chế độ tập trung**: đếm giờ gắn với một Task/Note, lưu thời gian thật
-- [ ] **Thống kê học tập**: giờ học theo Space, số thẻ đã ôn, chuỗi ngày liên tục
+- [x] Kết hợp với Kế hoạch: Note liên kết với Task sắp làm → ưu tiên ôn trước
+- [x] **Pomodoro / chế độ tập trung**: đếm giờ gắn với một Task/Note, lưu thời gian thật
+- [x] **Thống kê học tập**: giờ học theo Space, số thẻ đã ôn, chuỗi ngày liên tục
 - [ ] Bật/tắt công cụ "Ôn tập" trong cài đặt Space
 
 ### Kiểm thử

@@ -1,0 +1,352 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pageSub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panelTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Thẻ ôn ---- */
+.cardFace {
+  min-height: 180px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--canvas-bg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  text-align: center;
+}
+
+.cardLabel {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.cardText {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cardAnswer {
+  font-size: 18px;
+  color: var(--primary-blue);
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 12px;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+.chipContext {
+  background: var(--primary-blue-subtle);
+  color: var(--primary-blue);
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--primary-blue);
+  transition: width 0.2s;
+}
+
+.gradeRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.gradeBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gradeBtn small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.gradeAgain:hover { border-color: #ef4444; }
+.gradeHard:hover { border-color: #f59e0b; }
+.gradeGood:hover { border-color: #3b82f6; }
+.gradeEasy:hover { border-color: #10b981; }
+
+.hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.done {
+  text-align: center;
+  padding: 24px 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.doneEmoji {
+  font-size: 36px;
+}
+
+/* ---- Pomodoro ---- */
+.timer {
+  font-size: 56px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.timerBreak {
+  color: #10b981;
+}
+
+.timerMode {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.select {
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  width: 100%;
+}
+
+/* ---- Biểu đồ 7 ngày ---- */
+.bars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  align-items: end;
+  height: 90px;
+}
+
+.barCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 100%;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: var(--primary-blue);
+  min-height: 2px;
+}
+
+.barEmpty {
+  background: var(--border-subtle);
+}
+
+/* ---- Khối thẻ trong Drawer ---- */
+.noteCards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noteCardsHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.noteCardsHint code {
+  background: var(--surface-hover);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.noteCardItem {
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.noteCardDue {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ---- Thẻ trên Dashboard ---- */
+.dashCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  flex-wrap: wrap;
+}
+
+.dashText {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.dashText strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 900px) {
+  .mainGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .timer {
+    font-size: 44px;
+  }
+  .cardText {
+    font-size: 18px;
+  }
+  .gradeRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

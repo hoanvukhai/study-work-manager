@@ -234,6 +234,34 @@ async function main() {
   });
   console.log('[Seed] Đã tạo liên kết REFERENCES, DEPENDS_ON và PARENT_OF');
 
+  // 6b. Demo Trụ Học tập: Note có thẻ hỏi–đáp, liên kết với việc sắp đến hạn → được ưu tiên ôn
+  const noteJwt = await prisma.object.create({
+    data: {
+      userId: demoUser.id,
+      type: ObjectType.NOTE,
+      title: 'Ghi chú JWT & bảo mật',
+      description: [
+        'Ôn nhanh trước khi viết module Auth:',
+        'JWT gồm mấy phần? :: 3 phần: header, payload, signature',
+        'Bcrypt dùng để làm gì? :: Băm một chiều mật khẩu trước khi lưu',
+        'Vì sao đăng nhập sai chỉ báo lỗi chung? :: Tránh lộ tài khoản nào tồn tại',
+      ].join('\n'),
+      lifecycle: ObjectLifecycle.ACTIVE,
+    },
+  });
+  await prisma.spaceObject.create({ data: { spaceId: thesisSpace.id, objectId: noteJwt.id, position: 8 } });
+  await prisma.objectRelation.create({
+    data: { fromObjectId: taskSeed.id, toObjectId: noteJwt.id, relationType: RelationType.REFERENCES },
+  });
+  await prisma.flashcard.createMany({
+    data: [
+      { front: 'JWT gồm mấy phần?', back: '3 phần: header, payload, signature' },
+      { front: 'Bcrypt dùng để làm gì?', back: 'Băm một chiều mật khẩu trước khi lưu' },
+      { front: 'Vì sao đăng nhập sai chỉ báo lỗi chung?', back: 'Tránh lộ tài khoản nào tồn tại' },
+    ].map((c) => ({ ...c, userId: demoUser.id, objectId: noteJwt.id })),
+  });
+  console.log('[Seed] Đã tạo Note JWT với 3 thẻ ôn tập');
+
   // 7. Tạo Thông báo mẫu
   await prisma.notification.create({
     data: {

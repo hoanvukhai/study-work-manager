@@ -117,3 +117,10 @@
 - **Đã làm:** `backend/src/planning/` (graph.ts phát hiện vòng, scoring.ts chấm điểm, `GET /planning/overview`); luật quan hệ: DEPENDS_ON/PARENT_OF chỉ giữa Task, cấm vòng, một việc chỉ một việc cha; thêm `estimatedMinutes` (migration + CHECK chỉ Task). Giao diện: thẻ "Hôm nay làm gì?" ở Dashboard (kèm lý do, mức quá tải, danh sách việc bị chặn), 🔒 trên Kanban, khối "Kế hoạch" trong Drawer (chặn bởi, mở khoá, việc cha/con + tiến độ), hỏi xác nhận khi đánh dấu xong việc còn bị chặn, hiện lỗi cụ thể khi nối vòng.
 - **Kiểm chứng:** 14 unit test thuật toán + 7 test API; chạy thật trên trình duyệt, thẻ gợi ý hiện đúng lý do trên dữ liệu seed.
 - **Chưa làm:** thông báo "được mở khoá", việc lặp lại, cảnh báo dây chuyền khi dời hạn.
+
+---
+
+### 25/10/2026 — GĐ5 Trụ Học tập
+- **Đã làm:** Backend `src/study/`: `sm2.ts` (SM-2 theo bản gốc: cập nhật hệ số dễ rồi mới tính khoảng cách; Quên → hiện lại sau 10 phút), `cards.ts` (tách thẻ `Câu hỏi :: Trả lời`, tính chuỗi ngày), `study.service.ts` (đồng bộ thẻ giữ nguyên tiến độ, danh sách đến hạn có ưu tiên ngữ cảnh, ôn thẻ, phiên học, thống kê), `common/timezone.ts` (giờ VN dùng chung). Bảng mới `flashcards`, `flashcard_reviews`, `study_sessions` + CHECK. Giao diện: trang `/study` (ôn thẻ bằng phím Space/1–4, Pomodoro, thống kê 7 ngày), khối "Thẻ ôn tập" trong Drawer của Note, thẻ nhắc ôn trên Dashboard, mục "Học tập" ở Sidebar/MobileNav.
+- **Vấn đề & cách xử lý:** bản SM-2 đầu tiên dùng hệ số dễ *cũ* để tính khoảng cách, lệch với bài gốc (SuperMemo-2) → test chuỗi Dễ-Dễ-Dễ phát hiện (16 vs 17 ngày) và sửa theo bản gốc.
+- **Kiểm chứng:** 16 unit test (SM-2, tách thẻ, chuỗi ngày, múi giờ) + 10 test API (kể cả cách ly dữ liệu, thẻ của Note trong Thùng rác không hiện, ôn theo ngữ cảnh). Chạy thật trên trình duyệt: ôn thẻ bằng bàn phím, hiện lý do ngữ cảnh. **Chưa tự kiểm** khối "Thẻ ôn tập" trong Drawer và Pomodoro trên giao diện.

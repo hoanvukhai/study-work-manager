@@ -9,6 +9,7 @@ import {
   Plus,
   KanbanSquare,
   Calendar,
+  BookOpenCheck,
   MoreVertical,
   Archive,
   Inbox,
@@ -160,6 +161,14 @@ export default function Sidebar() {
             >
               <Calendar size={18} />
               <span>Lịch trình</span>
+            </Link>
+
+            <Link
+              href="/study"
+              className={`${styles.navLink} ${isActive('/study') ? styles.navLinkActive : ''}`}
+            >
+              <BookOpenCheck size={18} />
+              <span>Học tập</span>
             </Link>
           </div>
 
