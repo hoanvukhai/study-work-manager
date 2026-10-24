@@ -241,7 +241,7 @@ async function main() {
       type: ObjectType.NOTE,
       title: 'Ghi chú JWT & bảo mật',
       description: [
-        'Ôn nhanh trước khi viết module Auth:',
+        'Ôn nhanh trước khi viết module Auth (xem thêm [[NestJS & Prisma Documentation]] và [[Ghi chú góp ý của Thầy Cường]]):',
         'JWT gồm mấy phần? :: 3 phần: header, payload, signature',
         'Bcrypt dùng để làm gì? :: Băm một chiều mật khẩu trước khi lưu',
         'Vì sao đăng nhập sai chỉ báo lỗi chung? :: Tránh lộ tài khoản nào tồn tại',
@@ -259,6 +259,13 @@ async function main() {
       { front: 'Bcrypt dùng để làm gì?', back: 'Băm một chiều mật khẩu trước khi lưu' },
       { front: 'Vì sao đăng nhập sai chỉ báo lỗi chung?', back: 'Tránh lộ tài khoản nào tồn tại' },
     ].map((c) => ({ ...c, userId: demoUser.id, objectId: noteJwt.id })),
+  });
+  // Liên kết tự động sinh từ [[ ]] trong nội dung (giống KnowledgeService.syncMentions)
+  await prisma.objectRelation.createMany({
+    data: [
+      { fromObjectId: noteJwt.id, toObjectId: refNest.id, relationType: RelationType.RELATES_TO, auto: true },
+      { fromObjectId: noteJwt.id, toObjectId: noteThesis.id, relationType: RelationType.RELATES_TO, auto: true },
+    ],
   });
   console.log('[Seed] Đã tạo Note JWT với 3 thẻ ôn tập');
 

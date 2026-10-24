@@ -44,6 +44,8 @@ import {
 } from '@/hooks/useRelations';
 import { RelationType, RELATION_LABELS } from '@/lib/relations-api';
 import NoteCards from '@/components/study/NoteCards';
+import LinkTextarea from '@/components/knowledge/LinkTextarea';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Button } from '@/components/ui/Button';
@@ -118,6 +120,7 @@ export default function ObjectDetailDrawer({
   const deleteRelationMutation = useDeleteRelation(objectId || undefined);
 
   const toast = useToast();
+  const router = useRouter();
 
   // Local form state
   const [title, setTitle] = useState('');
@@ -758,14 +761,17 @@ export default function ObjectDetailDrawer({
 
             <div className={styles.section}>
               <span className={styles.sectionTitle}>Nội dung / Ghi chú</span>
-              <textarea
+              <LinkTextarea
                 className={styles.textarea}
-                placeholder="Nhập ghi chú hoặc mô tả chi tiết..."
+                placeholder="Nhập ghi chú hoặc mô tả chi tiết... Gõ [[ để liên kết tới mục khác."
                 value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
+                onChange={(v) => {
+                  setDescription(v);
                   setIsDirty(true);
                 }}
+                candidates={allObjects.map((o) => ({ id: o.id, title: o.title, type: o.type }))}
+                selfId={object.id}
+                onOpen={(id) => onSelectObject && onSelectObject(id)}
               />
             </div>
 
@@ -785,6 +791,13 @@ export default function ObjectDetailDrawer({
                   onClick={() => setShowAddRelation(!showAddRelation)}
                 >
                   <Plus size={14} /> Thêm liên kết
+                </button>
+                <button
+                  className={styles.addSpaceBtn}
+                  onClick={() => router.push(`/graph?focus=${object.id}`)}
+                  title="Xem các mục quanh mục này trên bản đồ tri thức"
+                >
+                  Xem trên bản đồ
                 </button>
               </div>
 
@@ -887,7 +900,7 @@ export default function ObjectDetailDrawer({
                     <div className={styles.relationMeta}>
                       <ArrowLeft size={14} style={{ color: 'var(--text-muted)' }} />
                       <span className={styles.relationTypeBadge}>
-                        Được liên kết bởi
+                        Backlink{rel.auto ? ' · [[ ]]' : ''}
                       </span>
                       <span
                         className={styles.relationTitle}

@@ -205,16 +205,18 @@ Doc 02 (Actor Quản trị viên, FR-NOTIF, FR-ADMIN), 03 (UC Admin, Activity 06
 
 ## GĐ6 — Trụ Tri thức  `M`
 
+> **Trạng thái 25/10:** đã xong `[[ ]]` (gợi ý khi gõ + tự tạo/xoá liên kết), backlink, bản đồ tri thức (bố cục lực đẩy–kéo tự viết, lọc Space/loại, xem quanh một mục). 5 unit test + 9 test API. **Chưa làm:** bật/tắt công cụ Bản đồ theo Space (chờ Việc 3).
+
 ### Việc cần làm
-- [ ] Gõ `[[` trong nội dung → chọn mục → tự tạo liên kết
-- [ ] Mục **Backlink** trong khung chi tiết: "những mục đang nhắc tới mục này"
-- [ ] **Bản đồ tri thức**: chấm = Object (màu theo loại), đường = liên kết; lọc theo Space / loại liên kết; bấm vào chấm mở khung chi tiết
-- [ ] Bản đồ quanh một mục (chỉ hiện các mục cách 1–2 bước)
+- [x] Gõ `[[` trong nội dung → chọn mục → tự tạo liên kết
+- [x] Mục **Backlink** trong khung chi tiết: "những mục đang nhắc tới mục này"
+- [x] **Bản đồ tri thức**: chấm = Object (màu theo loại), đường = liên kết; lọc theo Space / loại liên kết; bấm vào chấm mở khung chi tiết
+- [x] Bản đồ quanh một mục (chỉ hiện các mục cách 1–2 bước)
 - [ ] Bật/tắt công cụ "Bản đồ" trong cài đặt Space
 
 ### Kiểm thử
-- [ ] Tự động: `[[ ]]` tạo/xoá liên kết khi sửa nội dung; backlink đúng
-- [ ] Thủ công: bản đồ mượt với khoảng 200 mục
+- [x] Tự động: `[[ ]]` tạo/xoá liên kết khi sửa nội dung; backlink đúng
+- [x] Thủ công: bản đồ mượt với khoảng 200 mục
 
 ---
 

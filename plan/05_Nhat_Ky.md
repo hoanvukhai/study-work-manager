@@ -124,3 +124,10 @@
 - **Đã làm:** Backend `src/study/`: `sm2.ts` (SM-2 theo bản gốc: cập nhật hệ số dễ rồi mới tính khoảng cách; Quên → hiện lại sau 10 phút), `cards.ts` (tách thẻ `Câu hỏi :: Trả lời`, tính chuỗi ngày), `study.service.ts` (đồng bộ thẻ giữ nguyên tiến độ, danh sách đến hạn có ưu tiên ngữ cảnh, ôn thẻ, phiên học, thống kê), `common/timezone.ts` (giờ VN dùng chung). Bảng mới `flashcards`, `flashcard_reviews`, `study_sessions` + CHECK. Giao diện: trang `/study` (ôn thẻ bằng phím Space/1–4, Pomodoro, thống kê 7 ngày), khối "Thẻ ôn tập" trong Drawer của Note, thẻ nhắc ôn trên Dashboard, mục "Học tập" ở Sidebar/MobileNav.
 - **Vấn đề & cách xử lý:** bản SM-2 đầu tiên dùng hệ số dễ *cũ* để tính khoảng cách, lệch với bài gốc (SuperMemo-2) → test chuỗi Dễ-Dễ-Dễ phát hiện (16 vs 17 ngày) và sửa theo bản gốc.
 - **Kiểm chứng:** 16 unit test (SM-2, tách thẻ, chuỗi ngày, múi giờ) + 10 test API (kể cả cách ly dữ liệu, thẻ của Note trong Thùng rác không hiện, ôn theo ngữ cảnh). Chạy thật trên trình duyệt: ôn thẻ bằng bàn phím, hiện lý do ngữ cảnh. **Chưa tự kiểm** khối "Thẻ ôn tập" trong Drawer và Pomodoro trên giao diện.
+
+---
+
+### 25/10/2026 — GĐ6 Trụ Tri thức
+- **Đã làm:** Backend `src/knowledge/` (`mentions.ts` tách `[[Tiêu đề]]`, `syncMentions` tự tạo/xoá liên kết RELATES_TO có cờ `auto`, `GET /knowledge/graph`); cột mới `object_relations.auto`. Giao diện: ô gõ có gợi ý khi gõ `[[` (↑↓ Enter Esc), chip liên kết trong nội dung, nhãn Backlink trong Drawer, nút "Xem trên bản đồ", trang `/graph` (bố cục Fruchterman–Reingold tự viết, phóng/dịch/kéo nút, lọc Space + loại, tìm, ẩn mục chưa liên kết, chế độ xem quanh một mục 1–3 bước).
+- **Vấn đề & cách xử lý:** bố cục lần đầu tràn ra ngoài khung nhìn (ít nút nên lực đẩy quá lớn) → thêm bước tự căn vừa khung và nút "Căn lại". Liên kết tự sinh không được xoá liên kết tạo tay → cờ `auto` + `skipDuplicates`.
+- **Kiểm chứng:** 5 unit test + 9 test API (kể cả cách ly dữ liệu, mục Thùng rác/Lưu trữ không lên bản đồ). Chạy thật: bản đồ hiện đúng 8 mục, bấm chấm mở khung chi tiết, gõ `[[` hiện gợi ý và chèn đúng. **Chưa tự kiểm:** kéo thả nút, phóng to bằng cuộn, màn hình điện thoại.

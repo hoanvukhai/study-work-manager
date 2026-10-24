@@ -24,6 +24,8 @@ export interface ObjectRelationItem {
   fromObjectId: string;
   toObjectId: string;
   relationType: RelationType;
+  /** true = sinh tự động từ [[Tiêu đề]] trong nội dung */
+  auto?: boolean;
   createdAt: string;
   fromObject?: RelatedObjectSummary;
   toObject?: RelatedObjectSummary;

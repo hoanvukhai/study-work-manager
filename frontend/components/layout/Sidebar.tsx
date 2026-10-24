@@ -10,6 +10,7 @@ import {
   KanbanSquare,
   Calendar,
   BookOpenCheck,
+  Network,
   MoreVertical,
   Archive,
   Inbox,
@@ -169,6 +170,14 @@ export default function Sidebar() {
             >
               <BookOpenCheck size={18} />
               <span>Học tập</span>
+            </Link>
+
+            <Link
+              href="/graph"
+              className={`${styles.navLink} ${isActive('/graph') ? styles.navLinkActive : ''}`}
+            >
+              <Network size={18} />
+              <span>Bản đồ tri thức</span>
             </Link>
           </div>
 
