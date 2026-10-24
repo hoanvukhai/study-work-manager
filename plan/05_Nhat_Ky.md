@@ -110,3 +110,10 @@
   - Lỗi múi giờ do dùng `toISOString()` (UTC) để hiển thị → thêm `frontend/lib/datetime.ts`, cấm dùng cách cũ.
   - Test unit (CSDL giả) không bắt được lỗi giao diện/ràng buộc CSDL → thêm test API chạy trên CSDL thật `study_work_test`.
 - **Tiếp theo:** Thông báo + Admin (giao Gemini, `plan/06`); tự kiểm thử thủ công trên trình duyệt trước khi tick các mục "Kiểm thử" của GĐ1–GĐ2.
+
+---
+
+### 25/10/2026 — GĐ4 Trụ Kế hoạch
+- **Đã làm:** `backend/src/planning/` (graph.ts phát hiện vòng, scoring.ts chấm điểm, `GET /planning/overview`); luật quan hệ: DEPENDS_ON/PARENT_OF chỉ giữa Task, cấm vòng, một việc chỉ một việc cha; thêm `estimatedMinutes` (migration + CHECK chỉ Task). Giao diện: thẻ "Hôm nay làm gì?" ở Dashboard (kèm lý do, mức quá tải, danh sách việc bị chặn), 🔒 trên Kanban, khối "Kế hoạch" trong Drawer (chặn bởi, mở khoá, việc cha/con + tiến độ), hỏi xác nhận khi đánh dấu xong việc còn bị chặn, hiện lỗi cụ thể khi nối vòng.
+- **Kiểm chứng:** 14 unit test thuật toán + 7 test API; chạy thật trên trình duyệt, thẻ gợi ý hiện đúng lý do trên dữ liệu seed.
+- **Chưa làm:** thông báo "được mở khoá", việc lặp lại, cảnh báo dây chuyền khi dời hạn.

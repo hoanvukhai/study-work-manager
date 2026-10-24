@@ -164,15 +164,17 @@ Doc 02 (Actor Quản trị viên, FR-NOTIF, FR-ADMIN), 03 (UC Admin, Activity 06
 
 ## GĐ4 — Trụ Kế hoạch  `L`
 
+> **Trạng thái 25/10:** đã xong phần lõi (cấm vòng, 🔒, việc con, ước lượng, gợi ý, quá tải) với 14 unit test + 7 test API. **Chưa làm:** thông báo "được mở khoá" (chờ module Thông báo), cảnh báo khi dời hạn làm việc phía sau trễ theo, việc/sự kiện lặp lại.
+
 ### Việc cần làm
-- [ ] **Phụ thuộc** (`DEPENDS_ON`): biểu tượng 🔒 cho việc bị chặn; **chặn nối vòng tròn** (thuật toán duyệt đồ thị); hỏi xác nhận khi đánh dấu xong một việc còn bị chặn
+- [x] **Phụ thuộc** (`DEPENDS_ON`): biểu tượng 🔒 cho việc bị chặn; **chặn nối vòng tròn** (thuật toán duyệt đồ thị); hỏi xác nhận khi đánh dấu xong một việc còn bị chặn
 - [ ] Thông báo "đã được mở khoá" khi việc tiền đề xong
 - [ ] Cảnh báo khi dời hạn chót làm việc phía sau bị trễ theo
-- [ ] **Việc con** (`PARENT_OF`): checklist trong khung chi tiết, tiến độ việc cha tự tính
+- [x] **Việc con** (`PARENT_OF`): checklist trong khung chi tiết, tiến độ việc cha tự tính
 - [ ] **Việc / sự kiện lặp lại** (thời khoá biểu, việc hằng tuần)
-- [ ] **Ước lượng thời gian** cho Task
-- [ ] **"Hôm nay làm gì?"**: chấm điểm theo độ gấp + ưu tiên + bị chặn hay không + vừa thời gian trống → gợi ý 3–5 việc; giải thích vì sao gợi ý
-- [ ] **Cảnh báo quá tải** tuần
+- [x] **Ước lượng thời gian** cho Task
+- [x] **"Hôm nay làm gì?"**: chấm điểm theo độ gấp + ưu tiên + bị chặn hay không + vừa thời gian trống → gợi ý 3–5 việc; giải thích vì sao gợi ý
+- [x] **Cảnh báo quá tải** tuần
 - [ ] Bật/tắt công cụ "Kế hoạch" trong cài đặt Space (QD-03)
 
 ### Kiểm thử
