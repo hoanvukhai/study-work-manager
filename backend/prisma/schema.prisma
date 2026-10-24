@@ -72,6 +72,7 @@ model User {
   flashcards       Flashcard[]
   flashcardReviews FlashcardReview[]
   studySessions    StudySession[]
+  notificationSettings NotificationSettings?
 
   @@map("users")
 }
@@ -242,4 +243,25 @@ model StudySession {
 
   @@index([userId, createdAt])
   @@map("study_sessions")
+}
+
+// ---- Thông báo ----
+
+// Cài đặt thông báo của mỗi người dùng (1 dòng / người).
+model NotificationSettings {
+  userId              String  @id @map("user_id") @db.Uuid
+  remindBeforeMinutes Int     @default(1440) @map("remind_before_minutes")
+  quietHoursEnabled   Boolean @default(false) @map("quiet_hours_enabled")
+  quietStartMinute    Int     @default(1380) @map("quiet_start_minute") // 23:00 (giờ VN)
+  quietEndMinute      Int     @default(420) @map("quiet_end_minute") // 07:00 (giờ VN)
+  enableDeadline      Boolean @default(true) @map("enable_deadline")
+  enableOverdue       Boolean @default(true) @map("enable_overdue")
+  enableEvent         Boolean @default(true) @map("enable_event")
+  enableDigest        Boolean @default(true) @map("enable_digest")
+  enableStudy         Boolean @default(true) @map("enable_study")
+  enableUnblocked     Boolean @default(true) @map("enable_unblocked")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
 }

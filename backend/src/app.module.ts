@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { SpacesModule } from './space/spaces.module';
@@ -9,10 +10,12 @@ import { ViewsModule } from './view/views.module';
 import { PlanningModule } from './planning/planning.module';
 import { StudyModule } from './study/study.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     SpacesModule,
@@ -22,6 +25,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
     PlanningModule,
     StudyModule,
     KnowledgeModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

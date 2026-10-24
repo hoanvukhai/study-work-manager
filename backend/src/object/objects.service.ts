@@ -5,6 +5,7 @@ import { CreateObjectDto } from './dto/create-object.dto';
 import { UpdateObjectDto } from './dto/update-object.dto';
 import { QueryObjectsDto } from './dto/query-objects.dto';
 import { KnowledgeService } from '../knowledge/knowledge.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ObjectLifecycle, ObjectType, TaskStatus, Priority } from '@prisma/client';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class ObjectsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly knowledge: KnowledgeService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(userId: string, dto: CreateObjectDto) {
@@ -191,6 +193,15 @@ export class ObjectsService {
       },
     });
 
+    // Task vừa xong/huỷ → dọn nhắc hạn và báo các việc được mở khoá
+    if (
+      existing.type === ObjectType.TASK &&
+      (dto.status === TaskStatus.DONE || dto.status === TaskStatus.CANCELLED) &&
+      existing.status !== dto.status
+    ) {
+      await this.notifications.onTaskFinished(userId, id);
+    }
+
     // Nội dung đổi → đồng bộ liên kết tự động từ [[Tiêu đề]]
     if (dto.description !== undefined) {
       await this.knowledge.syncMentions(userId, id, dto.description?.trim() || null);
@@ -225,6 +236,10 @@ export class ObjectsService {
       where: { id },
       data: { lifecycle, deletedAt, ...(archivedAt !== undefined && { archivedAt }) },
     });
+
+    if (action === 'TRASH' || action === 'ARCHIVE') {
+      await this.notifications.clearPendingReminders(userId, id);
+    }
 
     return this.findOne(userId, id);
   }

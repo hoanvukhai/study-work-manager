@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ObjectsService } from './objects.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ObjectType, TaskStatus, Priority, ObjectLifecycle } from '@prisma/client';
 
 describe('ObjectsService (Unit Tests)', () => {
@@ -33,6 +34,7 @@ describe('ObjectsService (Unit Tests)', () => {
         ObjectsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: KnowledgeService, useValue: { syncMentions: jest.fn() } },
+        { provide: NotificationsService, useValue: { onTaskFinished: jest.fn(), clearPendingReminders: jest.fn() } },
       ],
     }).compile();
 
