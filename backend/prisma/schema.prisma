@@ -153,6 +153,8 @@ model ObjectRelation {
   fromObjectId String       @map("from_object_id") @db.Uuid
   toObjectId   String       @map("to_object_id") @db.Uuid
   relationType RelationType @default(RELATES_TO) @map("relation_type")
+  // true = tự sinh từ [[Tiêu đề]] trong nội dung; tự xoá khi không còn được nhắc
+  auto         Boolean      @default(false)
   createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
 
   fromObject Object @relation("OutgoingRelations", fields: [fromObjectId], references: [id], onDelete: Cascade)

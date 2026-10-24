@@ -4,11 +4,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateObjectDto } from './dto/create-object.dto';
 import { UpdateObjectDto } from './dto/update-object.dto';
 import { QueryObjectsDto } from './dto/query-objects.dto';
+import { KnowledgeService } from '../knowledge/knowledge.service';
 import { ObjectLifecycle, ObjectType, TaskStatus, Priority } from '@prisma/client';
 
 @Injectable()
 export class ObjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly knowledge: KnowledgeService,
+  ) {}
 
   async create(userId: string, dto: CreateObjectDto) {
     if (dto.spaceId) {
@@ -78,6 +82,8 @@ export class ObjectsService {
 
       return object;
     });
+
+    if (created.description) await this.knowledge.syncMentions(userId, created.id, created.description);
 
     return this.findOne(userId, created.id);
   }
@@ -184,6 +190,11 @@ export class ObjectsService {
         ...(dto.metadata !== undefined && { metadata: dto.metadata }),
       },
     });
+
+    // Nội dung đổi → đồng bộ liên kết tự động từ [[Tiêu đề]]
+    if (dto.description !== undefined) {
+      await this.knowledge.syncMentions(userId, id, dto.description?.trim() || null);
+    }
 
     return this.findOne(userId, id);
   }

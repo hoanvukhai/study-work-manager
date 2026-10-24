@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ObjectsService } from './objects.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { KnowledgeService } from '../knowledge/knowledge.service';
 import { ObjectType, TaskStatus, Priority, ObjectLifecycle } from '@prisma/client';
 
 describe('ObjectsService (Unit Tests)', () => {
@@ -31,6 +32,7 @@ describe('ObjectsService (Unit Tests)', () => {
       providers: [
         ObjectsService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: KnowledgeService, useValue: { syncMentions: jest.fn() } },
       ],
     }).compile();
 
