@@ -50,6 +50,11 @@ async function main() {
   });
   console.log(`[Seed] Admin User: ${adminUser.email} (Mật khẩu: Admin12345!)`);
 
+  // Dọn dữ liệu mẫu cũ của Demo User để seed chạy lại nhiều lần không bị trùng
+  await prisma.notification.deleteMany({ where: { userId: demoUser.id } });
+  await prisma.object.deleteMany({ where: { userId: demoUser.id } });
+  await prisma.space.deleteMany({ where: { userId: demoUser.id } });
+
   // 3. Tạo Không gian (Spaces) cho Demo User
   const thesisSpace = await prisma.space.create({
     data: {

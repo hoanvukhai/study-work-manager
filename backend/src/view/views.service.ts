@@ -124,12 +124,13 @@ export class ViewsService {
       recentTasks,
       upcomingDeadlines,
       upcomingEvents,
+      eventsTotal,
     ] = await Promise.all([
       // 1. Số Space hoạt động
       this.prisma.space.count({ where: { userId, archivedAt: null } }),
       // 2. Tổng số task
       this.prisma.object.count({
-        where: { userId, type: ObjectType.TASK, lifecycle: ObjectLifecycle.ACTIVE, deletedAt: null },
+        where: { userId, type: ObjectType.TASK, lifecycle: ObjectLifecycle.ACTIVE, deletedAt: null, status: { not: TaskStatus.CANCELLED } },
       }),
       // 3. Số việc Cần làm (TODO)
       this.prisma.object.count({
@@ -150,7 +151,7 @@ export class ViewsService {
           type: ObjectType.TASK,
           lifecycle: ObjectLifecycle.ACTIVE,
           deletedAt: null,
-          status: { not: TaskStatus.DONE },
+          status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] },
           dueDate: { lt: now },
         },
       }),
@@ -185,7 +186,7 @@ export class ViewsService {
           type: ObjectType.TASK,
           lifecycle: ObjectLifecycle.ACTIVE,
           deletedAt: null,
-          status: { not: TaskStatus.DONE },
+          status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] },
           dueDate: { gte: now },
         },
         orderBy: { dueDate: 'asc' },
@@ -213,6 +214,10 @@ export class ViewsService {
           },
         },
       }),
+      // 12. Tổng số sự kiện sắp tới
+      this.prisma.object.count({
+        where: { userId, type: ObjectType.EVENT, lifecycle: ObjectLifecycle.ACTIVE, deletedAt: null, startAt: { gte: now } },
+      }),
     ]);
 
     const completionRate = tasksTotal > 0 ? Math.round((doneCount / tasksTotal) * 100) : 0;
@@ -226,7 +231,7 @@ export class ViewsService {
         done: doneCount,
         overdue: overdueCount,
         notesTotal: notesCount,
-        eventsTotal: upcomingEvents.length,
+        eventsTotal,
         completionRate,
       },
       upcomingDeadlines,

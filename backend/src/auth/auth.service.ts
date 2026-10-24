@@ -60,13 +60,14 @@ export class AuthService {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
     }
 
-    if (user.lockedAt) {
-      throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
-    }
-
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isMatch) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+    }
+
+    // Chỉ báo khoá sau khi đã xác thực đúng mật khẩu (tránh lộ trạng thái tài khoản)
+    if (user.lockedAt) {
+      throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
 
     // Cập nhật thời điểm đăng nhập gần nhất

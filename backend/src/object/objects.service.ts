@@ -22,26 +22,30 @@ export class ObjectsService {
 
     // Kiểm tra ràng buộc theo loại đối tượng (QD-07, SEC-06)
     if (dto.type === ObjectType.EVENT) {
+      if (!dto.startAt) {
+        throw new BadRequestException('Sự kiện bắt buộc phải có thời gian bắt đầu');
+      }
       if (dto.startAt && dto.endAt) {
         if (new Date(dto.endAt).getTime() <= new Date(dto.startAt).getTime()) {
           throw new BadRequestException('Thời gian kết thúc phải sau thời gian bắt đầu');
         }
       }
     } else if (dto.type === ObjectType.REFERENCE) {
-      if (dto.url) {
-        try {
-          new URL(dto.url);
-        } catch {
-          throw new BadRequestException('Đường dẫn URL không hợp lệ');
-        }
+      if (!dto.url?.trim()) {
+        throw new BadRequestException('Tài liệu tham khảo bắt buộc phải có đường dẫn URL');
+      }
+      try {
+        new URL(dto.url);
+      } catch {
+        throw new BadRequestException('Đường dẫn URL không hợp lệ');
       }
     }
 
-    const defaultStatus = dto.type === ObjectType.TASK ? (dto.status ?? TaskStatus.TODO) : (dto.status ?? null);
+    const defaultStatus = dto.type === ObjectType.TASK ? (dto.status ?? TaskStatus.TODO) : null;
     const defaultPriority =
       dto.type === ObjectType.TASK || dto.type === ObjectType.EVENT
         ? (dto.priority ?? Priority.MEDIUM)
-        : (dto.priority ?? null);
+        : null;
 
     // BUG-07: Đưa tạo Object và gán Space vào transaction
     const created = await this.prisma.$transaction(async (tx) => {
@@ -167,8 +171,10 @@ export class ObjectsService {
       data: {
         ...(dto.title !== undefined && { title: dto.title.trim() }),
         ...(dto.description !== undefined && { description: dto.description?.trim() || null }),
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.priority !== undefined && { priority: dto.priority }),
+        // Chỉ Task có trạng thái; chỉ Task/Event có độ ưu tiên (khớp ràng buộc CHECK ở CSDL)
+        ...(dto.status !== undefined && existing.type === ObjectType.TASK && { status: dto.status }),
+        ...(dto.priority !== undefined &&
+          (existing.type === ObjectType.TASK || existing.type === ObjectType.EVENT) && { priority: dto.priority }),
         ...(dto.dueDate !== undefined && { dueDate: dto.dueDate ? new Date(dto.dueDate) : null }),
         ...(dto.startAt !== undefined && { startAt: dto.startAt ? new Date(dto.startAt) : null }),
         ...(dto.endAt !== undefined && { endAt: dto.endAt ? new Date(dto.endAt) : null }),
@@ -181,34 +187,40 @@ export class ObjectsService {
   }
 
   async updateLifecycle(userId: string, id: string, action: 'ARCHIVE' | 'TRASH' | 'RESTORE') {
-    await this.findOne(userId, id);
+    const existing = await this.findOne(userId, id);
 
     let lifecycle: ObjectLifecycle = ObjectLifecycle.ACTIVE;
-    let archivedAt: Date | null = null;
+    let archivedAt: Date | null | undefined = null;
     let deletedAt: Date | null = null;
 
     if (action === 'TRASH') {
       lifecycle = ObjectLifecycle.TRASH;
       deletedAt = new Date();
+      archivedAt = undefined; // giữ nguyên để khôi phục về đúng trạng thái trước đó
     } else if (action === 'ARCHIVE') {
       lifecycle = ObjectLifecycle.ARCHIVED;
       archivedAt = new Date();
     } else if (action === 'RESTORE') {
-      lifecycle = ObjectLifecycle.ACTIVE;
-      archivedAt = null;
-      deletedAt = null;
+      // Từ Thùng rác: nếu trước đó đã Lưu trữ thì quay về Lưu trữ, ngược lại về ACTIVE
+      if (existing.lifecycle === ObjectLifecycle.TRASH && existing.archivedAt) {
+        lifecycle = ObjectLifecycle.ARCHIVED;
+        archivedAt = existing.archivedAt;
+      }
     }
 
     await this.prisma.object.update({
       where: { id },
-      data: { lifecycle, archivedAt, deletedAt },
+      data: { lifecycle, deletedAt, ...(archivedAt !== undefined && { archivedAt }) },
     });
 
     return this.findOne(userId, id);
   }
 
   async remove(userId: string, id: string) {
-    await this.findOne(userId, id);
+    const existing = await this.findOne(userId, id);
+    if (existing.lifecycle !== ObjectLifecycle.TRASH) {
+      throw new BadRequestException('Chỉ có thể xoá vĩnh viễn mục đang nằm trong Thùng rác');
+    }
     await this.prisma.object.delete({ where: { id } });
     return { message: 'Đã xoá mục thành công' };
   }

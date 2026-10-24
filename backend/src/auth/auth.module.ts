@@ -21,7 +21,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
         return {
           secret,
           signOptions: {
-            expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
+            expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '7d',
           },
         };
       },

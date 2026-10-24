@@ -93,8 +93,8 @@ model Object {
   type        ObjectType
   title       String          @db.VarChar(255)
   description String?
-  status      TaskStatus?     @default(TODO)
-  priority    Priority?       @default(MEDIUM)
+  status      TaskStatus?
+  priority    Priority?
   lifecycle   ObjectLifecycle @default(ACTIVE)
   dueDate     DateTime?       @map("due_date") @db.Timestamptz
   startAt     DateTime?       @map("start_at") @db.Timestamptz
@@ -167,6 +167,6 @@ model Notification {
   object Object? @relation(fields: [objectId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
-  @@index([userId, dedupeKey])
+  @@unique([userId, dedupeKey])
   @@map("notifications")
 }

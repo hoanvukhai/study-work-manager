@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ViewsService } from './views.service';
 import { ViewsController } from './views.controller';
-import { DashboardController } from './dashboard.controller';
 
 @Module({
-  controllers: [ViewsController, DashboardController],
+  controllers: [ViewsController],
   providers: [ViewsService],
   exports: [ViewsService],
 })
