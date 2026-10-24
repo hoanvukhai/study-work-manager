@@ -40,6 +40,13 @@ enum ObjectLifecycle {
   TRASH
 }
 
+enum ReviewGrade {
+  AGAIN
+  HARD
+  GOOD
+  EASY
+}
+
 enum RelationType {
   RELATES_TO
   DEPENDS_ON
@@ -59,9 +66,12 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  spaces        Space[]
-  objects       Object[]
-  notifications Notification[]
+  spaces           Space[]
+  objects          Object[]
+  notifications    Notification[]
+  flashcards       Flashcard[]
+  flashcardReviews FlashcardReview[]
+  studySessions    StudySession[]
 
   @@map("users")
 }
@@ -88,30 +98,32 @@ model Space {
 }
 
 model Object {
-  id          String          @id @default(uuid()) @db.Uuid
-  userId      String          @map("user_id") @db.Uuid
-  type        ObjectType
-  title       String          @db.VarChar(255)
-  description String?
-  status      TaskStatus?
-  priority    Priority?
-  lifecycle   ObjectLifecycle @default(ACTIVE)
-  dueDate     DateTime?       @map("due_date") @db.Timestamptz
-  startAt     DateTime?       @map("start_at") @db.Timestamptz
-  endAt       DateTime?       @map("end_at") @db.Timestamptz
-  url         String?
-  estimatedMinutes Int?       @map("estimated_minutes")
-  metadata    Json            @default("{}")
-  archivedAt  DateTime?       @map("archived_at") @db.Timestamptz
-  deletedAt   DateTime?       @map("deleted_at") @db.Timestamptz
-  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @map("user_id") @db.Uuid
+  type             ObjectType
+  title            String          @db.VarChar(255)
+  description      String?
+  status           TaskStatus?
+  priority         Priority?
+  lifecycle        ObjectLifecycle @default(ACTIVE)
+  dueDate          DateTime?       @map("due_date") @db.Timestamptz
+  startAt          DateTime?       @map("start_at") @db.Timestamptz
+  endAt            DateTime?       @map("end_at") @db.Timestamptz
+  url              String?
+  estimatedMinutes Int?            @map("estimated_minutes")
+  metadata         Json            @default("{}")
+  archivedAt       DateTime?       @map("archived_at") @db.Timestamptz
+  deletedAt        DateTime?       @map("deleted_at") @db.Timestamptz
+  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz
 
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   spaceObjects  SpaceObject[]
   outgoingRel   ObjectRelation[] @relation("OutgoingRelations")
   incomingRel   ObjectRelation[] @relation("IncomingRelations")
   notifications Notification[]
+  flashcards    Flashcard[]
+  studySessions StudySession[]
 
   @@index([userId, lifecycle])
   @@index([userId, type])
@@ -121,12 +133,12 @@ model Object {
 }
 
 model SpaceObject {
-  id        String   @id @default(uuid()) @db.Uuid
-  spaceId   String   @map("space_id") @db.Uuid
-  objectId  String   @map("object_id") @db.Uuid
-  position  Int      @default(0)
-  isPinned  Boolean  @default(false) @map("is_pinned")
-  addedAt   DateTime @default(now()) @map("added_at") @db.Timestamptz
+  id       String   @id @default(uuid()) @db.Uuid
+  spaceId  String   @map("space_id") @db.Uuid
+  objectId String   @map("object_id") @db.Uuid
+  position Int      @default(0)
+  isPinned Boolean  @default(false) @map("is_pinned")
+  addedAt  DateTime @default(now()) @map("added_at") @db.Timestamptz
 
   space  Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   object Object @relation(fields: [objectId], references: [id], onDelete: Cascade)
@@ -167,7 +179,65 @@ model Notification {
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   object Object? @relation(fields: [objectId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isRead])
   @@unique([userId, dedupeKey])
+  @@index([userId, isRead])
   @@map("notifications")
+}
+
+// ---- Trụ Học tập ----
+
+// Thẻ hỏi–đáp sinh từ Note (dòng "Câu hỏi :: Trả lời"), ôn theo SM-2.
+model Flashcard {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  objectId       String    @map("object_id") @db.Uuid
+  front          String    @db.VarChar(500)
+  back           String    @db.VarChar(2000)
+  easeFactor     Float     @default(2.5) @map("ease_factor")
+  intervalDays   Int       @default(0) @map("interval_days")
+  repetitions    Int       @default(0)
+  dueAt          DateTime  @default(now()) @map("due_at") @db.Timestamptz
+  lastReviewedAt DateTime? @map("last_reviewed_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  object  Object            @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  reviews FlashcardReview[]
+
+  @@unique([objectId, front])
+  @@index([userId, dueAt])
+  @@map("flashcards")
+}
+
+// Lịch sử mỗi lần ôn (phục vụ thống kê và chuỗi ngày học).
+model FlashcardReview {
+  id            String      @id @default(uuid()) @db.Uuid
+  cardId        String      @map("card_id") @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  grade         ReviewGrade
+  intervalAfter Int         @map("interval_after")
+  easeAfter     Float       @map("ease_after")
+  reviewedAt    DateTime    @default(now()) @map("reviewed_at") @db.Timestamptz
+
+  card Flashcard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reviewedAt])
+  @@map("flashcard_reviews")
+}
+
+// Phiên học tập trung (Pomodoro) — thời gian học thật.
+model StudySession {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  objectId  String?  @map("object_id") @db.Uuid
+  minutes   Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  object Object? @relation(fields: [objectId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("study_sessions")
 }

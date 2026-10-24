@@ -7,6 +7,7 @@ import { ObjectsModule } from './object/objects.module';
 import { RelationsModule } from './relation/relations.module';
 import { ViewsModule } from './view/views.module';
 import { PlanningModule } from './planning/planning.module';
+import { StudyModule } from './study/study.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PlanningModule } from './planning/planning.module';
     RelationsModule,
     ViewsModule,
     PlanningModule,
+    StudyModule,
   ],
   controllers: [],
   providers: [],
