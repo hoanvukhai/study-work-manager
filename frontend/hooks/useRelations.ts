@@ -23,6 +23,7 @@ export function useCreateRelation() {
   return useMutation({
     mutationFn: (payload: CreateRelationPayload) => createRelation(payload),
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       queryClient.invalidateQueries({
         queryKey: [...RELATIONS_QUERY_KEY, variables.fromObjectId],
       });
@@ -38,6 +39,7 @@ export function useDeleteRelation(objectId?: string) {
   return useMutation({
     mutationFn: (id: string) => deleteRelation(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       if (objectId) {
         queryClient.invalidateQueries({
           queryKey: [...RELATIONS_QUERY_KEY, objectId],

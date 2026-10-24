@@ -32,6 +32,7 @@ export interface AppObject {
   startAt: string | null;
   endAt: string | null;
   url: string | null;
+  estimatedMinutes?: number | null;
   metadata: any;
   archivedAt: string | null;
   deletedAt: string | null;
@@ -51,6 +52,7 @@ export interface CreateObjectPayload {
   endAt?: string;
   url?: string;
   spaceId?: string;
+  estimatedMinutes?: number;
   metadata?: any;
 }
 
@@ -63,6 +65,7 @@ export interface UpdateObjectPayload {
   startAt?: string | null;
   endAt?: string | null;
   url?: string | null;
+  estimatedMinutes?: number | null;
   metadata?: any;
 }
 

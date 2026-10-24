@@ -8,6 +8,7 @@ import { AppObject, TaskStatus } from '@/lib/objects-api';
 import KanbanBoard from '@/components/views/KanbanBoard';
 import CreateObjectModal from '@/components/objects/CreateObjectModal';
 import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
+import { useBlockedIds } from '@/hooks/usePlanning';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
@@ -23,6 +24,7 @@ export default function GlobalKanbanPage() {
 
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>('');
   const [showCancelled, setShowCancelled] = useState(false);
+  const blockedIds = useBlockedIds();
   const [selectedDrawerId, setSelectedDrawerId] = useState<string | null>(null);
 
   const { data: spacesData = [] } = useSpaces();
@@ -171,6 +173,7 @@ export default function GlobalKanbanPage() {
           />
         ) : (
           <KanbanBoard
+            blockedIds={blockedIds}
             tasks={tasks}
             onTaskUpdated={handleTaskUpdated}
             onTaskDeleted={task => setTaskToDelete(task)}

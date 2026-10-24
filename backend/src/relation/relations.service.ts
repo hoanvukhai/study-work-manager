@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRelationDto } from './dto/create-relation.dto';
-import { ObjectLifecycle } from '@prisma/client';
+import { ObjectLifecycle, ObjectType, RelationType } from '@prisma/client';
+import { wouldCreateCycle } from '../planning/graph';
 
 const objectSelect = {
   id: true,
@@ -36,6 +37,31 @@ export class RelationsService {
     // QD-09: Không cho phép liên kết với mục trong Thùng rác
     if (fromObject.lifecycle === ObjectLifecycle.TRASH || toObject.lifecycle === ObjectLifecycle.TRASH) {
       throw new BadRequestException('Không thể liên kết với đối tượng đang nằm trong Thùng rác');
+    }
+
+    // Quan hệ có ý nghĩa lập kế hoạch: chỉ giữa các Task, cấm tạo vòng (QD-09)
+    if (dto.relationType === RelationType.DEPENDS_ON || dto.relationType === RelationType.PARENT_OF) {
+      if (fromObject.type !== ObjectType.TASK || toObject.type !== ObjectType.TASK) {
+        throw new BadRequestException('Quan hệ "Phụ thuộc" và "Việc con" chỉ áp dụng giữa các công việc (Task)');
+      }
+
+      const edges = await this.prisma.objectRelation.findMany({
+        where: { relationType: dto.relationType, fromObject: { userId } },
+        select: { fromObjectId: true, toObjectId: true },
+      });
+      const graph = edges.map((e) => ({ from: e.fromObjectId, to: e.toObjectId }));
+
+      if (wouldCreateCycle(graph, dto.fromObjectId, dto.toObjectId)) {
+        throw new BadRequestException(
+          dto.relationType === RelationType.DEPENDS_ON
+            ? 'Liên kết này tạo vòng phụ thuộc (A cần B xong trước, mà B lại cần A)'
+            : 'Liên kết này tạo vòng cha–con',
+        );
+      }
+
+      if (dto.relationType === RelationType.PARENT_OF && graph.some((e) => e.to === dto.toObjectId)) {
+        throw new BadRequestException('Công việc này đã có một việc cha khác');
+      }
     }
 
     const existing = await this.prisma.objectRelation.findUnique({

@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import CreateSpaceModal from '@/components/spaces/CreateSpaceModal';
 import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
+import TodayPlan from '@/components/planning/TodayPlan';
 import { AppObject, Priority } from '@/lib/objects-api';
 import { Space } from '@/lib/spaces-api';
 import styles from './Dashboard.module.css';
@@ -173,6 +174,9 @@ export default function Dashboard() {
           <Plus size={16} /> Thêm việc
         </Button>
       </form>
+
+      {/* Gợi ý hôm nay làm gì (Trụ Kế hoạch) */}
+      <TodayPlan onSelect={setSelectedObjectId} />
 
       {/* Tiếp tục dở dang (Resume In-Progress Tasks - UI-06) */}
       {inProgressTasks.length > 0 && (

@@ -6,6 +6,7 @@ import { SpacesModule } from './space/spaces.module';
 import { ObjectsModule } from './object/objects.module';
 import { RelationsModule } from './relation/relations.module';
 import { ViewsModule } from './view/views.module';
+import { PlanningModule } from './planning/planning.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ViewsModule } from './view/views.module';
     ObjectsModule,
     RelationsModule,
     ViewsModule,
+    PlanningModule,
   ],
   controllers: [],
   providers: [],

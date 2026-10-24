@@ -13,6 +13,8 @@ interface Props {
   onAddTask?: (status: TaskStatus) => void;
   onSelectTask?: (task: AppObject) => void;
   showCancelled?: boolean;
+  /** Id các việc đang chờ việc khác (hiện 🔒). */
+  blockedIds?: Set<string>;
 }
 
 const ALL_COLUMNS: { status: TaskStatus; title: string; color: string; bg: string }[] = [
@@ -35,6 +37,7 @@ export default function KanbanBoard({
   onTaskDeleted,
   onEditTask,
   onOpenRelations,
+  blockedIds,
   onAddTask,
   onSelectTask,
   showCancelled = false,
@@ -183,6 +186,11 @@ export default function KanbanBoard({
                     onMouseEnter={e => (e.currentTarget.style.borderColor = col.color)}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
                   >
+                    {blockedIds?.has(task.id) && (
+                      <span title="Đang chờ việc khác hoàn thành" aria-label="Đang bị chặn" style={{ position: 'absolute', top: 8, right: 8, fontSize: 13 }}>
+                        🔒
+                      </span>
+                    )}
                     {/* Top Row: Title & Action buttons */}
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
                       <div style={{

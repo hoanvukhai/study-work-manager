@@ -13,6 +13,7 @@ import {
 import { AppObject, Priority, TaskStatus } from '@/lib/objects-api';
 import CreateObjectModal from '@/components/objects/CreateObjectModal';
 import ObjectDetailDrawer from '@/components/objects/ObjectDetailDrawer';
+import { useBlockedIds } from '@/hooks/usePlanning';
 import KanbanBoard from '@/components/views/KanbanBoard';
 import WeeklyCalendar from '@/components/views/WeeklyCalendar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -57,6 +58,7 @@ export default function SpaceDetailPage() {
 
   // Objects queries & mutations
   const { data: objects = [], isLoading: loadingObjects } = useObjects({ spaceId });
+  const blockedIds = useBlockedIds();
   const updateObjectMutation = useUpdateObject();
   const updateLifecycleMutation = useUpdateObjectLifecycle();
 
@@ -484,6 +486,7 @@ export default function SpaceDetailPage() {
           </div>
         ) : viewMode === 'kanban' ? (
           <KanbanBoard
+            blockedIds={blockedIds}
             tasks={filteredObjects.filter(o => o.type === 'TASK')}
             onTaskUpdated={updated => {
               updateObjectMutation.mutate({

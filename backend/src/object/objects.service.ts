@@ -61,6 +61,7 @@ export class ObjectsService {
           startAt: dto.startAt ? new Date(dto.startAt) : null,
           endAt: dto.endAt ? new Date(dto.endAt) : null,
           url: dto.url?.trim() || null,
+          estimatedMinutes: dto.type === ObjectType.TASK ? (dto.estimatedMinutes ?? null) : null,
           metadata: dto.metadata ?? {},
           lifecycle: ObjectLifecycle.ACTIVE,
         },
@@ -179,6 +180,7 @@ export class ObjectsService {
         ...(dto.startAt !== undefined && { startAt: dto.startAt ? new Date(dto.startAt) : null }),
         ...(dto.endAt !== undefined && { endAt: dto.endAt ? new Date(dto.endAt) : null }),
         ...(dto.url !== undefined && { url: dto.url?.trim() || null }),
+        ...(dto.estimatedMinutes !== undefined && existing.type === ObjectType.TASK && { estimatedMinutes: dto.estimatedMinutes }),
         ...(dto.metadata !== undefined && { metadata: dto.metadata }),
       },
     });
@@ -299,6 +301,7 @@ export class ObjectsService {
         startAt: nextStartAt,
         endAt: nextEndAt,
         url: nextUrl,
+        ...(targetType !== ObjectType.TASK && { estimatedMinutes: null }),
       },
     });
 

@@ -43,6 +43,7 @@ export function useCreateObject() {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['spaces'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       queryClient.invalidateQueries({ queryKey: ['kanban'] });
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
@@ -58,6 +59,7 @@ export function useUpdateObject() {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...OBJECTS_QUERY_KEY, id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       queryClient.invalidateQueries({ queryKey: ['kanban'] });
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
@@ -78,6 +80,7 @@ export function useUpdateObjectLifecycle() {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...OBJECTS_QUERY_KEY, id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       queryClient.invalidateQueries({ queryKey: ['kanban'] });
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
       queryClient.invalidateQueries({ queryKey: ['spaces'] });
@@ -94,6 +97,7 @@ export function useConvertObjectType() {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...OBJECTS_QUERY_KEY, id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       queryClient.invalidateQueries({ queryKey: ['kanban'] });
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
@@ -107,6 +111,7 @@ export function useDeleteObject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
       queryClient.invalidateQueries({ queryKey: ['kanban'] });
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
       queryClient.invalidateQueries({ queryKey: ['spaces'] });
@@ -121,6 +126,7 @@ export function useEmptyTrash() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
     },
   });
 }
@@ -134,6 +140,7 @@ export function useAttachObjectToSpace() {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['spaces'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
     },
   });
 }
@@ -147,6 +154,7 @@ export function useRemoveObjectFromSpace() {
       queryClient.invalidateQueries({ queryKey: OBJECTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['spaces'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
     },
   });
 }

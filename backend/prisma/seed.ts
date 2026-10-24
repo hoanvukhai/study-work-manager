@@ -127,6 +127,43 @@ async function main() {
       priority: Priority.URGENT,
       lifecycle: ObjectLifecycle.ACTIVE,
       dueDate: new Date(now + 86400000 * 1),
+      estimatedMinutes: 180,
+    },
+  });
+
+  // Demo Trụ Kế hoạch: việc phụ thuộc + việc con
+  const taskModule = await prisma.object.create({
+    data: {
+      userId: demoUser.id,
+      type: ObjectType.TASK,
+      title: 'Viết module Space (chờ khởi tạo Prisma xong)',
+      status: TaskStatus.TODO,
+      priority: Priority.HIGH,
+      lifecycle: ObjectLifecycle.ACTIVE,
+      dueDate: new Date(now + 86400000 * 4),
+      estimatedMinutes: 240,
+    },
+  });
+  const subDocker = await prisma.object.create({
+    data: {
+      userId: demoUser.id,
+      type: ObjectType.TASK,
+      title: 'Chạy Docker PostgreSQL',
+      status: TaskStatus.DONE,
+      priority: Priority.MEDIUM,
+      lifecycle: ObjectLifecycle.ACTIVE,
+      estimatedMinutes: 30,
+    },
+  });
+  const subMigrate = await prisma.object.create({
+    data: {
+      userId: demoUser.id,
+      type: ObjectType.TASK,
+      title: 'Chạy migration và seed',
+      status: TaskStatus.TODO,
+      priority: Priority.MEDIUM,
+      lifecycle: ObjectLifecycle.ACTIVE,
+      estimatedMinutes: 45,
     },
   });
 
@@ -166,6 +203,9 @@ async function main() {
       { spaceId: thesisSpace.id, objectId: meetingEvent.id, position: 3, isPinned: false },
       { spaceId: thesisSpace.id, objectId: refNest.id, position: 4, isPinned: false },
       // Đồng thời gán task API và refNest sang cả FreelanceSpace để demo multi-space
+      { spaceId: thesisSpace.id, objectId: taskModule.id, position: 5, isPinned: false },
+      { spaceId: thesisSpace.id, objectId: subDocker.id, position: 6, isPinned: false },
+      { spaceId: thesisSpace.id, objectId: subMigrate.id, position: 7, isPinned: false },
       { spaceId: freelanceSpace.id, objectId: taskApi.id, position: 0, isPinned: false },
       { spaceId: freelanceSpace.id, objectId: refNest.id, position: 1, isPinned: false },
     ],
@@ -178,8 +218,13 @@ async function main() {
       {
         fromObjectId: taskSeed.id,
         toObjectId: noteThesis.id,
-        relationType: RelationType.DEPENDS_ON,
+        relationType: RelationType.REFERENCES,
       },
+      // Việc "viết module Space" phải chờ "khởi tạo Prisma" xong
+      { fromObjectId: taskModule.id, toObjectId: taskSeed.id, relationType: RelationType.DEPENDS_ON },
+      // Việc cha – việc con
+      { fromObjectId: taskSeed.id, toObjectId: subDocker.id, relationType: RelationType.PARENT_OF },
+      { fromObjectId: taskSeed.id, toObjectId: subMigrate.id, relationType: RelationType.PARENT_OF },
       {
         fromObjectId: taskApi.id,
         toObjectId: refNest.id,
@@ -187,7 +232,7 @@ async function main() {
       },
     ],
   });
-  console.log('[Seed] Đã tạo quan hệ liên kết DEPENDS_ON và REFERENCES');
+  console.log('[Seed] Đã tạo liên kết REFERENCES, DEPENDS_ON và PARENT_OF');
 
   // 7. Tạo Thông báo mẫu
   await prisma.notification.create({

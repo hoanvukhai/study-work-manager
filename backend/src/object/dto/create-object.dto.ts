@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, MaxLength, IsUUID, IsDateString } from 'class-validator';
+import { IsInt, Min, Max, IsString, IsNotEmpty, IsOptional, IsEnum, MaxLength, IsUUID, IsDateString } from 'class-validator';
 import { ObjectType, TaskStatus, Priority } from '@prisma/client';
 
 export class CreateObjectDto {
@@ -37,6 +37,12 @@ export class CreateObjectDto {
   @IsOptional()
   @IsString()
   url?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'Thời gian ước lượng phải là số phút (số nguyên)' })
+  @Min(1)
+  @Max(10080)
+  estimatedMinutes?: number;
 
   @IsOptional()
   @IsUUID('4', { message: 'Mã Không gian không hợp lệ' })

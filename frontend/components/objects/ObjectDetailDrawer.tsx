@@ -127,6 +127,8 @@ export default function ObjectDetailDrawer({
   const [startAt, setStartAt] = useState('');
   const [endAt, setEndAt] = useState('');
   const [url, setUrl] = useState('');
+  const [estimated, setEstimated] = useState('');
+  const [confirmDoneBlocked, setConfirmDoneBlocked] = useState(false);
 
   // UI state
   const [showTypeMenu, setShowTypeMenu] = useState(false);
@@ -151,6 +153,7 @@ export default function ObjectDetailDrawer({
       setStartAt(isoToLocalInput(object.startAt));
       setEndAt(isoToLocalInput(object.endAt));
       setUrl(object.url || '');
+      setEstimated(object.estimatedMinutes ? String(object.estimatedMinutes) : '');
       setIsDirty(false);
     }
   }, [object]);
@@ -182,6 +185,7 @@ export default function ObjectDetailDrawer({
           status,
           priority,
           dueDate: localInputToIso(dueDate),
+          estimatedMinutes: estimated ? Math.max(1, Math.round(Number(estimated))) : null,
         }),
         ...(object.type === 'EVENT' && {
           priority,
@@ -313,8 +317,8 @@ export default function ObjectDetailDrawer({
       setShowAddRelation(false);
       setRelationTargetId('');
       toast.success('Đã tạo liên kết thành công');
-    } catch {
-      toast.error('Không thể tạo liên kết');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không thể tạo liên kết');
     }
   };
 
@@ -326,6 +330,19 @@ export default function ObjectDetailDrawer({
       toast.error('Không thể xoá liên kết');
     }
   };
+
+  // Trụ Kế hoạch: việc tiền đề chưa xong, việc con, việc cha
+  const isOpen = (st?: string | null) => st !== 'DONE' && st !== 'CANCELLED';
+  const blockers = (relations?.outgoing ?? []).filter(
+    (r) => r.relationType === 'DEPENDS_ON' && r.toObject && isOpen(r.toObject.status),
+  );
+  const waitingOnMe = (relations?.incoming ?? []).filter(
+    (r) => r.relationType === 'DEPENDS_ON' && r.fromObject && isOpen(r.fromObject.status),
+  );
+  const children = (relations?.outgoing ?? []).filter((r) => r.relationType === 'PARENT_OF' && r.toObject);
+  const parent = (relations?.incoming ?? []).find((r) => r.relationType === 'PARENT_OF' && r.fromObject);
+  const childrenDone = children.filter((r) => r.toObject!.status === 'DONE').length;
+  const childrenTotal = children.filter((r) => r.toObject!.status !== 'CANCELLED').length;
 
   // Spaces assigned
   const assignedSpaceIds = new Set(
@@ -531,7 +548,12 @@ export default function ObjectDetailDrawer({
                       className={styles.propInput}
                       value={status}
                       onChange={(e) => {
-                        setStatus(e.target.value as TaskStatus);
+                        const next = e.target.value as TaskStatus;
+                        if (next === 'DONE' && blockers.length > 0) {
+                          setConfirmDoneBlocked(true);
+                          return;
+                        }
+                        setStatus(next);
                         setIsDirty(true);
                       }}
                     >
@@ -567,6 +589,22 @@ export default function ObjectDetailDrawer({
                       value={dueDate}
                       onChange={(e) => {
                         setDueDate(e.target.value);
+                        setIsDirty(true);
+                      }}
+                    />
+                  </div>
+                  <div className={styles.propItem} style={{ gridColumn: 'span 2' }}>
+                    <label className={styles.propLabel}>Ước lượng thời gian (phút)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10080}
+                      step={5}
+                      className={styles.propInput}
+                      placeholder="VD: 90"
+                      value={estimated}
+                      onChange={(e) => {
+                        setEstimated(e.target.value);
                         setIsDirty(true);
                       }}
                     />
@@ -657,6 +695,66 @@ export default function ObjectDetailDrawer({
             </div>
 
             {/* Description / Content */}
+            {object.type === 'TASK' && (blockers.length > 0 || waitingOnMe.length > 0 || children.length > 0 || parent) && (
+              <div className={styles.section}>
+                <span className={styles.sectionTitle}>Kế hoạch</span>
+                {blockers.length > 0 && (
+                  <div className={styles.blockedBanner}>
+                    🔒 Đang chờ {blockers.length} việc hoàn thành trước:{' '}
+                    {blockers.map((r, i) => (
+                      <React.Fragment key={r.id}>
+                        {i > 0 && ', '}
+                        <button type="button" className={styles.linkBtn} onClick={() => onSelectObject && onSelectObject(r.toObjectId)}>
+                          {r.toObject!.title}
+                        </button>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+                {waitingOnMe.length > 0 && (
+                  <div className={styles.planNote}>
+                    Hoàn thành việc này sẽ mở khoá {waitingOnMe.length} việc khác:{' '}
+                    {waitingOnMe.map((r) => r.fromObject!.title).join(', ')}
+                  </div>
+                )}
+                {parent && (
+                  <div className={styles.planNote}>
+                    Là việc con của{' '}
+                    <button type="button" className={styles.linkBtn} onClick={() => onSelectObject && onSelectObject(parent.fromObjectId)}>
+                      {parent.fromObject!.title}
+                    </button>
+                  </div>
+                )}
+                {children.length > 0 && (
+                  <div className={styles.childBox}>
+                    <div className={styles.childHeader}>
+                      <span>Việc con</span>
+                      <span>
+                        {childrenDone}/{childrenTotal} xong
+                      </span>
+                    </div>
+                    <div className={styles.progressTrack}>
+                      <div
+                        className={styles.progressFill}
+                        style={{ width: childrenTotal ? `${Math.round((childrenDone / childrenTotal) * 100)}%` : '0%' }}
+                      />
+                    </div>
+                    {children.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className={styles.childItem}
+                        onClick={() => onSelectObject && onSelectObject(r.toObjectId)}
+                      >
+                        <span>{r.toObject!.status === 'DONE' ? '✅' : r.toObject!.status === 'CANCELLED' ? '⛔' : '⬜'}</span>
+                        <span>{r.toObject!.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className={styles.section}>
               <span className={styles.sectionTitle}>Nội dung / Ghi chú</span>
               <textarea
@@ -844,6 +942,18 @@ export default function ObjectDetailDrawer({
       </div>
 
       {/* Delete Permanent Confirmation */}
+      <ConfirmDialog
+        open={confirmDoneBlocked}
+        title="Việc này đang bị chặn"
+        description={`Việc này còn chờ: ${blockers.map((r) => r.toObject!.title).join(', ')}. Vẫn đánh dấu là đã xong?`}
+        confirmLabel="Vẫn đánh dấu xong"
+        onConfirm={() => {
+          setStatus('DONE');
+          setIsDirty(true);
+          setConfirmDoneBlocked(false);
+        }}
+        onCancel={() => setConfirmDoneBlocked(false)}
+      />
       <ConfirmDialog
         isOpen={showDeleteConfirm}
         title="Xoá vĩnh viễn"
