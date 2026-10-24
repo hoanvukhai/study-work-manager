@@ -1,11 +1,12 @@
 import {
-  Controller, Get, Post, Patch, Delete,
+  Controller, Get, Post, Patch, Delete, HttpCode, HttpStatus,
   Body, Param, Query, UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { SpacesService } from './spaces.service';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
+import { ReorderDto, UpdatePlacementDto } from './dto/placement.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -29,7 +30,7 @@ export class SpacesController {
 
   @Get(':id')
   findOne(@CurrentUser('id') userId: string, @Param('id', ParseUUIDPipe) id: string) {
-    return this.spacesService.findOne(userId, id);
+    return this.spacesService.getWithProgress(userId, id);
   }
 
   @Patch(':id')
@@ -39,6 +40,26 @@ export class SpacesController {
     @Body() dto: UpdateSpaceDto,
   ) {
     return this.spacesService.update(userId, id, dto);
+  }
+
+  @Patch(':spaceId/objects/:objectId')
+  updatePlacement(
+    @CurrentUser('id') userId: string,
+    @Param('spaceId', ParseUUIDPipe) spaceId: string,
+    @Param('objectId', ParseUUIDPipe) objectId: string,
+    @Body() dto: UpdatePlacementDto,
+  ) {
+    return this.spacesService.updatePlacement(userId, spaceId, objectId, dto);
+  }
+
+  @Post(':id/reorder')
+  @HttpCode(HttpStatus.OK)
+  reorder(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReorderDto,
+  ) {
+    return this.spacesService.reorder(userId, id, dto.objectIds);
   }
 
   @Delete(':id')

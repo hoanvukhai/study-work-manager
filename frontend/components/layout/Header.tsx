@@ -177,8 +177,7 @@ export default function Header() {
                 <span>Hồ sơ & Bảo mật</span>
               </button>
 
-              {/* TODO(GĐ3): bật lại khi đã có trang /admin */}
-              {false && user?.role === 'ADMIN' && (
+              {user?.role === 'ADMIN' && (
                 <button
                   className={styles.dropdownItem}
                   onClick={() => {
