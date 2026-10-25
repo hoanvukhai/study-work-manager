@@ -76,6 +76,7 @@ export class ObjectsService {
           url: dto.url?.trim() || null,
           estimatedMinutes: dto.type === ObjectType.TASK ? (dto.estimatedMinutes ?? null) : null,
           ...(dto.recurrence && { recurrence: dto.recurrence as unknown as Prisma.InputJsonValue }),
+          completedAt: defaultStatus === TaskStatus.DONE ? new Date() : null,
           metadata: dto.metadata ?? {},
           lifecycle: ObjectLifecycle.ACTIVE,
         },
@@ -214,6 +215,9 @@ export class ObjectsService {
         ...(dto.description !== undefined && { description: dto.description?.trim() || null }),
         // Chỉ Task có trạng thái; chỉ Task/Event có độ ưu tiên (khớp ràng buộc CHECK ở CSDL)
         ...(dto.status !== undefined && existing.type === ObjectType.TASK && { status: dto.status }),
+        // Ghi lại thời điểm hoàn thành thật (phục vụ báo cáo tuần); mở lại việc thì xoá
+        ...(dto.status !== undefined && existing.type === ObjectType.TASK && dto.status === TaskStatus.DONE && existing.status !== TaskStatus.DONE && { completedAt: new Date() }),
+        ...(dto.status !== undefined && existing.type === ObjectType.TASK && dto.status !== TaskStatus.DONE && existing.status === TaskStatus.DONE && { completedAt: null }),
         ...(dto.priority !== undefined &&
           (existing.type === ObjectType.TASK || existing.type === ObjectType.EVENT) && { priority: dto.priority }),
         ...(dto.dueDate !== undefined && { dueDate: dto.dueDate ? new Date(dto.dueDate) : null }),
@@ -387,6 +391,7 @@ export class ObjectsService {
         ...(targetType !== ObjectType.TASK && { estimatedMinutes: null }),
         recurrence: Prisma.DbNull,
         recurrenceSpawned: false,
+        completedAt: null,
       },
     });
 

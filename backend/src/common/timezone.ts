@@ -20,3 +20,11 @@ export function startOfLocalDay(d: Date): Date {
 export function localDateKeyDaysAgo(now: Date, n: number): string {
   return toLocalDateKey(new Date(now.getTime() - n * DAY_MS));
 }
+
+/** 00:00 thứ Hai (giờ Việt Nam) của tuần chứa `d`, trả về dạng Date (UTC). Tuần bắt đầu từ thứ Hai. */
+export function startOfLocalWeek(d: Date): Date {
+  const dayStart = startOfLocalDay(d);
+  const shifted = new Date(dayStart.getTime() + APP_TIMEZONE_OFFSET_MIN * 60000);
+  const weekdayFromMonday = (shifted.getUTCDay() + 6) % 7; // T2 = 0 … CN = 6
+  return new Date(dayStart.getTime() - weekdayFromMonday * DAY_MS);
+}

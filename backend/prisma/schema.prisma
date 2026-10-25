@@ -119,6 +119,7 @@ model Object {
   url               String?
   recurrence        Json?
   recurrenceSpawned Boolean         @default(false) @map("recurrence_spawned")
+  completedAt       DateTime?       @map("completed_at") @db.Timestamptz
   estimatedMinutes  Int?            @map("estimated_minutes")
   metadata          Json            @default("{}")
   archivedAt        DateTime?       @map("archived_at") @db.Timestamptz

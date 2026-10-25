@@ -11,6 +11,7 @@ import {
   Calendar,
   BookOpenCheck,
   Network,
+  BarChart3,
   MoreVertical,
   Archive,
   Inbox,
@@ -178,6 +179,14 @@ export default function Sidebar() {
             >
               <Network size={18} />
               <span>Bản đồ tri thức</span>
+            </Link>
+
+            <Link
+              href="/reports"
+              className={`${styles.navLink} ${isActive('/reports') ? styles.navLinkActive : ''}`}
+            >
+              <BarChart3 size={18} />
+              <span>Báo cáo tuần</span>
             </Link>
           </div>
 
