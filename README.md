@@ -1,28 +1,40 @@
 # study-work-manager
 
-Đồ án tốt nghiệp — Xây dựng ứng dụng web quản lý học tập và công việc cá nhân (Personal Study & Work Management System).
+Đồ án tốt nghiệp — **Hệ thống quản lý học tập và công việc cá nhân** (Personal Study & Work Management System).
+
+> Việc cần làm, ghi chú, sự kiện và tài liệu là **cùng một loại "thẻ"** nên hệ thống kết hợp được những thứ vốn nằm ở ba ứng dụng khác nhau: *lập kế hoạch* (Todoist), *ôn tập* (Anki), *mạng tri thức* (Obsidian).
 
 ---
 
 ## 1. Giới thiệu
 
-Ứng dụng hướng tới người học và người làm việc độc lập (sinh viên, freelancer, người tự học), giải quyết bài toán phân mảnh thông tin bằng cách hợp nhất việc quản lý công việc, ghi chú, lịch trình và tri thức cá nhân trên một nền tảng duy nhất:
+Ứng dụng hướng tới người học và người làm việc độc lập (sinh viên, freelancer, người tự học), giải quyết bài toán thông tin bị phân mảnh qua nhiều ứng dụng.
 
-- **Không gian làm việc linh hoạt (Spaces):** Người dùng tự do định nghĩa các ngữ cảnh cá nhân (ví dụ: *Đồ án tốt nghiệp*, *Việc Freelance*, *Học Ngoại ngữ*...) thay vì bị ép buộc vào các danh mục tĩnh.
-- **Mô hình Hạt nhân Đa hình (Hybrid Objects):** Thống nhất mọi dạng dữ liệu (Công việc - Task, Ghi chú - Note, Sự kiện - Event, Tài liệu - Reference) thành các đối tượng độc lập, có thuộc tính và vòng đời riêng biệt.
-- **Cơ chế Gắn đa ngữ cảnh (Contextual Placement):** Một công việc hoặc ghi chú có thể hiển thị đồng thời ở nhiều Không gian khác nhau mà không bị nhân bản dữ liệu.
-- **Mạng lưới liên kết tri thức (Bi-directional Relations):** Tạo liên kết chéo hai chiều giữa nhiệm vụ thực thi và các ghi chú, bài học liên quan.
-- **Đa dạng chế độ hiển thị (Multi-views):** Danh sách tổng hợp (`📑 Tất cả`), Bảng việc Kanban kéo thả, Lịch thời gian Calendar, Bảng vẽ tư duy Canvas và Chế độ tập trung sâu (Zen Focus Mode).
+**Nền tảng**
+- **Không gian (Space):** người dùng tự tạo theo chủ đề (Đồ án, Môn học, Freelance...), có mục tiêu, hạn chót, tiến độ, ghim, sắp xếp, và tự bật/tắt công cụ (Kanban, Lịch, Tiến độ). Có mẫu dựng sẵn.
+- **Mô hình Hạt nhân Đa hình (Object):** Task, Note (Markdown), Event, Reference là các thực thể độc lập có vòng đời riêng (Hoạt động → Lưu trữ → Thùng rác → Xoá vĩnh viễn).
+- **Gán đa ngữ cảnh:** một mục nằm ở nhiều Không gian cùng lúc mà không nhân bản dữ liệu.
+- **Nhiều góc nhìn:** danh sách, lưới, Kanban, Lịch tuần/tháng, Hộp nhận, bản đồ tri thức.
+
+**Ba trụ — "Một Object, ba góc nhìn"**
+- **Kế hoạch:** việc phụ thuộc nhau (cấm vòng), việc con, ước lượng thời gian, việc lặp lại, gợi ý *"Hôm nay làm gì?"* kèm lý do, cảnh báo quá tải và cảnh báo khi dời hạn.
+- **Học tập:** thẻ hỏi–đáp viết ngay trong ghi chú (`Câu hỏi :: Trả lời`), ôn tập ngắt quãng **SM-2**, ưu tiên ôn ghi chú liên quan việc sắp đến hạn, Pomodoro, thống kê và chuỗi ngày học.
+- **Tri thức:** gõ `[[Tiêu đề]]` để tự liên kết, backlink, **bản đồ tri thức** (đồ thị tương tác).
+
+**Tiện ích:** thông báo (sắp hạn, quá hạn, sự kiện, bản tin sáng, mở khoá, ôn tập) có giờ yên lặng; lịch `.ics` cho Google Calendar; báo cáo tuần; quên mật khẩu qua email; xuất dữ liệu cá nhân; chế độ sáng/tối; dùng được trên điện thoại.
+
+**Quản trị:** khu vực Admin quản lý tài khoản và xem thống kê tổng hợp — **không đọc được nội dung cá nhân** của người dùng (có test chứng minh).
 
 ---
 
-## 2. Công nghệ sử dụng (Tech Stack)
+## 2. Công nghệ sử dụng
 
-- **Frontend:** Next.js 14 (App Router), TypeScript, Vanilla CSS / CSS Modules, Lucide React
-- **Backend:** NestJS, TypeScript, Passport JWT, Bcrypt
-- **Database & ORM:** PostgreSQL 16 (chạy container Docker), Prisma ORM
-- **Xác thực & Bảo mật:** JWT (Access Token & Refresh Token)
-- **Công cụ thiết kế & Sơ đồ:** Figma, draw.io
+- **Frontend:** Next.js 14 (App Router), TypeScript, TanStack Query, CSS Modules, react-markdown
+- **Backend:** NestJS 10, TypeScript, Passport JWT, Bcrypt, `@nestjs/schedule`, `@nestjs/throttler`, helmet, Swagger
+- **CSDL:** PostgreSQL 16 (Docker), Prisma ORM 5 với **migration**
+- **Kiểm thử:** Jest + Supertest — 235 test tự động chạy trên PostgreSQL thật
+- **Đóng gói:** Docker / Docker Compose
+- **Thiết kế & sơ đồ:** Figma, draw.io
 
 ---
 
@@ -30,52 +42,71 @@
 
 ```text
 study-work-manager/
-├── README.md              # Giới thiệu tổng quan & Hướng dẫn khởi chạy
-├── docker-compose.yml     # Khởi chạy PostgreSQL Container (Port 5435)
-├── backend/               # Mã nguồn Backend (NestJS, Prisma ORM, Auth Module)
-├── frontend/              # Mã nguồn Frontend (Next.js 14, Lucide Icons)
-├── docs/                  # Hệ thống 12 tài liệu phân tích & thiết kế chuẩn hóa
-│   ├── README.md          # Mục lục tài liệu & Bảng tiến độ
-│   └── Workflow.md        # Quy tắc commit, Git Tag & Quy trình làm việc
-├── design/                # Thiết kế UI/UX (Figma link, HTML mockups & exports)
-│   ├── exports/           # 13 ảnh wireframe giao diện thực tế
-│   └── theme/             # Các mẫu giao diện HTML/CSS
-├── diagrams/              # Sơ đồ kỹ thuật hệ thống (.drawio)
-│   └── exports/           # Ảnh xuất của Use Case, Activity, Architecture, ERD
-├── meeting/               # Biên bản các buổi họp với GVHD
-└── report/                # Bản nháp báo cáo tốt nghiệp
+├── README.md
+├── docker-compose.yml        # PostgreSQL cho phát triển (cổng 5435)
+├── docker-compose.prod.yml   # Chạy cả hệ thống bằng Docker (CSDL + API + giao diện)
+├── backend/                  # NestJS + Prisma (src/, prisma/migrations/, test/)
+├── frontend/                 # Next.js
+├── docs/                     # 13 tài liệu phân tích & thiết kế (01–13)
+├── plan/                     # Sổ tay làm việc: hiện trạng, quyết định, lộ trình, nhật ký
+├── progress/                 # Tóm tắt tiến độ theo giai đoạn
+├── design/  diagrams/        # Wireframe, sơ đồ draw.io
+├── meeting/                  # Biên bản họp GVHD
+└── report/                   # Bản nháp báo cáo tốt nghiệp
 ```
 
 ---
 
-## 4. Tài liệu & Quy trình
+## 4. Tài liệu
 
-- Chi tiết 12 tài liệu phân tích thiết kế chuẩn hóa: Xem tại [docs/README.md](docs/README.md).
-- Quy tắc commit, quản lý phiên bản (Git Tag) và quy trình phát triển: Xem tại [docs/Workflow.md](docs/Workflow.md).
+| Cần xem | Ở đâu |
+|---|---|
+| Mục lục và liên kết 13 tài liệu | [docs/README.md](docs/README.md) |
+| Kiến trúc và lý do chọn công nghệ | [docs/04_System_Architecture.md](docs/04_System_Architecture.md) |
+| CSDL (sinh tự động từ schema) | [docs/06_Database_Design.md](docs/06_Database_Design.md) |
+| API (sinh tự động từ controller) | [docs/07_API_Design.md](docs/07_API_Design.md) hoặc Swagger `/api/docs` |
+| Kiểm thử | [docs/10_Testing.md](docs/10_Testing.md) |
+| Triển khai | [docs/11_Deployment.md](docs/11_Deployment.md) |
+| Quy tắc commit và quy trình | [docs/Workflow.md](docs/Workflow.md) |
+| Quyết định thiết kế, lộ trình, nhật ký | [plan/](plan/README.md) |
 
 ---
 
-## 5. Hướng dẫn khởi chạy ứng dụng
+## 5. Chạy ứng dụng (phát triển)
 
-### Bước 1: Khởi động Cơ sở dữ liệu (PostgreSQL)
 ```bash
-# Chạy Docker daemon trước, sau đó khởi động database container
+# 1) CSDL
 docker compose up -d
-```
 
-### Bước 2: Cài đặt và chạy Backend (NestJS)
-```bash
+# 2) Backend  → http://localhost:3001/api/v1   (Swagger: /api/docs)
 cd backend
+cp .env.example .env            # bắt buộc đặt JWT_SECRET
 npm install
-npx prisma generate
+npx prisma migrate reset --force   # áp migration + nạp dữ liệu mẫu (CHỈ cho phát triển)
 npm run start:dev
-# Backend chạy tại: http://localhost:3001
-```
 
-### Bước 3: Cài đặt và chạy Frontend (Next.js)
-```bash
-cd frontend
+# 3) Frontend  → http://localhost:3000
+cd ../frontend
 npm install
 npm run dev
-# Frontend chạy tại: http://localhost:3000
 ```
+
+Tài khoản mẫu (chỉ môi trường phát triển): `demo@example.com / Password123!` và quản trị `admin@example.com / Admin12345!`.
+
+## 6. Kiểm thử
+
+```bash
+cd backend
+npm test            # unit test (82)
+npm run test:e2e    # test API trên PostgreSQL thật (153) — cần: docker compose up -d
+npx tsc --noEmit    # kiểm tra kiểu (cả backend và frontend)
+```
+
+## 7. Chạy bằng Docker (đóng gói)
+
+```bash
+cp .env.prod.example .env       # đổi POSTGRES_PASSWORD, JWT_SECRET
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Chi tiết biến môi trường, tạo Admin đầu tiên và lưu ý khi đưa lên mạng: [docs/11_Deployment.md](docs/11_Deployment.md).

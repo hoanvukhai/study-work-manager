@@ -17,6 +17,17 @@
 
 | Mục tiêu | Kết quả | Ghi chú |
 |---|---|---|
+| OBJ-01: Tự tạo Không gian theo chủ đề riêng | Hoàn thành | Mục tiêu, hạn chót, tiến độ, ghim, sắp xếp, công cụ bật/tắt, mẫu dựng sẵn |
+| OBJ-02: 4 loại nội dung độc lập | Hoàn thành | Task, Note (Markdown), Event, Reference; chuyển loại; vòng đời |
+| OBJ-03: Đặt một mục vào nhiều Không gian | Hoàn thành | Không nhân bản dữ liệu; gỡ ra không mất dữ liệu |
+| OBJ-04: Liên kết giữa các mục | Hoàn thành | 4 loại có ý nghĩa; `[[ ]]`; backlink; bản đồ tri thức |
+| OBJ-05: Nhiều góc nhìn | Hoàn thành | Danh sách, lưới, Kanban, Lịch tuần/tháng, bản đồ |
+| OBJ-06: Dashboard tổng quan | Hoàn thành | Gợi ý "Hôm nay làm gì?", ôn tập, việc dở dang |
+| OBJ-07: Nhắc nhở tự động | Hoàn thành một phần | Thông báo trong app, bản tin sáng, lịch `.ics`; chưa có thông báo đẩy |
+| Mở rộng: Kế hoạch / Học tập / Tri thức | Hoàn thành | Phụ thuộc + cấm vòng, SM-2, đồ thị; 6 thuật toán tự cài đặt |
+| Mở rộng: Quản trị, báo cáo tuần, xuất dữ liệu | Hoàn thành | Admin không đọc được nội dung cá nhân |
+
+---|---|---|
 | OBJ-01: Quản lý Task | ✅ Hoàn thành | |
 | OBJ-02: Quản lý Learning | ✅ Hoàn thành | |
 | OBJ-03: Calendar đồng bộ | ✅ Hoàn thành | |

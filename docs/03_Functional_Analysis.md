@@ -40,7 +40,6 @@
 | US-13 | Là người dùng, tôi muốn đánh dấu công việc đã hoàn thành để theo dõi tiến độ.                               | FR-TASK-06                | Task   |
 | US-14 | Là người dùng, tôi muốn đặt deadline và mức độ ưu tiên cho công việc để sắp xếp thứ tự xử lý.               | FR-TASK-01                | Task   |
 | US-15 | Là người dùng, tôi muốn tìm kiếm và lọc công việc để nhanh chóng tìm được nội dung cần thiết.               | FR-TASK-09                | Task   |
-| US-16 | Là người dùng, tôi muốn gắn Tag cho công việc để dễ phân loại và tìm kiếm.                                  | FR-TASK-10                | Task   |
 
 ---
 
@@ -69,7 +68,6 @@
 | ID    | User Story                                                                                                     | FR liên quan | Module    |
 | ----- | -------------------------------------------------------------------------------------------------------------- | ------------ | --------- |
 | US-23 | Là người dùng, tôi muốn lưu link tài liệu tham khảo vào một Space để không phải tìm lại mỗi lần cần.        | FR-REF-01    | Reference |
-| US-24 | Là người dùng, tôi muốn gắn Tag cho tài liệu tham khảo để phân loại và tìm nhanh hơn.                       | FR-REF-06    | Reference |
 
 ---
 
@@ -128,9 +126,9 @@
 
 | ID    | User Story                                                                                                     | FR liên quan  | Module       |
 | ----- | -------------------------------------------------------------------------------------------------------------- | ------------- | ------------ |
-| US-34 | Là người dùng, tôi muốn nhận thông báo khi công việc hoặc sự kiện sắp đến hạn để không bỏ lỡ.               | FR-NOTIF-01   | Notification |
-| US-35 | Là người dùng, tôi muốn xem danh sách các thông báo chưa đọc để không bỏ lỡ thông tin quan trọng.           | FR-NOTIF-02   | Notification |
-| US-36 | Là người dùng, tôi muốn đánh dấu thông báo đã đọc sau khi xem để dễ quản lý.                                | FR-NOTIF-04   | Notification |
+| US-41 | Là người dùng, tôi muốn nhận thông báo khi công việc hoặc sự kiện sắp đến hạn để không bỏ lỡ.               | FR-NOTIF-01   | Notification |
+| US-42 | Là người dùng, tôi muốn xem danh sách các thông báo chưa đọc để không bỏ lỡ thông tin quan trọng.           | FR-NOTIF-02   | Notification |
+| US-43 | Là người dùng, tôi muốn đánh dấu thông báo đã đọc sau khi xem để dễ quản lý.                                | FR-NOTIF-04   | Notification |
 
 ---
 
@@ -151,7 +149,7 @@
 ![Space](../diagrams/exports/03_UseCase_03_Space.png)
 
 **Module Quản lý Task:**
-![Task](03_UseCase_04_Task.png)
+![Task](../diagrams/exports/03_UseCase_04_Task.png)
 
 **Module Lifecycle Object:**
 ![Object Lifecycle](../diagrams/exports/03_UseCase_05_Object_Lifecycle.png)
@@ -285,17 +283,7 @@
 
 ---
 
-### UC-09: Gắn Tag cho Object
-
-| | |
-|---|---|
-| **Actor** | Người dùng đã đăng nhập |
-| **Precondition** | Object tồn tại, thuộc người dùng. Object là Task, Note hoặc Reference. |
-| **Trigger** | Người dùng chọn "Gắn Tag" trong trang chi tiết Object |
-| **Main Flow** | 1. Hệ thống hiển thị danh sách Tag hiện có của người dùng và ô nhập Tag mới <br> 2a. Người dùng chọn Tag đã có → hệ thống tạo bản ghi `ObjectTag` <br> 2b. Người dùng nhập tên Tag mới → hệ thống tạo Tag trong bảng `Tag`, sau đó tạo `ObjectTag` <br> 3. Hệ thống hiển thị Tag vừa gắn trên giao diện Object |
-| **Alternative Flow** | 2c. Tag đã được gắn cho Object này rồi → bỏ qua, không tạo trùng |
-| **Postcondition** | Object được gắn thêm Tag. Tag có thể dùng để lọc và tìm kiếm Object. |
-| **FR liên quan** | FR-TASK-10, FR-NOTE-07, FR-REF-06 |
+> **UC-09 (Gắn Tag) đã bị bỏ** theo quyết định QD-01: Không gian đã đảm nhận việc phân loại ngang, giữ cả hai gây trùng chức năng.
 
 ---
 
@@ -423,6 +411,22 @@
 | **Postcondition** | Thông báo được lưu trong database. Người dùng thấy indicator thông báo mới khi vào hệ thống. |
 | **FR liên quan** | FR-NOTIF-01, FR-NOTIF-02 |
 
+### Các chức năng bổ sung (UC-19 → UC-27)
+
+> Các use case của ba trụ (Kế hoạch, Học tập, Tri thức), tài khoản và quản trị — bổ sung sau khi hoàn thiện lõi.
+
+| UC | Tên | Actor | Luồng chính | Ngoại lệ chính | FR |
+|---|---|---|---|---|---|
+| UC-19 | Xem gợi ý "Hôm nay làm gì?" | Người dùng | 1. Mở Tổng quan. 2. Hệ thống chấm điểm các Task chưa xong (độ gấp, ưu tiên, đang làm dở, mở khoá việc khác) và hiện tối đa 5 việc kèm lý do. 3. Bấm một việc để mở khung chi tiết. | Việc bị chặn bởi việc khác không được gợi ý mà nằm ở mục "Đang bị chặn"; quá tải 7 ngày tới thì cảnh báo | FR-PLAN-03, 04 |
+| UC-20 | Đặt phụ thuộc giữa hai việc | Người dùng | 1. Trong khung chi tiết, thêm liên kết loại "Phụ thuộc vào". 2. Hệ thống kiểm tra cả hai là Task và **không tạo vòng**. 3. Việc bị chặn hiện 🔒 trên Kanban; xong việc tiền đề thì báo "được mở khoá". | Tạo vòng (A→B→C→A) → 400; một việc đã có việc cha → 400 | FR-PLAN-01, 02, 07 |
+| UC-21 | Tạo thẻ ôn tập từ ghi chú | Người dùng | 1. Viết các dòng `Câu hỏi :: Trả lời` trong Note. 2. Lưu, bấm "Tạo thẻ ôn tập". 3. Hệ thống thêm thẻ mới, cập nhật đáp án đã đổi, xoá thẻ không còn trong nội dung (giữ tiến độ thẻ cũ). | Mục không phải Note → 400 | FR-STUDY-01 |
+| UC-22 | Ôn tập thẻ | Người dùng | 1. Mở trang Học tập. 2. Hệ thống đưa các thẻ đến hạn (thẻ của Note liên quan việc sắp đến hạn lên trước). 3. Hiện câu hỏi → hiện đáp án → chấm Quên/Khó/Nhớ/Dễ. 4. SM-2 tính lần ôn kế tiếp. | Chấm "Quên" → thẻ hiện lại sau 10 phút | FR-STUDY-02, 03 |
+| UC-23 | Liên kết nhanh bằng `[[ ]]` | Người dùng | 1. Gõ `[[` trong nội dung, chọn mục từ gợi ý. 2. Lưu. 3. Hệ thống tự tạo liên kết; mục được nhắc thấy backlink. | Bỏ nhắc → liên kết tự xoá (liên kết tạo tay được giữ); tiêu đề không có mục nào → chỉ hiện chip xám | FR-KNOW-01, 02 |
+| UC-24 | Xem bản đồ tri thức | Người dùng | 1. Mở "Bản đồ tri thức" (hoặc "Xem trên bản đồ" từ một mục). 2. Lọc theo Không gian/loại; kéo, phóng to, bấm chấm để mở chi tiết. | Chưa có liên kết → hướng dẫn cách tạo | FR-KNOW-03 |
+| UC-25 | Đặt lại mật khẩu | Khách | 1. Nhập email ở "Quên mật khẩu". 2. Hệ thống luôn báo như nhau; nếu email có thật thì gửi liên kết hết hạn sau 30 phút. 3. Mở liên kết, nhập mật khẩu mới. | Liên kết hết hạn / đã dùng / sai → 400; yêu cầu mới huỷ liên kết cũ | FR-AUTH-08, 09 |
+| UC-26 | Khoá / mở khoá tài khoản | Quản trị viên | 1. Vào Khu vực Quản trị → Người dùng. 2. Chọn Khoá, xác nhận. 3. Người đó không đăng nhập được và phiên hiện tại bị chặn ngay. Hành động ghi vào nhật ký. | Không tự khoá mình, không khoá Admin khác | FR-ADMIN-02 |
+| UC-27 | Đồng bộ lịch ra Google Calendar | Người dùng | 1. Hồ sơ → Đồng bộ lịch → sao chép địa chỉ `.ics`. 2. Thêm vào Google Calendar bằng "Từ URL". 3. Việc có hạn và sự kiện tự hiện, có nhắc trước. | Địa chỉ bị lộ → "Tạo lại địa chỉ" huỷ địa chỉ cũ | FR-EXT-01 |
+
 ---
 
 ## 4. Activity Diagram (Sơ đồ Hoạt động)
@@ -476,7 +480,6 @@
 | Gỡ khỏi Space (không xóa) |      |       | x    | x    | x     | x         | x          |          |      |           |              |
 | Archive / Restore          |      |       | x    | x    | x     | x         |            |          |      |           |              |
 | Trash / Restore            |      |       | x    | x    | x     | x         |            |          |      |           |              |
-| Gắn Tag                    |      |       | x    | x    |       | x         |            |          |      |           |              |
 | Liên kết với nội dung khác |      |       | x    | x    | x     | x         |            | x        |      |           |              |
 | Nhắc nhở deadline          |      |       | x    |      | x     |           |            |          |      | x         | x            |
 | Hiển thị theo thời gian    |      |       | x    |      | x     |           |            |          | x    |           |              |

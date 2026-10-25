@@ -2,378 +2,316 @@
 
 > Tài liệu trước: [04_System_Architecture.md](04_System_Architecture.md) và [05_Domain_Model.md](05_Domain_Model.md)
 > Tài liệu sau: [07_API_Design.md](07_API_Design.md)
+>
+> **Tài liệu này được SINH TỰ ĐỘNG từ `backend/prisma/schema.prisma` và `backend/prisma/migrations/`** (không sửa tay; chạy lại bộ sinh khi schema đổi) nên luôn khớp với mã nguồn.
 
 ---
 
-
-
-## 1. ERD mức Logic
-
-> Ánh xạ từ Domain Model sang các bảng database. Tập trung vào quan hệ giữa bảng, chưa chi tiết kiểu dữ liệu.
-
-```
-Sơ đồ: ../diagrams/06_ERD.drawio
-Export: ../diagrams/exports/06_ERD.png
-```
-
-![ERD Logic](../diagrams/exports/06_ERD.png)
-
----
-
-## 2. ERD mức Physical
-
-> Sinh tự động từ Prisma bằng `prisma-erd-generator` sau khi có `schema.prisma`.
-
-```bash
-# Cài đặt công cụ tự sinh ERD từ Prisma
-npm install -D prisma-erd-generator @mermaid-js/mermaid-cli
-
-# Cấu hình generator trong schema.prisma:
-# generator erd {
-#   provider = "prisma-erd-generator"
-#   output   = "ERD.svg"
-# }
-
-# Chạy sinh sơ đồ vật lý
-npx prisma generate
-```
-
-
-
----
-
-## 3. Data Dictionary (Từ điển dữ liệu)
-
-> Mỗi field đều phải có ý nghĩa rõ ràng. Đây là mục hội đồng thường hỏi.
-
-### Bảng: `users`
-Lưu trữ thông tin tài khoản người dùng cá nhân.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `email` | VARCHAR(255) | NO | — | Email đăng nhập, UNIQUE |
-| `password_hash` | VARCHAR(255) | NO | — | Mật khẩu đã hash (Bcrypt) |
-| `full_name` | VARCHAR(100) | NO | — | Họ và tên hiển thị |
-| `avatar_url` | TEXT | YES | NULL | Đường dẫn ảnh đại diện |
-| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm tạo tài khoản |
-| `updated_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm cập nhật gần nhất |
-
----
-
-### Bảng: `spaces`
-Không gian làm việc quản lý theo chủ đề của người dùng.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `user_id` | UUID | NO | — | FK → users.id (CASCADE) |
-| `name` | VARCHAR(100) | NO | — | Tên không gian |
-| `description` | TEXT | YES | NULL | Mô tả mục đích không gian |
-| `icon` | VARCHAR(50) | NO | `'📁'` | Biểu tượng emoji / icon |
-| `color` | VARCHAR(20) | NO | `'#6366f1'` | Mã màu nhận diện Hex |
-| `parent_id` | UUID | YES | NULL | FK → spaces.id (SET NULL, cây phân cấp) |
-| `is_archived` | BOOLEAN | NO | false | Đã lưu trữ hay chưa |
-| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm tạo |
-| `updated_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm cập nhật |
-
----
-
-### Bảng: `objects` (Hạt nhân Dữ liệu Đa hình)
-Bảng trung tâm lưu trữ toàn bộ Task, Note, Event, Reference.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `user_id` | UUID | NO | — | FK → users.id (CASCADE) |
-| `type` | ENUM | NO | — | TASK / NOTE / EVENT / REFERENCE |
-| `title` | VARCHAR(255) | NO | — | Tiêu đề nội dung |
-| `description` | TEXT | YES | NULL | Nội dung chi tiết hoặc ghi chú markdown |
-| `status` | ENUM | NO | `TODO` | TODO / IN_PROGRESS / DONE / CANCELLED |
-| `priority` | ENUM | NO | `MEDIUM` | LOW / MEDIUM / HIGH / URGENT |
-| `lifecycle` | ENUM | NO | `ACTIVE` | ACTIVE / ARCHIVED / TRASH |
-| `due_date` | TIMESTAMPTZ | YES | NULL | Hạn chót hoàn thành (cho TASK) |
-| `start_at` | TIMESTAMPTZ | YES | NULL | Mốc bắt đầu (cho EVENT) |
-| `end_at` | TIMESTAMPTZ | YES | NULL | Mốc kết thúc (cho EVENT) |
-| `url` | TEXT | YES | NULL | Đường dẫn tham chiếu (cho REFERENCE) |
-| `metadata` | JSONB | NO | `'{}'` | Dữ liệu cấu hình mở rộng động |
-| `deleted_at` | TIMESTAMPTZ | YES | NULL | Mốc xóa mềm vào Trash |
-| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm tạo |
-| `updated_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm cập nhật |
-
----
-
-### Bảng: `space_objects` (Vị trí gán Object vào Space)
-Quản lý quan hệ nhiều - nhiều giữa Space và Object.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `space_id` | UUID | NO | — | FK → spaces.id (CASCADE) |
-| `object_id` | UUID | NO | — | FK → objects.id (CASCADE) |
-| `position` | INTEGER | NO | 0 | Thứ tự sắp xếp trong Space |
-| `is_pinned` | BOOLEAN | NO | false | Đánh dấu ghim lên đầu Space |
-| `added_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm gán vào Space |
-
-*(Ràng buộc duy nhất: `UNIQUE (space_id, object_id)` — Ngăn gán trùng 1 Object vào cùng 1 Space).*
-
----
-
-### Bảng: `object_relations` (Liên kết Chéo giữa các Object)
-Quản lý liên kết động tự do giữa 2 Object bất kỳ.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `from_object_id` | UUID | NO | — | FK → objects.id (CASCADE) |
-| `to_object_id` | UUID | NO | — | FK → objects.id (CASCADE) |
-| `relation_type` | ENUM | NO | `RELATES_TO` | RELATES_TO / DEPENDS_ON / REFERENCES / PARENT_OF |
-| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm tạo liên kết |
-
-*(Ràng buộc duy nhất: `UNIQUE (from_object_id, to_object_id, relation_type)`, `CHECK (from_object_id <> to_object_id)`).*
-
----
-
-### Bảng: `tags`
-Thẻ phân loại dữ liệu ngang hàng giữa các Space.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `user_id` | UUID | NO | — | FK → users.id (CASCADE) |
-| `name` | VARCHAR(50) | NO | — | Tên tag, UNIQUE trên từng User |
-| `color` | VARCHAR(20) | NO | `'#94a3b8'` | Màu hex hiển thị |
-| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm tạo |
-
----
-
-### Bảng: `object_tags` (Bảng trung gian Object ↔ Tag)
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `object_id` | UUID | NO | — | FK → objects.id (CASCADE) |
-| `tag_id` | UUID | NO | — | FK → tags.id (CASCADE) |
-
-*(Khóa chính tổng hợp: `PRIMARY KEY (object_id, tag_id)`).*
-
----
-
-### Bảng: `notifications`
-Thông báo nhắc việc hệ thống sinh tự động.
-
-| Column | Kiểu dữ liệu | Nullable | Default | Ý nghĩa |
-|---|---|---|---|---|
-| `id` | UUID | NO | gen_random_uuid() | Khóa chính |
-| `user_id` | UUID | NO | — | FK → users.id (CASCADE) |
-| `object_id` | UUID | YES | NULL | FK → objects.id (CASCADE, Object liên quan) |
-| `title` | VARCHAR(255) | NO | — | Tiêu đề thông báo |
-| `message` | TEXT | NO | — | Nội dung chi tiết |
-| `is_read` | BOOLEAN | NO | false | Đã đọc chưa |
-| `read_at` | TIMESTAMPTZ | YES | NULL | Thời điểm đọc |
-| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời điểm sinh thông báo |
-
----
-
-## 4. Prisma Schema (khung hoàn chỉnh)
-
-> File cấu hình chính thức tại `../backend/prisma/schema.prisma`
-
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-enum ObjectType {
-  TASK
-  NOTE
-  EVENT
-  REFERENCE
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  DONE
-  CANCELLED
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum ObjectLifecycle {
-  ACTIVE
-  ARCHIVED
-  TRASH
-}
-
-enum RelationType {
-  RELATES_TO
-  DEPENDS_ON
-  REFERENCES
-  PARENT_OF
-}
-
-model User {
-  id           String         @id @default(uuid()) @db.Uuid
-  email        String         @unique @db.VarChar(255)
-  passwordHash String         @map("password_hash") @db.VarChar(255)
-  fullName     String         @map("full_name") @db.VarChar(100)
-  avatarUrl    String?        @map("avatar_url")
-  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz
-
-  spaces        Space[]
-  objects       Object[]
-  tags          Tag[]
-  notifications Notification[]
-
-  @@map("users")
-}
-
-model Space {
-  id          String    @id @default(uuid()) @db.Uuid
-  userId      String    @map("user_id") @db.Uuid
-  name        String    @db.VarChar(100)
-  description String?
-  icon        String    @default("📁") @db.VarChar(50)
-  color       String    @default("#6366f1") @db.VarChar(20)
-  parentId    String?   @map("parent_id") @db.Uuid
-  isArchived  Boolean   @default(false) @map("is_archived")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent       Space?        @relation("SpaceHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children     Space[]       @relation("SpaceHierarchy")
-  spaceObjects SpaceObject[]
-
-  @@map("spaces")
-}
-
-model Object {
-  id          String          @id @default(uuid()) @db.Uuid
-  userId      String          @map("user_id") @db.Uuid
-  type        ObjectType
-  title       String          @db.VarChar(255)
-  description String?
-  status      TaskStatus      @default(TODO)
-  priority    Priority        @default(MEDIUM)
-  lifecycle   ObjectLifecycle @default(ACTIVE)
-  dueDate     DateTime?       @map("due_date") @db.Timestamptz
-  startAt     DateTime?       @map("start_at") @db.Timestamptz
-  endAt       DateTime?       @map("end_at") @db.Timestamptz
-  url         String?
-  metadata    Json            @default("{}")
-  deletedAt   DateTime?       @map("deleted_at") @db.Timestamptz
-  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
-
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  spaceObjects  SpaceObject[]
-  outgoingRel   ObjectRelation[] @relation("OutgoingRelations")
-  incomingRel   ObjectRelation[] @relation("IncomingRelations")
-  objectTags    ObjectTag[]
-  notifications Notification[]
-
-  @@index([userId, lifecycle])
-  @@index([userId, type])
-  @@map("objects")
-}
-
-model SpaceObject {
-  id        String   @id @default(uuid()) @db.Uuid
-  spaceId   String   @map("space_id") @db.Uuid
-  objectId  String   @map("object_id") @db.Uuid
-  position  Int      @default(0)
-  isPinned  Boolean  @default(false) @map("is_pinned")
-  addedAt   DateTime @default(now()) @map("added_at") @db.Timestamptz
-
-  space  Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  object Object @relation(fields: [objectId], references: [id], onDelete: Cascade)
-
-  @@unique([spaceId, objectId])
-  @@map("space_objects")
-}
-
-model ObjectRelation {
-  id           String       @id @default(uuid()) @db.Uuid
-  fromObjectId String       @map("from_object_id") @db.Uuid
-  toObjectId   String       @map("to_object_id") @db.Uuid
-  relationType RelationType @default(RELATES_TO) @map("relation_type")
-  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
-
-  fromObject Object @relation("OutgoingRelations", fields: [fromObjectId], references: [id], onDelete: Cascade)
-  toObject   Object @relation("IncomingRelations", fields: [toObjectId], references: [id], onDelete: Cascade)
-
-  @@unique([fromObjectId, toObjectId, relationType])
-  @@map("object_relations")
-}
-
-model Tag {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  name      String   @db.VarChar(50)
-  color     String   @default("#94a3b8") @db.VarChar(20)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  objectTags ObjectTag[]
-
-  @@unique([userId, name])
-  @@map("tags")
-}
-
-model ObjectTag {
-  objectId String @map("object_id") @db.Uuid
-  tagId    String @map("tag_id") @db.Uuid
-
-  object Object @relation(fields: [objectId], references: [id], onDelete: Cascade)
-  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([objectId, tagId])
-  @@map("object_tags")
-}
-
-model Notification {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  objectId  String?   @map("object_id") @db.Uuid
-  title     String    @db.VarChar(255)
-  message   String
-  isRead    Boolean   @default(false) @map("is_read")
-  readAt    DateTime? @map("read_at") @db.Timestamptz
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  object Object? @relation(fields: [objectId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isRead])
-  @@map("notifications")
-}
+## 1. Tổng quan
+
+- Hệ quản trị: **PostgreSQL 16**, truy cập qua **Prisma ORM 5**; lược đồ thay đổi bằng **migration** có đánh số (`prisma/migrations/`), không dùng `db push`.
+- **12 bảng**, **7 kiểu liệt kê (enum)**. Quy ước: tên bảng/cột `snake_case`, khoá chính UUID, thời gian `TIMESTAMPTZ`.
+- Nguyên tắc cốt lõi: **Object** là bảng dùng chung cho 4 loại nội dung (Task, Note, Event, Reference) — xem Decision Log trong doc 04. **Space** không sở hữu Object; quan hệ nhiều–nhiều qua `space_objects`.
+- Dữ liệu của mỗi người dùng luôn gắn với `user_id`; mọi truy vấn ở backend đều lọc theo người dùng hiện tại (kiểm thử bằng test cách ly dữ liệu, xem doc 10).
+
+## 2. Sơ đồ ERD
+
+```mermaid
+erDiagram
+
+    users ||--o{ spaces : "user"
+    users ||--o{ objects : "user"
+    spaces ||--o{ space_objects : "space"
+    objects ||--o{ space_objects : "object"
+    objects ||--o{ object_relations : "fromObject"
+    objects ||--o{ object_relations : "toObject"
+    users ||--o{ notifications : "user"
+    objects |o--o{ notifications : "object"
+    users ||--o{ flashcards : "user"
+    objects ||--o{ flashcards : "object"
+    flashcards ||--o{ flashcard_reviews : "card"
+    users ||--o{ flashcard_reviews : "user"
+    users ||--o{ study_sessions : "user"
+    objects |o--o{ study_sessions : "object"
+    users ||--o| notification_settings : "user"
+    users ||--o{ admin_audit_logs : "admin"
+    users |o--o{ admin_audit_logs : "target"
+    users ||--o{ password_resets : "user"
 ```
 
+> Sơ đồ vẽ tay (draw.io) ở `diagrams/06_ERD.drawio` là bản cũ (8 bảng, còn Tag) — cần xuất lại khi chốt báo cáo; sơ đồ Mermaid ở trên là bản đúng với mã nguồn.
+
 ---
 
-## 5. Indexing & Ràng buộc toàn vẹn
+## 3. Từ điển dữ liệu
 
-- **Chỉ mục B-Tree:**
-  - `users(email)`: Đảm bảo kiểm tra đăng nhập siêu tốc.
-  - `objects(user_id, lifecycle)`: Tối ưu lọc danh sách Active, Archived và Trash.
-  - `objects(user_id, type)`: Tối ưu lọc theo loại (chỉ lấy Task hoặc Note...).
-  - `space_objects(space_id, position)`: Tối ưu lấy danh sách đã sắp xếp trong Space.
-  - `object_relations(from_object_id)`, `object_relations(to_object_id)`: Tối ưu duyệt đồ thị quan hệ 2 chiều.
-- **Ràng buộc toàn vẹn:**
-  - Xóa Space (`ON DELETE CASCADE` trên `space_objects`) chỉ xóa liên kết vị trí, **Object gốc không bị xóa**.
-  - Xóa vĩnh viễn Object (`Hard delete`) cascade xóa sạch `space_objects`, `object_relations` và `object_tags`.
+### 3.1. Bảng `users`
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `email` | VARCHAR(255) |  | — | Duy nhất |
+| `password_hash` | VARCHAR(255) |  | — |  |
+| `full_name` | VARCHAR(100) |  | — |  |
+| `avatar_url` | TEXT | ✓ | — |  |
+| `role` | ENUM `Role` |  | `USER` |  |
+| `locked_at` | TIMESTAMPTZ | ✓ | — |  |
+| `failed_login_count` | INTEGER |  | `0` |  |
+| `lockout_until` | TIMESTAMPTZ | ✓ | — |  |
+| `last_login_at` | TIMESTAMPTZ | ✓ | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+| `updated_at` | TIMESTAMPTZ |  | — |  |
+| `calendar_token` | VARCHAR(64) | ✓ | — | Duy nhất |
+
+### 3.2. Bảng `spaces`
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `name` | VARCHAR(100) |  | — |  |
+| `description` | TEXT | ✓ | — |  |
+| `icon` | VARCHAR(50) |  | `📁` |  |
+| `color` | VARCHAR(20) |  | `#6366f1` |  |
+| `settings` | JSONB |  | `{}` |  |
+| `goal` | TEXT | ✓ | — |  |
+| `due_date` | TIMESTAMPTZ | ✓ | — |  |
+| `archived_at` | TIMESTAMPTZ | ✓ | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+| `updated_at` | TIMESTAMPTZ |  | — |  |
+
+- Chỉ mục: (user_id, archived_at)
+
+### 3.3. Bảng `objects`
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `type` | ENUM `ObjectType` |  | — |  |
+| `title` | VARCHAR(255) |  | — |  |
+| `description` | TEXT | ✓ | — |  |
+| `status` | ENUM `TaskStatus` | ✓ | — |  |
+| `priority` | ENUM `Priority` | ✓ | — |  |
+| `lifecycle` | ENUM `ObjectLifecycle` |  | `ACTIVE` |  |
+| `due_date` | TIMESTAMPTZ | ✓ | — |  |
+| `start_at` | TIMESTAMPTZ | ✓ | — |  |
+| `end_at` | TIMESTAMPTZ | ✓ | — |  |
+| `url` | TEXT | ✓ | — |  |
+| `recurrence` | JSONB | ✓ | — |  |
+| `recurrence_spawned` | BOOLEAN |  | `false` |  |
+| `completed_at` | TIMESTAMPTZ | ✓ | — |  |
+| `estimated_minutes` | INTEGER | ✓ | — |  |
+| `metadata` | JSONB |  | `{}` |  |
+| `archived_at` | TIMESTAMPTZ | ✓ | — |  |
+| `deleted_at` | TIMESTAMPTZ | ✓ | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+| `updated_at` | TIMESTAMPTZ |  | — |  |
+
+- Chỉ mục: (user_id, lifecycle)
+- Chỉ mục: (user_id, type)
+- Chỉ mục: (user_id, due_date)
+- Chỉ mục: (user_id, start_at)
+
+### 3.4. Bảng `space_objects`
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `space_id` | UUID |  | — | FK → `spaces.id` (xoá theo) |
+| `object_id` | UUID |  | — | FK → `objects.id` (xoá theo) |
+| `position` | INTEGER |  | `0` |  |
+| `is_pinned` | BOOLEAN |  | `false` |  |
+| `added_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Duy nhất: (space_id, object_id)
+- Chỉ mục: (space_id, position)
+
+### 3.5. Bảng `object_relations`
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `from_object_id` | UUID |  | — | FK → `objects.id` (xoá theo) |
+| `to_object_id` | UUID |  | — | FK → `objects.id` (xoá theo) |
+| `relation_type` | ENUM `RelationType` |  | `RELATES_TO` |  |
+| `auto` | BOOLEAN |  | `false` |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Duy nhất: (from_object_id, to_object_id, relation_type)
+- Chỉ mục: (to_object_id)
+
+### 3.6. Bảng `notifications`
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `object_id` | UUID | ✓ | — | FK → `objects.id` (xoá theo) |
+| `type` | VARCHAR(50) |  | `GENERAL` |  |
+| `title` | VARCHAR(255) |  | — |  |
+| `message` | TEXT |  | — |  |
+| `data` | JSONB |  | `{}` |  |
+| `dedupe_key` | VARCHAR(100) | ✓ | — |  |
+| `is_read` | BOOLEAN |  | `false` |  |
+| `read_at` | TIMESTAMPTZ | ✓ | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Duy nhất: (user_id, dedupe_key)
+- Chỉ mục: (user_id, is_read)
+
+### 3.7. Bảng `flashcards`
+
+Thẻ hỏi–đáp sinh từ Note (dòng "Câu hỏi :: Trả lời"), ôn theo SM-2.
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `object_id` | UUID |  | — | FK → `objects.id` (xoá theo) |
+| `front` | VARCHAR(500) |  | — |  |
+| `back` | VARCHAR(2000) |  | — |  |
+| `ease_factor` | DOUBLE PRECISION |  | `2.5` |  |
+| `interval_days` | INTEGER |  | `0` |  |
+| `repetitions` | INTEGER |  | `0` |  |
+| `due_at` | TIMESTAMPTZ |  | NOW() |  |
+| `last_reviewed_at` | TIMESTAMPTZ | ✓ | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+| `updated_at` | TIMESTAMPTZ |  | — |  |
+
+- Duy nhất: (object_id, front)
+- Chỉ mục: (user_id, due_at)
+
+### 3.8. Bảng `flashcard_reviews`
+
+Lịch sử mỗi lần ôn (phục vụ thống kê và chuỗi ngày học).
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `card_id` | UUID |  | — | FK → `flashcards.id` (xoá theo) |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `grade` | ENUM `ReviewGrade` |  | — |  |
+| `interval_after` | INTEGER |  | — |  |
+| `ease_after` | DOUBLE PRECISION |  | — |  |
+| `reviewed_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Chỉ mục: (user_id, reviewed_at)
+
+### 3.9. Bảng `study_sessions`
+
+Phiên học tập trung (Pomodoro) — thời gian học thật.
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `object_id` | UUID | ✓ | — | FK → `objects.id` (đặt NULL) |
+| `minutes` | INTEGER |  | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Chỉ mục: (user_id, created_at)
+
+### 3.10. Bảng `notification_settings`
+
+Cài đặt thông báo của mỗi người dùng (1 dòng / người).
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `user_id` | UUID |  | — | Khoá chính; FK → `users.id` (xoá theo) |
+| `remind_before_minutes` | INTEGER |  | `1440` |  |
+| `quiet_hours_enabled` | BOOLEAN |  | `false` |  |
+| `quiet_start_minute` | INTEGER |  | `1380` |  |
+| `quiet_end_minute` | INTEGER |  | `420` |  |
+| `enable_deadline` | BOOLEAN |  | `true` |  |
+| `enable_overdue` | BOOLEAN |  | `true` |  |
+| `enable_event` | BOOLEAN |  | `true` |  |
+| `enable_digest` | BOOLEAN |  | `true` |  |
+| `enable_study` | BOOLEAN |  | `true` |  |
+| `enable_unblocked` | BOOLEAN |  | `true` |  |
+
+### 3.11. Bảng `admin_audit_logs`
+
+Nhật ký hành động quản trị (ai khoá/mở khoá ai, phát thông báo...). Không chứa nội dung cá nhân.
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `admin_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `action` | VARCHAR(50) |  | — |  |
+| `target_user_id` | UUID | ✓ | — | FK → `users.id` (đặt NULL) |
+| `detail` | VARCHAR(255) |  | `` |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Chỉ mục: (created_at)
+
+### 3.12. Bảng `password_resets`
+
+Chỉ lưu BĂM của token (không lưu token gốc) → lộ CSDL cũng không dùng được để đặt lại mật khẩu.
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|:-:|---|---|
+| `id` | UUID |  | gen_random_uuid() | Khoá chính |
+| `user_id` | UUID |  | — | FK → `users.id` (xoá theo) |
+| `token_hash` | VARCHAR(64) |  | — | Duy nhất |
+| `expires_at` | TIMESTAMPTZ |  | — |  |
+| `used_at` | TIMESTAMPTZ | ✓ | — |  |
+| `created_at` | TIMESTAMPTZ |  | NOW() |  |
+
+- Chỉ mục: (user_id)
+
+---
+
+## 4. Kiểu liệt kê (enum)
+
+| Enum | Giá trị |
+|---|---|
+| `Role` | `USER`, `ADMIN` |
+| `ObjectType` | `TASK`, `NOTE`, `EVENT`, `REFERENCE` |
+| `TaskStatus` | `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED` |
+| `Priority` | `LOW`, `MEDIUM`, `HIGH`, `URGENT` |
+| `ObjectLifecycle` | `ACTIVE`, `ARCHIVED`, `TRASH` |
+| `ReviewGrade` | `AGAIN`, `HARD`, `GOOD`, `EASY` |
+| `RelationType` | `RELATES_TO`, `DEPENDS_ON`, `REFERENCES`, `PARENT_OF` |
+
+---
+
+## 5. Ràng buộc toàn vẹn ở mức CSDL (`CHECK`)
+
+Prisma không tự sinh `CHECK`, nên các ràng buộc này được viết tay trong migration. Chúng đảm bảo dữ liệu sai bị CSDL từ chối **kể cả khi đi đường tắt** (SQL trực tiếp) — có test kiểm chứng.
+
+| Bảng | Tên ràng buộc | Điều kiện |
+|---|---|---|
+| `objects` | `objects_event_has_start` | `type <> 'EVENT' OR start_at IS NOT NULL` |
+| `objects` | `objects_reference_has_url` | `type <> 'REFERENCE' OR url IS NOT NULL` |
+| `objects` | `objects_time_order` | `start_at IS NULL OR end_at IS NULL OR end_at > start_at` |
+| `objects` | `objects_status_only_task` | `type = 'TASK' OR status IS NULL` |
+| `objects` | `objects_priority_task_event` | `type IN ('TASK', 'EVENT') OR priority IS NULL` |
+| `object_relations` | `object_relations_no_self` | `from_object_id <> to_object_id` |
+| `objects` | `objects_estimate_only_task` | `type = 'TASK' OR estimated_minutes IS NULL` |
+| `study_sessions` | `study_sessions_minutes_range` | `minutes BETWEEN 1 AND 240` |
+| `flashcards` | `flashcards_ease_min` | `ease_factor >= 1.3` |
+| `flashcards` | `flashcards_nonneg` | `interval_days >= 0 AND repetitions >= 0` |
+| `notification_settings` | `notif_remind_range` | `remind_before_minutes BETWEEN 5 AND 10080` |
+| `notification_settings` | `notif_quiet_range` | `quiet_start_minute BETWEEN 0 AND 1439 AND quiet_end_minute BETWEEN 0 AND 1439` |
+| `objects` | `objects_recurrence_task_event` | `type IN ('TASK', 'EVENT') OR recurrence IS NULL` |
+
+## 6. Lịch sử migration
+
+| # | Migration |
+|--:|---|
+| 1 | `20261024000000_init` |
+| 2 | `20261024000100_constraints` |
+| 3 | `20261024165528_planning_estimated_minutes` |
+| 4 | `20261024170421_study_flashcards_sessions` |
+| 5 | `20261024171453_relation_auto_mentions` |
+| 6 | `20261024172153_notification_settings` |
+| 7 | `20261024172815_admin_audit_logs` |
+| 8 | `20261025074225_login_lockout` |
+| 9 | `20261025074903_recurrence` |
+| 10 | `20261025075243_password_resets` |
+| 11 | `20261025075701_completed_at` |
+| 12 | `20261025080000_calendar_token` |
 
 ---
 

@@ -2,247 +2,193 @@
 
 > Tài liệu trước: [06_Database_Design.md](06_Database_Design.md)
 > Tài liệu sau: [08_UI_UX_Design.md](08_UI_UX_Design.md) và [09_Implementation.md](09_Implementation.md)
+>
+> **Danh sách endpoint được SINH TỰ ĐỘNG từ các controller** (`backend/src/**/*.controller.ts`) nên luôn khớp mã nguồn (tổng **59 endpoint**). Mô tả chi tiết từng trường dữ liệu: Swagger tại `/api/docs` khi chạy backend.
 
 ---
 
+## 1. Quy ước chung
 
+- **Địa chỉ gốc:** `/api/v1`. Dữ liệu vào/ra: JSON (`Content-Type: application/json`), trừ `.ics` (text/calendar).
+- **Xác thực:** `Authorization: Bearer <accessToken>` (JWT, mặc định hết hạn sau 7 ngày). Cột "Quyền": *Công khai* = không cần đăng nhập; *Đăng nhập* = cần JWT; *Admin* = cần JWT và vai trò `ADMIN`.
+- **Cách ly dữ liệu:** mọi endpoint "Đăng nhập" chỉ thao tác trên dữ liệu của chính người gọi; truy cập dữ liệu người khác trả **404** (không phải 403, để không lộ sự tồn tại).
+- **Kiểm tra dữ liệu vào:** `ValidationPipe` với `whitelist` + `forbidNonWhitelisted` — gửi trường không khai báo bị từ chối **400** (chống mass assignment).
+- **Định dạng lỗi:**
 
-## Quy ước chung
-
-- **Base URL:** `/api/v1`
-- **Format:** JSON cho cả request và response (`Content-Type: application/json`)
-- **Auth:** Bearer Token trong header `Authorization: Bearer <jwt_token>`
-- **Error Response format:**
 ```json
 {
   "statusCode": 400,
-  "message": "Validation failed",
-  "errors": ["title must not be empty"],
-  "timestamp": "2026-09-11T07:30:00.000Z"
+  "message": "Tiêu đề không được để trống",
+  "errors": ["Tiêu đề không được để trống"],
+  "timestamp": "2026-10-25T07:30:00.000Z"
 }
 ```
+
+- **Mã trạng thái thường gặp:** 400 dữ liệu sai · 401 chưa/không còn đăng nhập · 403 không đủ quyền (Admin) · 404 không tìm thấy hoặc không thuộc về bạn · 409 trùng dữ liệu · 429 gọi quá nhanh.
+- **Giới hạn tần suất:** mặc định 300 yêu cầu/phút/IP; đăng nhập, đăng ký, quên và đặt lại mật khẩu có giới hạn riêng (10/phút). Sai mật khẩu 5 lần thì khoá đăng nhập tạm 15 phút (một thông báo lỗi chung cho mọi lý do, không lộ tài khoản).
+- **Phân trang:** `GET /objects` nhận `limit` (1–500, mặc định 500) và `offset`; tổng số khớp bộ lọc trả qua header `X-Total-Count`.
+- **Thời gian:** ISO 8601 UTC; giao diện đổi sang giờ địa phương. Các phép tính "theo ngày" ở máy chủ (chuỗi ngày học, báo cáo tuần, bản tin sáng) dùng giờ Việt Nam (UTC+7).
 
 ---
 
-## 1. Auth Module
+## 2. Danh sách endpoint
 
-| Endpoint | Mô tả |
-|---|---|
-| POST /auth/register | Đăng ký tài khoản mới |
-| POST /auth/login | Đăng nhập lấy JWT access token |
-| GET /auth/me | Thông tin user đăng nhập hiện tại |
 
-### POST /auth/register — Đăng ký
+### Tài khoản — xuất dữ liệu
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "Password123",
-  "fullName": "Nguyễn Văn A"
-}
-```
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/account/export` | Đăng nhập | `export` | giới hạn riêng |
 
-**Business Rules:**
-- `email` phải đúng định dạng email, không được trùng với tài khoản đã có.
-- `password` tối thiểu 8 ký tự.
-- `fullName` không được rỗng.
+### Quản trị (chỉ ADMIN)
 
-**Response 201:**
-```json
-{
-  "user": {
-    "id": "uuid-user-1",
-    "email": "user@example.com",
-    "fullName": "Nguyễn Văn A"
-  },
-  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/admin/users` | Admin | `listUsers` |  |
+| `PATCH` | `/api/v1/admin/users/:id/lock` | Admin | `lock` |  |
+| `PATCH` | `/api/v1/admin/users/:id/unlock` | Admin | `unlock` |  |
+| `GET` | `/api/v1/admin/stats` | Admin | `stats` |  |
+| `POST` | `/api/v1/admin/broadcast` | Admin | `broadcast` |  |
+| `GET` | `/api/v1/admin/audit-logs` | Admin | `auditLogs` |  |
 
-### POST /auth/login — Đăng nhập
+### Xác thực & Tài khoản
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "Password123"
-}
-```
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `POST` | `/api/v1/auth/register` | Công khai | `register` | giới hạn riêng |
+| `POST` | `/api/v1/auth/login` | Công khai | `login` | giới hạn riêng |
+| `POST` | `/api/v1/auth/forgot-password` | Công khai | `forgotPassword` | giới hạn riêng |
+| `POST` | `/api/v1/auth/reset-password` | Công khai | `resetPassword` | giới hạn riêng |
+| `GET` | `/api/v1/auth/me` | Đăng nhập | `getProfile` |  |
+| `PATCH` | `/api/v1/auth/profile` | Đăng nhập | `updateProfile` |  |
+| `POST` | `/api/v1/auth/change-password` | Đăng nhập | `changePassword` |  |
 
-**Business Rules:**
-- Sai email hoặc sai mật khẩu đều trả về lỗi chung `401 Unauthorized: "Email hoặc mật khẩu không chính xác"` để chống dò tài khoản.
+### Xuất lịch (.ics)
 
-**Response 200:** *(trả về accessToken và thông tin user)*
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/calendar/feed-token` | Đăng nhập | `getFeedToken` |  |
+| `POST` | `/api/v1/calendar/feed-token/rotate` | Đăng nhập | `rotate` |  |
+| `GET` | `/api/v1/calendar/feed/:file` | Công khai | `feed` |  |
 
----
+### Trụ Tri thức
 
-## 2. Space Module
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/knowledge/graph` | Đăng nhập | `getGraph` |  |
 
-| Endpoint | Mô tả |
-|---|---|
-| GET /spaces | Danh sách tất cả Space của user |
-| POST /spaces | Tạo Space mới |
-| GET /spaces/:id | Chi tiết một Space |
-| PATCH /spaces/:id | Cập nhật thông tin Space (tên, icon, color) |
-| DELETE /spaces/:id | Xóa Space (chuyển các Object con về Unassigned) |
+### Thông báo
 
-### POST /spaces — Tạo Space mới
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/notifications` | Đăng nhập | `list` |  |
+| `GET` | `/api/v1/notifications/unread-count` | Đăng nhập | `unreadCount` |  |
+| `GET` | `/api/v1/notifications/settings` | Đăng nhập | `getSettings` |  |
+| `PATCH` | `/api/v1/notifications/settings` | Đăng nhập | `updateSettings` |  |
+| `PATCH` | `/api/v1/notifications/read-all` | Đăng nhập | `markAllRead` |  |
+| `PATCH` | `/api/v1/notifications/:id/read` | Đăng nhập | `markRead` |  |
+| `DELETE` | `/api/v1/notifications/:id` | Đăng nhập | `remove` |  |
 
-**Request Body:**
-```json
-{
-  "name": "Đồ án tốt nghiệp",
-  "description": "Quản lý tiến độ ĐATN",
-  "icon": "🎓",
-  "color": "#6366f1",
-  "parentId": null
-}
-```
+### Mục (Object) & Vòng đời & Gán Space
 
-**Business Rules:**
-- `name` bắt buộc, không được để trống.
-- `parentId` (nếu có) phải thuộc về user hiện tại.
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `POST` | `/api/v1/objects` | Đăng nhập | `create` |  |
+| `GET` | `/api/v1/objects` | Đăng nhập | `findAll` |  |
+| `DELETE` | `/api/v1/objects/trash/empty` | Đăng nhập | `emptyTrash` |  |
+| `GET` | `/api/v1/objects/:id` | Đăng nhập | `findOne` |  |
+| `PATCH` | `/api/v1/objects/:id` | Đăng nhập | `update` |  |
+| `PATCH` | `/api/v1/objects/:id/lifecycle` | Đăng nhập | `updateLifecycle` |  |
+| `PATCH` | `/api/v1/objects/:id/convert-type` | Đăng nhập | `convertType` |  |
+| `DELETE` | `/api/v1/objects/:id` | Đăng nhập | `remove` |  |
+| `POST` | `/api/v1/objects/:id/spaces/:spaceId` | Đăng nhập | `attachToSpace` |  |
+| `DELETE` | `/api/v1/objects/:id/spaces/:spaceId` | Đăng nhập | `removeFromSpace` |  |
 
----
+### Trụ Kế hoạch
 
-## 3. Object Core Module (Task, Note, Event, Reference)
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/planning/overview` | Đăng nhập | `getOverview` |  |
 
-| Endpoint | Mô tả |
-|---|---|
-| GET /objects | Lấy danh sách Object (lọc theo type, status, spaceId, tagId, search) |
-| POST /objects | Tạo Object mới (tự động gán vào spaceId nếu có truyền) |
-| GET /objects/:id | Chi tiết Object kèm tags và relations |
-| PATCH /objects/:id | Cập nhật thuộc tính Object |
-| PATCH /objects/:id/lifecycle | Chuyển đổi trạng thái (ARCHIVE, TRASH, RESTORE) |
-| DELETE /objects/:id | Xóa vĩnh viễn (Hard delete từ Trash) |
+### Liên kết giữa các Object
 
-### POST /objects — Tạo Object mới
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `POST` | `/api/v1/relations` | Đăng nhập | `create` |  |
+| `GET` | `/api/v1/relations/object/:objectId` | Đăng nhập | `findByObjectId` |  |
+| `DELETE` | `/api/v1/relations/:id` | Đăng nhập | `remove` |  |
 
-**Request Body (Ví dụ tạo TASK):**
-```json
-{
-  "type": "TASK",
-  "title": "Hoàn thiện bản thiết kế API",
-  "description": "Mô tả chi tiết các endpoint",
-  "priority": "HIGH",
-  "dueDate": "2026-09-12T23:59:00.000Z",
-  "spaceId": "uuid-space-1",
-  "tagIds": ["uuid-tag-1"]
-}
-```
+### Báo cáo tuần
 
-**Business Rules:**
-- `title` bắt buộc, không được rỗng.
-- `type` bắt buộc thuộc một trong bốn loại: `TASK`, `NOTE`, `EVENT`, `REFERENCE`.
-- Nếu truyền `spaceId`, hệ thống tự động tạo bản ghi `SpaceObject` tương ứng.
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/reports/weekly` | Đăng nhập | `weekly` |  |
 
-### PATCH /objects/:id/lifecycle — Quản lý vòng đời
+### Không gian (Space)
 
-**Request Body:**
-```json
-{
-  "action": "TRASH" // Hợp lệ: "ARCHIVE", "TRASH", "RESTORE"
-}
-```
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `POST` | `/api/v1/spaces` | Đăng nhập | `create` |  |
+| `GET` | `/api/v1/spaces/templates` | Đăng nhập | `listTemplates` |  |
+| `POST` | `/api/v1/spaces/from-template` | Đăng nhập | `createFromTemplate` |  |
+| `GET` | `/api/v1/spaces` | Đăng nhập | `findAll` |  |
+| `GET` | `/api/v1/spaces/:id` | Đăng nhập | `findOne` |  |
+| `PATCH` | `/api/v1/spaces/:id` | Đăng nhập | `update` |  |
+| `PATCH` | `/api/v1/spaces/:spaceId/objects/:objectId` | Đăng nhập | `updatePlacement` |  |
+| `POST` | `/api/v1/spaces/:id/reorder` | Đăng nhập | `reorder` |  |
+| `DELETE` | `/api/v1/spaces/:id` | Đăng nhập | `remove` |  |
 
-**Business Rules:**
-- `TRASH`: Gán `deletedAt = now()`, ẩn khỏi mọi view và Space.
-- `RESTORE`: Gán `deletedAt = null`, đưa về `ACTIVE`.
-- `ARCHIVE`: Đưa vào lưu trữ, không kích hoạt thông báo nhắc việc.
+### Trụ Học tập
 
----
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `POST` | `/api/v1/study/notes/:objectId/sync-cards` | Đăng nhập | `syncCards` |  |
+| `GET` | `/api/v1/study/notes/:objectId/cards` | Đăng nhập | `listCards` |  |
+| `GET` | `/api/v1/study/due` | Đăng nhập | `getDue` |  |
+| `POST` | `/api/v1/study/cards/:id/review` | Đăng nhập | `review` |  |
+| `POST` | `/api/v1/study/sessions` | Đăng nhập | `createSession` |  |
+| `GET` | `/api/v1/study/stats` | Đăng nhập | `getStats` |  |
 
-## 4. Placement Module (Gán & Gỡ Space)
+### Góc nhìn & Tổng quan
 
-| Endpoint | Mô tả |
-|---|---|
-| POST /spaces/:spaceId/objects/:objectId | Đặt Object vào Space |
-| DELETE /spaces/:spaceId/objects/:objectId | Gỡ Object khỏi Space (không xóa Object gốc) |
-
-### DELETE /spaces/:spaceId/objects/:objectId — Gỡ khỏi Space
-
-**Business Rules:**
-- Chỉ xóa bản ghi vị trí trong `space_objects`.
-- Dữ liệu gốc trong `objects` vẫn an toàn tuyệt đối.
-- Nếu Object không còn nằm trong Space nào khác, tự động xuất hiện ở mục Unassigned.
-
-**Response 200:**
-```json
-{
-  "message": "Đã gỡ Object khỏi Space thành công"
-}
-```
+| Phương thức | Đường dẫn | Quyền | Hàm xử lý | Ghi chú |
+|---|---|---|---|---|
+| `GET` | `/api/v1/views/kanban` | Đăng nhập | `getKanban` |  |
+| `GET` | `/api/v1/views/calendar` | Đăng nhập | `getCalendar` |  |
+| `GET` | `/api/v1/views/summary` | Đăng nhập | `getSummary` |  |
+| `GET` | `/api/v1/dashboard/summary` | Đăng nhập | `getSummary` |  |
 
 ---
 
-## 5. Relation Module (Liên kết Chéo giữa các Object)
+## 3. Quy tắc nghiệp vụ chính của API
 
-| Endpoint | Mô tả |
-|---|---|
-| POST /relations | Tạo liên kết giữa 2 Object bất kỳ |
-| GET /objects/:id/relations | Lấy toàn bộ liên kết chiều đi và đến của một Object |
-| DELETE /relations/:id | Xóa liên kết giữa 2 Object |
+**Object (Task / Note / Event / Reference)**
+- `title` bắt buộc (≤ 255 ký tự). **Event** bắt buộc có `startAt`, và `endAt` (nếu có) phải sau `startAt`. **Reference** bắt buộc có `url` hợp lệ.
+- `status` chỉ có ở Task (mặc định `TODO`); `priority` chỉ có ở Task và Event; `estimatedMinutes` (1–10080) chỉ có ở Task. Các ràng buộc này cũng được CSDL kiểm tra bằng `CHECK`.
+- Không có luật "hạn chót/sự kiện không được ở quá khứ" và không ép thứ tự trạng thái — người dùng cần ghi lại việc đã xảy ra hoặc đã trễ.
+- `PATCH /objects/:id` **không** đổi được `type` hay `lifecycle`; đổi loại dùng `convert-type`, đổi vòng đời dùng `lifecycle` (một nguồn sự thật duy nhất).
 
-### POST /relations — Tạo liên kết
+**Vòng đời:** `ACTIVE ⇄ ARCHIVED`, `→ TRASH` (soft delete) `→` xoá vĩnh viễn (chỉ được khi đang ở Thùng rác). Khôi phục từ Thùng rác về đúng trạng thái trước đó (Lưu trữ hoặc Hoạt động). Vào Thùng rác/Lưu trữ thì dọn các nhắc hạn chưa đọc.
 
-**Request Body:**
-```json
-{
-  "fromObjectId": "uuid-object-task",
-  "toObjectId": "uuid-object-note",
-  "relationType": "REFERENCES"
-}
-```
+**Space:** xoá Space chỉ gỡ Object ra (Object không mất; không còn Space nào thì về Hộp nhận). `settings` chỉ nhận cờ `enableKanban`, `enableCalendar`, `enableProgress` kiểu boolean. `GET /spaces/:id` kèm `progress {done, total}`.
 
-**Business Rules:**
-- `fromObjectId` không được trùng với `toObjectId` (không tự liên kết).
-- Cả hai Object phải thuộc quyền sở hữu của user đăng nhập hiện tại.
+**Liên kết (Relation):** 4 loại `RELATES_TO`, `REFERENCES`, `DEPENDS_ON`, `PARENT_OF`. `DEPENDS_ON`/`PARENT_OF` chỉ giữa các Task, **cấm tạo vòng** (kiểm tra bằng duyệt đồ thị), một việc chỉ có một việc cha. Không liên kết với mục trong Thùng rác. Liên kết có cờ `auto = true` được sinh tự động từ `[[Tiêu đề]]` trong nội dung và tự xoá khi không còn được nhắc.
 
----
+**Lặp lại:** `recurrence {freq: DAILY|WEEKLY|MONTHLY, interval 1–52, until?}` chỉ cho Task (cần `dueDate`) và Event (cần `startAt`). Task lặp được đánh dấu xong → sinh lần kế tiếp (bỏ qua các lần đã lỡ); Event lặp → bộ quét sinh lần kế tiếp khi sự kiện đã bắt đầu.
 
-## 6. Views & Dashboard Module
+**Phản hồi bổ sung khi `PATCH /objects/:id`:** `nextOccurrenceId` (đã sinh lần lặp kế tiếp) và `planningWarnings` (dời hạn làm trễ các việc đang chờ việc này).
 
-| Endpoint | Mô tả |
-|---|---|
-| GET /views/kanban | Lấy danh sách Object gom nhóm theo trạng thái (TODO, IN_PROGRESS, DONE) |
-| GET /views/calendar | Lấy các Object có mốc thời gian trong khoảng `?from=&to=` |
-| GET /views/timeline | Lấy danh sách Object sắp xếp theo dòng thời gian |
-| GET /views/unassigned | Lấy toàn bộ các Object chưa được gán vào Space nào |
-| GET /dashboard/summary | Thống kê số lượng theo status, task quá hạn, sự kiện hôm nay |
+**Học tập:** thẻ sinh từ dòng `Câu hỏi :: Trả lời` trong Note; ôn theo thuật toán SM-2 (4 mức chấm `AGAIN/HARD/GOOD/EASY`); thẻ của Note liên kết với việc sắp đến hạn (3 ngày) được xếp lên đầu.
 
-**Response GET /dashboard/summary (ví dụ):**
-```json
-{
-  "counts": {
-    "tasksTotal": 15,
-    "todo": 6,
-    "inProgress": 5,
-    "done": 4,
-    "overdue": 1,
-    "notesTotal": 10,
-    "eventsTotal": 3,
-    "referencesTotal": 8
-  },
-  "todayEvents": [ ... ],
-  "upcomingDeadlines": [ ... ]
-}
-```
+**Thông báo:** quét mỗi 5 phút; chống trùng bằng `(user_id, dedupe_key)` duy nhất; giờ yên lặng; loại thông báo: `DEADLINE_SOON`, `OVERDUE`, `EVENT_SOON`, `DAILY_DIGEST` (07:00), `STUDY_DUE`, `UNBLOCKED`, `SYSTEM`.
+
+**Admin:** chỉ thông tin tài khoản và số liệu tổng hợp — **không bao giờ** trả tiêu đề/nội dung/URL/tên Không gian của người dùng. Không tự khoá mình, không khoá Admin khác. Mọi hành động ghi vào nhật ký `admin_audit_logs`.
+
+**Lịch `.ics`:** địa chỉ công khai bảo vệ bằng token bí mật 64 ký tự (tạo lại được để huỷ địa chỉ cũ); chỉ chứa tiêu đề.
+
+**Xuất dữ liệu:** `GET /account/export` trả toàn bộ dữ liệu của chính người dùng, không chứa mật khẩu/token.
 
 ---
 
-## 7. Notification Module & Tags
-
-| Endpoint | Mô tả |
-|---|---|
-| GET /notifications | Lấy danh sách thông báo nhắc việc của user |
-| PATCH /notifications/:id/read | Đánh dấu một thông báo đã đọc |
-| PATCH /notifications/read-all | Đánh dấu tất cả thông báo đã đọc |
-| GET /tags | Danh sách Tag của user |
-| POST /tags | Tạo Tag mới |
-| DELETE /tags/:id | Xóa Tag |
-
----
-
-*Tài liệu tiếp theo trong chuỗi: [08_UI_UX_Design.md](08_UI_UX_Design.md)*  
+*Tài liệu tiếp theo trong chuỗi: [08_UI_UX_Design.md](08_UI_UX_Design.md)*
 *Quay lại mục lục: [docs/README.md](README.md)*

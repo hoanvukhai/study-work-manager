@@ -1,143 +1,95 @@
-# 09_Implementation.md — Ghi chú triển khai
+# 09_Implementation.md — Ghi chú triển khai mã nguồn
 
 > Tài liệu trước: [07_API_Design.md](07_API_Design.md) và [08_UI_UX_Design.md](08_UI_UX_Design.md)
 > Tài liệu sau: [10_Testing.md](10_Testing.md)
 
 ---
 
-## 1. Môi trường phát triển
+## 1. Công nghệ và môi trường
 
-| Công cụ | Phiên bản | Ghi chú |
+| Thành phần | Phiên bản | Ghi chú |
 |---|---|---|
-| Node.js | 20.x LTS | Môi trường runtime JavaScript/TypeScript |
-| npm | 10.x | Quản lý gói |
-| PostgreSQL | 16.x | Cơ sở dữ liệu chính (8 bảng Lần 3) |
-| Prisma ORM | 5.x | ORM kết nối CSDL và sinh TypeScript client |
-| NestJS | 10.x | Framework Backend |
-| Next.js | 14.x / 15.x | Framework Frontend (App Router) |
+| Node.js | 20 LTS | |
+| NestJS | 10 | Backend, kiến trúc module (Controller → Service → Prisma) |
+| Prisma ORM | 5 | Truy cập CSDL, **migration** có đánh số |
+| PostgreSQL | 16 | |
+| Next.js | 14 (App Router) | Giao diện, TypeScript |
+| TanStack Query | 5 | Gọi API, lưu tạm và tự làm mới dữ liệu |
+| Jest + Supertest | 29 / 6 | Kiểm thử |
+| Thư viện nổi bật | `@nestjs/schedule`, `@nestjs/throttler`, `helmet`, `nodemailer`, `react-markdown`, `bcrypt` | |
 
-### Cài đặt môi trường
+Thuật toán **tự cài đặt** (không dùng thư viện): phát hiện vòng phụ thuộc, chấm điểm gợi ý "Hôm nay làm gì?", SM-2, tính lần lặp kế tiếp, bố cục đồ thị lực đẩy–kéo (Fruchterman–Reingold), sinh iCalendar.
 
-```bash
-# 1. Clone repository
-git clone https://github.com/hoanvukhai/study-work-manager.git
-cd study-work-manager
-
-# 2. Khởi tạo Backend (NestJS + Prisma)
-cd backend
-npm install
-cp .env.example .env          # Điền DATABASE_URL, JWT_SECRET
-npx prisma migrate dev         # Chạy migration tạo 8 bảng dữ liệu
-npx prisma db seed             # Nạp dữ liệu mẫu
-npm run start:dev
-
-# 3. Khởi tạo Frontend (Next.js)
-cd ../frontend
-npm install
-cp .env.example .env.local     # Điền NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
-npm run dev
-```
-
----
-
-## 2. Cấu trúc Backend (NestJS — Kiến trúc Lần 3)
-
-### Danh mục các Module chính:
-* `auth/`: Xác thực tài khoản (JWT, Register, Login, Me).
-* `space/`: Quản lý Không gian học tập & làm việc.
-* `object/`: **Hạt nhân đa hình** xử lý CRUD cho Task, Note, Event, Reference; quản lý vòng đời dữ liệu (`ACTIVE`, `ARCHIVE`, `TRASH`).
-* `space-object/`: Xử lý bảng trung gian n-n (gán/gỡ Object vào Space, vị trí position, ghim pinned).
-* `relation/`: Xử lý liên kết chéo 2 chiều giữa 2 Object bất kỳ.
-* `view/`: Cung cấp dữ liệu theo góc nhìn (Kanban lọc theo Task status, Calendar lọc theo thời gian, Unassigned lấy Inbox).
-* `notification/` & `tag/`: Xử lý nhắc nhở và gắn thẻ phân loại.
+## 2. Cấu trúc Backend (`backend/src/`)
 
 ```
-backend/src/
-├── auth/
-├── space/
-├── object/                      ← Module hạt nhân đa hình
-│   ├── object.module.ts
-│   ├── object.controller.ts     ← Định tuyến API /objects
-│   ├── object.service.ts        ← Nghiệp vụ xử lý đa hình & vòng đời
-│   ├── object.repository.ts     ← Truy vấn Prisma
-│   └── dto/
-│       ├── create-object.dto.ts ← DTO tạo Task/Note/Event/Ref
-│       ├── update-object.dto.ts
-│       └── lifecycle-action.dto.ts
-├── space-object/                ← Gán / gỡ Object vào Space
-├── relation/                    ← Liên kết chéo giữa các Object
-├── view/                        ← Các góc nhìn Kanban, Calendar, Dashboard
-└── common/
-    ├── guards/jwt-auth.guard.ts
-    └── filters/http-exception.filter.ts
+src/
+├── main.ts                    # Khởi động: helmet, CORS, ValidationPipe, bộ lọc lỗi, Swagger
+├── app.module.ts              # Gắn các module + ThrottlerGuard toàn cục + ScheduleModule
+├── common/                    # Dùng chung: bộ lọc lỗi, múi giờ Việt Nam (timezone.ts)
+├── prisma/                    # PrismaService (global)
+├── auth/                      # Đăng ký/đăng nhập, JWT, hồ sơ, đổi/quên/đặt lại mật khẩu, khoá tạm
+├── space/                     # Space: CRUD, tiến độ, ghim/sắp xếp, công cụ, mẫu dựng sẵn (templates.ts)
+├── object/                    # Object: CRUD, vòng đời, chuyển loại, gán Space, phân trang
+├── relation/                  # Liên kết + luật phụ thuộc/việc con (cấm vòng)
+├── view/                      # Kanban, Lịch, Dashboard tổng quan
+├── planning/                  # Trụ Kế hoạch: graph.ts (vòng), scoring.ts (chấm điểm), overview
+├── study/                     # Trụ Học tập: sm2.ts, cards.ts, thẻ, phiên học, thống kê
+├── knowledge/                 # Trụ Tri thức: mentions.ts ([[ ]]), đồng bộ liên kết, đồ thị
+├── recurrence/                # Luật lặp (recurrence.ts) + sinh lần kế tiếp (cron)
+├── notifications/             # Bộ máy thông báo: rules.ts, quét định kỳ, bản tin, cài đặt
+├── calendar/                  # Xuất .ics (ics.ts) bằng token bí mật
+├── reports/                   # Báo cáo tuần
+├── account/                   # Xuất dữ liệu cá nhân
+├── admin/                     # Quản trị: RolesGuard, người dùng, thống kê, thông báo hệ thống, nhật ký
+└── mail/                      # Gửi email (SMTP hoặc ghi log ở chế độ dev)
 ```
 
-### Ví dụ DTO Hạt nhân: `CreateObjectDto`
+**Nguyên tắc thiết kế mã:**
+- **Hàm thuần tách khỏi truy cập CSDL** (`graph.ts`, `scoring.ts`, `sm2.ts`, `recurrence.ts`, `rules.ts`, `ics.ts`...) → test được chính xác bằng unit test, không cần CSDL.
+- **Mọi truy vấn dữ liệu người dùng đều lọc theo `userId`** ngay trong Service; lỗi "không tìm thấy" và "không thuộc về bạn" cùng trả 404.
+- **Ràng buộc đặt ở nhiều tầng:** DTO (`class-validator`) → Service (luật nghiệp vụ) → CSDL (`CHECK`, `UNIQUE`, khoá ngoại) — để dữ liệu sai bị chặn dù đi đường nào.
+- Thao tác nhiều bước dùng **transaction** (tạo Object + gán Space, sinh lần lặp, tạo Space từ mẫu, đồng bộ liên kết).
+- Mọi giá trị thời gian lưu UTC; phép tính theo ngày dùng múi giờ Việt Nam (`common/timezone.ts`).
 
-```typescript
-// backend/src/object/dto/create-object.dto.ts
-// REF: 02_Requirement.md (FR-TASK, FR-NOTE, FR-EVENT, FR-REF) & 07_API_Design.md
-import { IsString, IsOptional, IsEnum, IsDateString, IsUUID, IsObject } from 'class-validator';
+## 3. Cấu trúc Frontend (`frontend/`)
 
-export enum ObjectType {
-  TASK = 'TASK',
-  NOTE = 'NOTE',
-  EVENT = 'EVENT',
-  REFERENCE = 'REFERENCE',
-}
-
-export class CreateObjectDto {
-  @IsEnum(ObjectType)
-  type: ObjectType;
-
-  @IsString()
-  title: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsEnum(['TODO', 'IN_PROGRESS', 'DONE'])
-  status?: string;
-
-  @IsOptional()
-  @IsEnum(['LOW', 'MEDIUM', 'HIGH', 'URGENT'])
-  priority?: string;
-
-  @IsOptional()
-  @IsDateString()
-  dueDate?: string;
-
-  @IsOptional()
-  @IsDateString()
-  startAt?: string;
-
-  @IsOptional()
-  @IsDateString()
-  endAt?: string;
-
-  @IsOptional()
-  @IsString()
-  url?: string;
-
-  @IsOptional()
-  @IsObject()
-  metadata?: Record<string, any>;
-
-  @IsOptional()
-  @IsUUID('4')
-  spaceId?: string; // Tùy chọn: tự động gán vào Space nếu được truyền
-}
+```
+app/
+├── login, register, forgot-password, reset-password   # Công khai
+└── (dashboard)/                                       # Cần đăng nhập, có Sidebar + Header
+    ├── page.tsx (Tổng quan: "Hôm nay làm gì?", ôn tập)
+    ├── spaces/[id], kanban, calendar, inbox, archive, trash
+    ├── study, graph, reports, notifications, profile, admin
+components/
+├── ui/            # Bộ component dùng chung: Button, Input, Dialog, ConfirmDialog, Toast (có Hoàn tác), ...
+├── layout/        # Sidebar, Header, MobileNav, CommandPalette (Ctrl+K)
+├── objects/       # ObjectDetailDrawer (khung chi tiết duy nhất), CreateObjectModal, RecurrenceField
+├── knowledge/     # LinkTextarea ([[ ]]), MarkdownView, GraphView (bản đồ)
+├── planning/, study/, notifications/, spaces/, views/
+hooks/             # Hook TanStack Query cho từng nhóm API
+lib/               # Gọi API, ngữ cảnh đăng nhập/giao diện, datetime.ts (xử lý giờ địa phương), graph-layout.ts
 ```
 
----
+**Quy ước giao diện:** CSS Modules + biến màu (sáng/tối); không dùng `confirm()`/`alert()` (dùng `ConfirmDialog`/`Toast`); **một khung chi tiết duy nhất** (`ObjectDetailDrawer`) thay cho nhiều hộp thoại sửa rời rạc; dữ liệu server luôn đi qua TanStack Query để các trang không lệch nhau; không dùng `toISOString()` để hiển thị thời gian (xem `lib/datetime.ts`).
 
-## 3. Quy ước Frontend (Next.js)
+Markdown được hiển thị bằng `react-markdown` **không cho HTML thô** (chống XSS) và tự lọc liên kết nguy hiểm.
 
-* Sử dụng **App Router** (`app/` directory).
-* Quản lý trạng thái: React Query / TanStack Query (caching API) + Zustand (quản lý state cục bộ).
-* Styling: Vanilla CSS kết hợp cấu trúc Design System Google Neutral Palette (Off-white `#f8f9fa`, Border `#dadce0`, Dark Charcoal `#202124`).
+## 4. Các điểm kỹ thuật đáng chú ý
+
+| Vấn đề | Cách giải quyết |
+|---|---|
+| Cấm vòng phụ thuộc A→B→C→A | Khi tạo liên kết, duyệt DFS từ đích xem có tới được nguồn không (`planning/graph.ts`) |
+| Gợi ý "Hôm nay làm gì?" giải thích được | Điểm = độ gấp theo hạn + ưu tiên + đang làm dở + số việc được mở khoá; mỗi cộng điểm sinh một "lý do" hiển thị cho người dùng |
+| Ôn tập đúng lúc sắp quên | SM-2 theo bản gốc (cập nhật hệ số dễ trước, rồi mới tính khoảng cách); Quên → hiện lại sau 10 phút |
+| Ôn theo ngữ cảnh | Thẻ của Note có liên kết với việc sắp đến hạn (3 ngày) được xếp trước |
+| `[[Tiêu đề]]` tự thành liên kết | Đồng bộ khi lưu; chỉ xoá liên kết `auto`, không đụng liên kết tạo tay; trùng tiêu đề lấy mục mới cập nhật nhất |
+| Chống thông báo trùng | Khoá duy nhất `(user_id, dedupe_key)`; đổi hạn chót thì khoá đổi nên báo lại đúng |
+| Việc lặp không sinh trùng | Cờ `recurrence_spawned`; chỉ đặt lại khi luật thật sự đổi (lỗi này từng suýt xảy ra, có test hồi quy) |
+| Lỗi múi giờ | Hiển thị theo giờ địa phương (`lib/datetime.ts`); tính theo ngày ở máy chủ theo giờ Việt Nam; test ở biên 23:30/00:30 |
+| Bản đồ tri thức mượt | Bố cục lực đẩy–kéo tự viết, tính một lần khi dữ liệu đổi, tự căn vừa khung; giới hạn 400 nút |
+| Lịch `.ics` an toàn | Token ngẫu nhiên 64 ký tự (tạo lại được), chỉ đưa tiêu đề, tài khoản bị khoá → 404 |
+| Đặt lại mật khẩu an toàn | Token ngẫu nhiên, **chỉ lưu băm SHA-256**, hết hạn 30 phút, dùng một lần; phản hồi giống nhau dù email có tồn tại hay không |
 
 ---
 

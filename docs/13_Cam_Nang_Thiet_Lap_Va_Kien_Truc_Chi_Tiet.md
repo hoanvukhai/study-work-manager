@@ -7,6 +7,8 @@
 > **Commit tham chiếu:** `66dd079` ([GitHub Repository](https://github.com/hoanvukhai/study-work-manager.git))  
 > **Mục tiêu tài liệu:** Ghi lại chi tiết, minh bạch toàn bộ các bước thiết lập kỹ thuật từ A-Z, giải thích cặn kẽ từng câu lệnh, phân tích nguyên nhân - giải pháp của các quyết định kiến trúc, giúp lập trình viên vừa học, vừa hiểu sâu bản chất hệ thống.
 
+> ⚠️ **Tài liệu lịch sử (25/09/2026).** Ghi lại các bước khởi tạo dự án ở thời điểm đó và **đã lỗi thời ở nhiều chỗ**: schema trong tài liệu là bản cũ (còn enum `INBOX/SOMEDAY`, `CHILD_OF/DUPLICATES`, có Tag), dùng `db push` thay cho migration, mật khẩu tối thiểu 6 ký tự, thời hạn token 7 ngày/15 phút... Bản hiện hành: CSDL → [06](06_Database_Design.md), API → [07](07_API_Design.md), cấu trúc mã → [09](09_Implementation.md), triển khai → [11](11_Deployment.md).
+
 ---
 
 ## MỤC LỤC
