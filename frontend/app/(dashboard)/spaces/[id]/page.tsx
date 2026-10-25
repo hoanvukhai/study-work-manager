@@ -65,6 +65,8 @@ export default function SpaceDetailPage() {
   const placementMutation = useUpdatePlacement();
   const reorderMutation = useReorderSpace();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropOverId, setDropOverId] = useState<string | null>(null);
 
   // Local state
   const [editingName, setEditingName] = useState(false);
@@ -236,6 +238,28 @@ export default function SpaceDetailPage() {
     placementMutation.mutate(
       { spaceId, objectId: item.id, patch: { isPinned: !pinned } },
       { onError: () => addToast({ title: 'Lỗi', description: 'Không ghim được mục này.', variant: 'danger' }) },
+    );
+  };
+
+  // Kéo thả: thả mục đang kéo vào vị trí của mục đích; chỉ trong cùng nhóm ghim / không ghim
+  const dropOn = (target: AppObject) => {
+    const from = dragId;
+    setDragId(null);
+    setDropOverId(null);
+    if (!from || from === target.id) return;
+    const ids = sortedAll.map(o => o.id);
+    const i = ids.indexOf(from);
+    const j = ids.indexOf(target.id);
+    if (i < 0 || j < 0) return;
+    if (placementOf(sortedAll[i]).isPinned !== placementOf(sortedAll[j]).isPinned) {
+      addToast({ title: 'Không thể sắp xếp', description: 'Mục ghim và mục thường được sắp xếp riêng.', variant: 'info' });
+      return;
+    }
+    ids.splice(i, 1);
+    ids.splice(j, 0, from);
+    reorderMutation.mutate(
+      { spaceId, objectIds: ids },
+      { onError: () => addToast({ title: 'Lỗi', description: 'Không đổi được thứ tự.', variant: 'danger' }) },
     );
   };
 
@@ -643,7 +667,17 @@ export default function SpaceDetailPage() {
                   key={item.id}
                   className={`${styles.listItem} ${isDone ? styles.listItemDone : ''}`}
                   onClick={() => setSelectedDrawerObjectId(item.id)}
-                  style={{ cursor: 'pointer' }}
+                  draggable={noFilter}
+                  onDragStart={noFilter ? e => { setDragId(item.id); e.dataTransfer.effectAllowed = 'move'; } : undefined}
+                  onDragOver={noFilter && dragId ? e => { e.preventDefault(); setDropOverId(item.id); } : undefined}
+                  onDragLeave={noFilter ? () => setDropOverId(id => (id === item.id ? null : id)) : undefined}
+                  onDrop={noFilter ? e => { e.preventDefault(); dropOn(item); } : undefined}
+                  onDragEnd={noFilter ? () => { setDragId(null); setDropOverId(null); } : undefined}
+                  style={{
+                    cursor: noFilter ? 'grab' : 'pointer',
+                    opacity: dragId === item.id ? 0.4 : 1,
+                    outline: dropOverId === item.id && dragId !== item.id ? `2px dashed ${color}` : undefined,
+                  }}
                 >
                   {isTask ? (
                     <button

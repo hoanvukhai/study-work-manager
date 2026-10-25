@@ -45,6 +45,8 @@ import {
 import { RelationType, RELATION_LABELS } from '@/lib/relations-api';
 import NoteCards from '@/components/study/NoteCards';
 import LinkTextarea from '@/components/knowledge/LinkTextarea';
+import MarkdownView from '@/components/knowledge/MarkdownView';
+import mdStyles from '@/components/knowledge/Markdown.module.css';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -143,6 +145,7 @@ export default function ObjectDetailDrawer({
   const [relationSearch, setRelationSearch] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [descMode, setDescMode] = useState<'edit' | 'preview'>('edit');
 
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -157,6 +160,7 @@ export default function ObjectDetailDrawer({
       setStartAt(isoToLocalInput(object.startAt));
       setEndAt(isoToLocalInput(object.endAt));
       setUrl(object.url || '');
+      setDescMode(object.type === 'NOTE' && object.description ? 'preview' : 'edit');
       setEstimated(object.estimatedMinutes ? String(object.estimatedMinutes) : '');
       setIsDirty(false);
     }
@@ -760,7 +764,36 @@ export default function ObjectDetailDrawer({
             )}
 
             <div className={styles.section}>
-              <span className={styles.sectionTitle}>Nội dung / Ghi chú</span>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span className={styles.sectionTitle}>Nội dung / Ghi chú</span>
+                <div className={mdStyles.modeBar} role="tablist" aria-label="Chế độ nội dung">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={descMode === 'edit'}
+                    className={`${mdStyles.modeBtn} ${descMode === 'edit' ? mdStyles.modeBtnActive : ''}`}
+                    onClick={() => setDescMode('edit')}
+                  >
+                    Soạn
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={descMode === 'preview'}
+                    className={`${mdStyles.modeBtn} ${descMode === 'preview' ? mdStyles.modeBtnActive : ''}`}
+                    onClick={() => setDescMode('preview')}
+                  >
+                    Xem
+                  </button>
+                </div>
+              </div>
+              {descMode === 'preview' ? (
+                <MarkdownView
+                  text={description}
+                  resolve={(t) => allObjects.find((o) => o.id !== object.id && o.title.toLowerCase() === t.toLowerCase())?.id}
+                  onOpen={(id) => onSelectObject && onSelectObject(id)}
+                />
+              ) : (
               <LinkTextarea
                 className={styles.textarea}
                 placeholder="Nhập ghi chú hoặc mô tả chi tiết... Gõ [[ để liên kết tới mục khác."
@@ -773,6 +806,7 @@ export default function ObjectDetailDrawer({
                 selfId={object.id}
                 onOpen={(id) => onSelectObject && onSelectObject(id)}
               />
+              )}
             </div>
 
             {object.type === 'NOTE' && (
