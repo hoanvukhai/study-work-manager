@@ -1,4 +1,6 @@
-import { IsInt, Min, Max, IsString, IsNotEmpty, IsOptional, IsEnum, MaxLength, IsUUID, IsDateString } from 'class-validator';
+import { ValidateNested, IsInt, Min, Max, IsString, IsNotEmpty, IsOptional, IsEnum, MaxLength, IsUUID, IsDateString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { RecurrenceDto } from './recurrence.dto';
 import { ObjectType, TaskStatus, Priority } from '@prisma/client';
 
 export class CreateObjectDto {
@@ -47,6 +49,12 @@ export class CreateObjectDto {
   @IsOptional()
   @IsUUID('4', { message: 'Mã Không gian không hợp lệ' })
   spaceId?: string;
+
+  /** Luật lặp lại (chỉ Task có hạn chót / Event có giờ bắt đầu). null = bỏ lặp. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RecurrenceDto)
+  recurrence?: RecurrenceDto | null;
 
   @IsOptional()
   metadata?: any;

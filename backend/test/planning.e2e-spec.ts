@@ -82,6 +82,40 @@ describe('Trụ Kế hoạch (e2e) — phụ thuộc, việc con, gợi ý hôm 
     });
   });
 
+  describe('Cảnh báo khi dời hạn', () => {
+    const day = 24 * 3600 * 1000;
+
+    it('dời hạn việc tiền đề vượt hạn của việc đang chờ nó → trả planningWarnings', async () => {
+      const base = Date.now();
+      const prereq = (await createObj({ type: 'TASK', title: 'Tiền đề dời hạn', dueDate: new Date(base + 2 * day).toISOString() })).id;
+      const next = (await createObj({ type: 'TASK', title: 'Việc phía sau', dueDate: new Date(base + 4 * day).toISOString() })).id;
+      const later = (await createObj({ type: 'TASK', title: 'Việc rất xa', dueDate: new Date(base + 30 * day).toISOString() })).id;
+      await link(next, prereq, 'DEPENDS_ON').expect(201);
+      await link(later, prereq, 'DEPENDS_ON').expect(201);
+
+      // Dời tiền đề tới +6 ngày: vượt hạn của "Việc phía sau" (+4) nhưng không vượt "Việc rất xa" (+30)
+      const res = await http
+        .patch(`/api/v1/objects/${prereq}`)
+        .set(auth(token))
+        .send({ dueDate: new Date(base + 6 * day).toISOString() })
+        .expect(200);
+      expect(res.body.planningWarnings.map((w: { id: string }) => w.id)).toEqual([next]);
+
+      // Dời sớm hơn thì không cảnh báo
+      const earlier = await http.patch(`/api/v1/objects/${prereq}`).set(auth(token)).send({ dueDate: new Date(base + 1 * day).toISOString() }).expect(200);
+      expect(earlier.body.planningWarnings).toBeUndefined();
+    });
+
+    it('việc phía sau đã xong thì không cảnh báo', async () => {
+      const base = Date.now();
+      const prereq = (await createObj({ type: 'TASK', title: 'Tiền đề B', dueDate: new Date(base + 2 * day).toISOString() })).id;
+      const next = (await createObj({ type: 'TASK', title: 'Việc B đã xong', dueDate: new Date(base + 3 * day).toISOString(), status: 'DONE' })).id;
+      await link(next, prereq, 'DEPENDS_ON').expect(201);
+      const res = await http.patch(`/api/v1/objects/${prereq}`).set(auth(token)).send({ dueDate: new Date(base + 9 * day).toISOString() }).expect(200);
+      expect(res.body.planningWarnings).toBeUndefined();
+    });
+  });
+
   describe('GET /planning/overview', () => {
     it('việc bị chặn không được gợi ý; xong tiền đề thì được mở khoá', async () => {
       const prereq = (await createObj({ type: 'TASK', title: 'Tiền đề X' })).id;

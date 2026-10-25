@@ -1,4 +1,6 @@
-import { IsInt, Min, Max, IsString, IsOptional, IsEnum, MaxLength, IsDateString } from 'class-validator';
+import { ValidateNested, IsInt, Min, Max, IsString, IsOptional, IsEnum, MaxLength, IsDateString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { RecurrenceDto } from './recurrence.dto';
 import { ObjectType, TaskStatus, Priority, ObjectLifecycle } from '@prisma/client';
 
 export class UpdateObjectDto {
@@ -40,6 +42,12 @@ export class UpdateObjectDto {
   @Min(1)
   @Max(10080)
   estimatedMinutes?: number | null;
+
+  /** Luật lặp lại (chỉ Task có hạn chót / Event có giờ bắt đầu). null = bỏ lặp. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RecurrenceDto)
+  recurrence?: RecurrenceDto | null;
 
   @IsOptional()
   metadata?: any;

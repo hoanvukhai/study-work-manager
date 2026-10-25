@@ -6,6 +6,7 @@ import { UpdateObjectDto } from './dto/update-object.dto';
 import { QueryObjectsDto } from './dto/query-objects.dto';
 import { KnowledgeService } from '../knowledge/knowledge.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { RecurrenceService } from '../recurrence/recurrence.service';
 import { ObjectLifecycle, ObjectType, TaskStatus, Priority } from '@prisma/client';
 
 /** Giới hạn cứng số mục trả về một lần (chống truy vấn quá nặng). */
@@ -17,6 +18,7 @@ export class ObjectsService {
     private readonly prisma: PrismaService,
     private readonly knowledge: KnowledgeService,
     private readonly notifications: NotificationsService,
+    private readonly recurrence: RecurrenceService,
   ) {}
 
   async create(userId: string, dto: CreateObjectDto) {
@@ -50,6 +52,8 @@ export class ObjectsService {
       }
     }
 
+    this.assertRecurrenceAllowed(dto.type, dto.recurrence, dto.type === ObjectType.TASK ? dto.dueDate : dto.startAt);
+
     const defaultStatus = dto.type === ObjectType.TASK ? (dto.status ?? TaskStatus.TODO) : null;
     const defaultPriority =
       dto.type === ObjectType.TASK || dto.type === ObjectType.EVENT
@@ -71,6 +75,7 @@ export class ObjectsService {
           endAt: dto.endAt ? new Date(dto.endAt) : null,
           url: dto.url?.trim() || null,
           estimatedMinutes: dto.type === ObjectType.TASK ? (dto.estimatedMinutes ?? null) : null,
+          ...(dto.recurrence && { recurrence: dto.recurrence as unknown as Prisma.InputJsonValue }),
           metadata: dto.metadata ?? {},
           lifecycle: ObjectLifecycle.ACTIVE,
         },
@@ -186,6 +191,21 @@ export class ObjectsService {
       }
     }
 
+    // Luật lặp: kiểm tra theo kết quả sau khi sửa (luật mới + ngày mới)
+    const finalRule = dto.recurrence !== undefined ? dto.recurrence : (existing.recurrence as unknown);
+    const finalDate =
+      existing.type === ObjectType.TASK
+        ? dto.dueDate !== undefined ? dto.dueDate : existing.dueDate
+        : dto.startAt !== undefined ? dto.startAt : existing.startAt;
+    this.assertRecurrenceAllowed(existing.type, finalRule, finalDate);
+
+    const normRule = (r: unknown) => {
+      if (!r) return null;
+      const x = r as { freq: string; interval: number; until?: string | null };
+      return JSON.stringify({ freq: x.freq, interval: x.interval, until: x.until ? new Date(x.until).toISOString() : null });
+    };
+    const ruleChanged = dto.recurrence !== undefined && normRule(dto.recurrence) !== normRule(existing.recurrence);
+
     // BUG-06: Không cho đổi type và lifecycle qua API sửa thường
     await this.prisma.object.update({
       where: { id },
@@ -202,6 +222,11 @@ export class ObjectsService {
         ...(dto.url !== undefined && { url: dto.url?.trim() || null }),
         ...(dto.estimatedMinutes !== undefined && existing.type === ObjectType.TASK && { estimatedMinutes: dto.estimatedMinutes }),
         ...(dto.metadata !== undefined && { metadata: dto.metadata }),
+        // Chỉ ghi khi luật thật sự đổi — Drawer gửi lại nguyên luật mỗi lần lưu, không được làm "quên" việc đã sinh lần kế tiếp
+        ...(ruleChanged && {
+          recurrence: dto.recurrence === null ? Prisma.DbNull : (dto.recurrence as unknown as Prisma.InputJsonValue),
+          recurrenceSpawned: false,
+        }),
       },
     });
 
@@ -214,12 +239,32 @@ export class ObjectsService {
       await this.notifications.onTaskFinished(userId, id);
     }
 
+    // Task lặp lại vừa xong → sinh lần kế tiếp
+    let spawnedId: string | null = null;
+    if (existing.type === ObjectType.TASK && dto.status === TaskStatus.DONE && existing.status !== TaskStatus.DONE) {
+      spawnedId = await this.recurrence.spawnNext(id);
+    }
+
     // Nội dung đổi → đồng bộ liên kết tự động từ [[Tiêu đề]]
     if (dto.description !== undefined) {
       await this.knowledge.syncMentions(userId, id, dto.description?.trim() || null);
     }
 
-    return this.findOne(userId, id);
+    // Dời hạn muộn hơn: cảnh báo các việc đang chờ việc này mà hạn của chúng sẽ bị vượt qua
+    let planningWarnings: { id: string; title: string; dueDate: Date | null }[] = [];
+    if (existing.type === ObjectType.TASK && dto.dueDate) {
+      const newDue = new Date(dto.dueDate);
+      if (!existing.dueDate || newDue.getTime() > existing.dueDate.getTime()) {
+        planningWarnings = await this.findDelayConflicts(userId, id, newDue);
+      }
+    }
+
+    const result = await this.findOne(userId, id);
+    return {
+      ...result,
+      ...(spawnedId && { nextOccurrenceId: spawnedId }),
+      ...(planningWarnings.length > 0 && { planningWarnings }),
+    };
   }
 
   async updateLifecycle(userId: string, id: string, action: 'ARCHIVE' | 'TRASH' | 'RESTORE') {
@@ -340,10 +385,45 @@ export class ObjectsService {
         endAt: nextEndAt,
         url: nextUrl,
         ...(targetType !== ObjectType.TASK && { estimatedMinutes: null }),
+        recurrence: Prisma.DbNull,
+        recurrenceSpawned: false,
       },
     });
 
     return this.findOne(userId, id);
+  }
+
+  /** Các việc chưa xong đang chờ `taskId` (DEPENDS_ON) mà hạn của chúng sớm hơn hoặc bằng hạn mới của `taskId`. */
+  async findDelayConflicts(userId: string, taskId: string, newDue: Date) {
+    const rels = await this.prisma.objectRelation.findMany({
+      where: {
+        relationType: 'DEPENDS_ON',
+        toObjectId: taskId,
+        fromObject: {
+          userId,
+          type: ObjectType.TASK,
+          lifecycle: ObjectLifecycle.ACTIVE,
+          deletedAt: null,
+          status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] },
+          dueDate: { not: null, lte: newDue },
+        },
+      },
+      select: { fromObject: { select: { id: true, title: true, dueDate: true } } },
+    });
+    return rels.map((r) => r.fromObject);
+  }
+
+  /** Luật lặp chỉ dùng cho Task (cần hạn chót) và Event (cần giờ bắt đầu). */
+  private assertRecurrenceAllowed(type: ObjectType, rule: unknown, date: unknown) {
+    if (!rule) return;
+    if (type !== ObjectType.TASK && type !== ObjectType.EVENT) {
+      throw new BadRequestException('Chỉ công việc và sự kiện mới lặp lại được');
+    }
+    if (!date) {
+      throw new BadRequestException(
+        type === ObjectType.TASK ? 'Cần đặt hạn chót để lặp lại công việc' : 'Cần đặt giờ bắt đầu để lặp lại sự kiện',
+      );
+    }
   }
 
   async emptyTrash(userId: string) {
