@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
 import { UpdatePlacementDto } from './dto/placement.dto';
+import { findTemplate, SPACE_TEMPLATES } from './templates';
 
 /** Công cụ bật/tắt theo từng Không gian (QD-03). Khoá lạ bị bỏ, giá trị không phải boolean bị bỏ. */
 export const SPACE_TOOL_KEYS = ['enableKanban', 'enableCalendar', 'enableProgress'] as const;
@@ -35,6 +36,72 @@ export class SpacesService {
         goal: dto.goal?.trim() || null,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
       },
+    });
+  }
+
+  /** Danh sách mẫu để giao diện hiển thị (chỉ thông tin tóm tắt). */
+  listTemplates() {
+    return SPACE_TEMPLATES.map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      icon: t.icon,
+      color: t.color,
+      taskCount: t.items.filter((i) => i.type === 'TASK').length,
+      noteCount: t.items.filter((i) => i.type === 'NOTE').length,
+    }));
+  }
+
+  /** Tạo Không gian từ mẫu: Không gian + các mục + liên kết phụ thuộc, tất cả trong một transaction. */
+  async createFromTemplate(
+    userId: string,
+    templateId: string,
+    overrides: { name?: string; icon?: string; color?: string; description?: string } = {},
+  ) {
+    const tpl = findTemplate(templateId);
+    if (!tpl) throw new NotFoundException('Không tìm thấy mẫu Không gian');
+
+    return this.prisma.$transaction(async (tx) => {
+      const space = await tx.space.create({
+        data: {
+          userId,
+          name: overrides.name?.trim() || tpl.name,
+          description: overrides.description?.trim() || tpl.description,
+          icon: overrides.icon || tpl.icon,
+          color: overrides.color || tpl.color,
+          goal: tpl.goal ?? null,
+          settings: sanitizeSettings({}),
+        },
+      });
+
+      const idByKey = new Map<string, string>();
+      for (const [position, item] of tpl.items.entries()) {
+        const isTask = item.type === 'TASK';
+        const obj = await tx.object.create({
+          data: {
+            userId,
+            type: item.type,
+            title: item.title,
+            description: item.description ?? null,
+            status: isTask ? TaskStatus.TODO : null,
+            priority: isTask ? (item.priority ?? 'MEDIUM') : null,
+            estimatedMinutes: isTask ? (item.estimatedMinutes ?? null) : null,
+          },
+        });
+        idByKey.set(item.key, obj.id);
+        await tx.spaceObject.create({ data: { spaceId: space.id, objectId: obj.id, position } });
+      }
+
+      if (tpl.dependencies.length > 0) {
+        await tx.objectRelation.createMany({
+          data: tpl.dependencies.map(([a, b]) => ({
+            fromObjectId: idByKey.get(a)!,
+            toObjectId: idByKey.get(b)!,
+            relationType: 'DEPENDS_ON' as const,
+          })),
+        });
+      }
+      return space;
     });
   }
 

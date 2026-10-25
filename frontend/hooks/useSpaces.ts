@@ -10,6 +10,8 @@ import {
   updatePlacement,
   reorderSpace,
   PlacementPatch,
+  getSpaceTemplates,
+  createSpaceFromTemplate,
   CreateSpacePayload,
   UpdateSpacePayload,
 } from '@/lib/spaces-api';
@@ -81,5 +83,22 @@ export function useReorderSpace() {
   return useMutation({
     mutationFn: ({ spaceId, objectIds }: { spaceId: string; objectIds: string[] }) => reorderSpace(spaceId, objectIds),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['objects'] }),
+  });
+}
+
+export function useSpaceTemplates() {
+  return useQuery({ queryKey: [...SPACES_QUERY_KEY, 'templates'], queryFn: getSpaceTemplates, staleTime: 5 * 60 * 1000 });
+}
+
+export function useCreateSpaceFromTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createSpaceFromTemplate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SPACES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['objects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
+    },
   });
 }

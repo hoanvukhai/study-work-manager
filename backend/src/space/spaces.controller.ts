@@ -4,7 +4,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { SpacesService } from './spaces.service';
-import { CreateSpaceDto } from './dto/create-space.dto';
+import { CreateSpaceDto, CreateFromTemplateDto } from './dto/create-space.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
 import { ReorderDto, UpdatePlacementDto } from './dto/placement.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -18,6 +18,21 @@ export class SpacesController {
   @Post()
   create(@CurrentUser('id') userId: string, @Body() dto: CreateSpaceDto) {
     return this.spacesService.create(userId, dto);
+  }
+
+  @Get('templates')
+  listTemplates() {
+    return this.spacesService.listTemplates();
+  }
+
+  @Post('from-template')
+  createFromTemplate(@CurrentUser('id') userId: string, @Body() dto: CreateFromTemplateDto) {
+    return this.spacesService.createFromTemplate(userId, dto.templateId, {
+      name: dto.name,
+      icon: dto.icon,
+      color: dto.color,
+      description: dto.description,
+    });
   }
 
   @Get()

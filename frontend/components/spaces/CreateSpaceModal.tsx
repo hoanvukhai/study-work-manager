@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCreateSpace } from '@/hooks/useSpaces';
+import { useCreateSpace, useCreateSpaceFromTemplate, useSpaceTemplates } from '@/hooks/useSpaces';
 import { useToast } from '@/components/ui/Toast';
 import { X, Check } from 'lucide-react';
 
@@ -25,6 +25,20 @@ export default function CreateSpaceModal({ onClose, onCreated }: Props) {
   const [error, setError] = useState('');
 
   const createSpaceMutation = useCreateSpace();
+  const fromTemplateMutation = useCreateSpaceFromTemplate();
+  const { data: templates = [] } = useSpaceTemplates();
+  const [templateId, setTemplateId] = useState<string | null>(null);
+
+  const pickTemplate = (id: string | null) => {
+    setTemplateId(id);
+    const t = templates.find(x => x.id === id);
+    if (t) {
+      setName(t.name);
+      setDescription(t.description);
+      setIcon(t.icon);
+      setColor(t.color);
+    }
+  };
   const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,12 +50,20 @@ export default function CreateSpaceModal({ onClose, onCreated }: Props) {
     setError('');
 
     try {
-      const created = await createSpaceMutation.mutateAsync({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        icon,
-        color,
-      });
+      const created = templateId
+        ? await fromTemplateMutation.mutateAsync({
+            templateId,
+            name: name.trim(),
+            description: description.trim() || undefined,
+            icon,
+            color,
+          })
+        : await createSpaceMutation.mutateAsync({
+            name: name.trim(),
+            description: description.trim() || undefined,
+            icon,
+            color,
+          });
       toast.success(`Đã tạo Không gian "${created.name}" thành công`);
       onCreated(created);
       onClose();
@@ -118,6 +140,43 @@ export default function CreateSpaceModal({ onClose, onCreated }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+          {/* Mẫu dựng sẵn */}
+          {templates.length > 0 && (
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Bắt đầu từ</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[{ id: null as string | null, label: '📄 Trống', hint: 'Tự tạo từ đầu' }, ...templates.map(t => ({ id: t.id as string | null, label: `${t.icon} ${t.name}`, hint: `${t.taskCount} việc, ${t.noteCount} ghi chú` }))].map(opt => {
+                  const active = templateId === opt.id;
+                  return (
+                    <button
+                      key={opt.id ?? 'blank'}
+                      type="button"
+                      onClick={() => pickTemplate(opt.id)}
+                      aria-pressed={active}
+                      title={opt.hint}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '999px',
+                        fontSize: '13px',
+                        border: `1px solid ${active ? 'var(--primary-blue)' : 'var(--border-subtle)'}`,
+                        background: active ? 'var(--primary-blue-subtle)' : 'var(--surface)',
+                        color: active ? 'var(--primary-blue)' : 'var(--text-primary)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {templateId && (
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                  Sẽ tạo kèm các việc và ghi chú khởi đầu (các bước trong chuỗi chờ bước trước). Bạn sửa hoặc xoá tự do sau đó.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Preview */}
           <div
             style={{

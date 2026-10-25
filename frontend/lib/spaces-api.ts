@@ -79,3 +79,27 @@ export async function reorderSpace(spaceId: string, objectIds: string[]) {
     body: JSON.stringify({ objectIds }),
   });
 }
+
+export interface SpaceTemplateInfo {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  taskCount: number;
+  noteCount: number;
+}
+
+export async function getSpaceTemplates() {
+  return apiRequest<SpaceTemplateInfo[]>('/spaces/templates');
+}
+
+export async function createSpaceFromTemplate(payload: {
+  templateId: string;
+  name?: string;
+  icon?: string;
+  color?: string;
+  description?: string;
+}) {
+  return apiRequest<Space>('/spaces/from-template', { method: 'POST', body: JSON.stringify(payload) });
+}
