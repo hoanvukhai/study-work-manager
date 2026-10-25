@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ValidateNested, IsInt, Min, Max, IsString, IsOptional, IsEnum, MaxLength, IsDateString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { RecurrenceDto } from './recurrence.dto';
@@ -47,6 +48,7 @@ export class UpdateObjectDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => RecurrenceDto)
+  @ApiPropertyOptional({ type: () => RecurrenceDto, nullable: true })
   recurrence?: RecurrenceDto | null;
 
   @IsOptional()
