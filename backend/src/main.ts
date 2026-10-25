@@ -2,10 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Header bảo mật (API trả JSON nên tắt CSP để không cản Swagger UI)
+  app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
   // Global prefix
   app.setGlobalPrefix('api/v1');
@@ -15,7 +19,8 @@ async function bootstrap() {
 
   // CORS for Next.js frontend
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    // Nhiều địa chỉ cách nhau bằng dấu phẩy, ví dụ: CORS_ORIGIN=https://app.example.com,http://localhost:3000
+    origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',').map((o) => o.trim()),
     credentials: true,
   });
 

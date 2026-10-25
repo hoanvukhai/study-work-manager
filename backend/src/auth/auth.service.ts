@@ -7,6 +7,13 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
+/** Sai mật khẩu quá số lần này thì khoá đăng nhập tạm thời (FR-AUTH-10). */
+export const MAX_FAILED_LOGINS = 5;
+export const LOCKOUT_MINUTES = 15;
+/** Một thông báo duy nhất cho mọi lý do đăng nhập thất bại → không lộ tài khoản nào tồn tại / đang bị khoá tạm. */
+export const LOGIN_FAILED_MESSAGE =
+  'Email hoặc mật khẩu không chính xác, hoặc tài khoản đang tạm khoá do nhập sai nhiều lần (thử lại sau 15 phút).';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -57,15 +64,29 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+      throw new UnauthorizedException(LOGIN_FAILED_MESSAGE);
+    }
+
+    // Đang trong thời gian khoá tạm: từ chối kể cả khi mật khẩu đúng (không cho dò tiếp)
+    if (user.lockoutUntil && user.lockoutUntil.getTime() > Date.now()) {
+      throw new UnauthorizedException(LOGIN_FAILED_MESSAGE);
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isMatch) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+      const failed = user.failedLoginCount + 1;
+      const lock = failed >= MAX_FAILED_LOGINS;
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginCount: lock ? 0 : failed,
+          lockoutUntil: lock ? new Date(Date.now() + LOCKOUT_MINUTES * 60000) : null,
+        },
+      });
+      throw new UnauthorizedException(LOGIN_FAILED_MESSAGE);
     }
 
-    // Chỉ báo khoá sau khi đã xác thực đúng mật khẩu (tránh lộ trạng thái tài khoản)
+    // Chỉ báo khoá (do Admin) sau khi đã xác thực đúng mật khẩu (tránh lộ trạng thái tài khoản)
     if (user.lockedAt) {
       throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
     }
@@ -73,7 +94,7 @@ export class AuthService {
     // Cập nhật thời điểm đăng nhập gần nhất
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { lastLoginAt: new Date() },
+      data: { lastLoginAt: new Date(), failedLoginCount: 0, lockoutUntil: null },
     });
 
     const safeUser = {

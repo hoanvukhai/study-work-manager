@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { SpacesModule } from './space/spaces.module';
@@ -17,6 +19,8 @@ import { AdminModule } from './admin/admin.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    // Giới hạn chung: mặc định 300 yêu cầu / phút / IP (đổi bằng THROTTLE_LIMIT)
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: Number(process.env.THROTTLE_LIMIT ?? 300) }]),
     PrismaModule,
     AuthModule,
     SpacesModule,
@@ -30,7 +34,7 @@ import { AdminModule } from './admin/admin.module';
     AdminModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
 

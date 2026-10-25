@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/http-exception.filter';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { LOGIN_FAILED_MESSAGE } from '../src/auth/auth.service';
 
 describe('API (e2e) — cách ly dữ liệu, vòng đời, ràng buộc', () => {
   let app: INestApplication;
@@ -199,13 +200,13 @@ describe('API (e2e) — cách ly dữ liệu, vòng đời, ràng buộc', () =>
     it('mật khẩu dưới 8 ký tự bị từ chối; đăng nhập sai báo lỗi chung', async () => {
       await http.post('/api/v1/auth/register').send({ email: 'c@test.local', password: '1234567', fullName: 'C' }).expect(400);
       const res = await http.post('/api/v1/auth/login').send({ email: 'a@test.local', password: 'sai-mat-khau' }).expect(401);
-      expect(res.body.message).toBe('Email hoặc mật khẩu không chính xác');
+      expect(res.body.message).toBe(LOGIN_FAILED_MESSAGE);
     });
 
     it('tài khoản bị khoá: sai mật khẩu vẫn báo lỗi chung, đúng mật khẩu mới báo bị khoá; token cũ bị chặn', async () => {
       await prisma.user.update({ where: { email: 'b@test.local' }, data: { lockedAt: new Date() } });
       const wrong = await http.post('/api/v1/auth/login').send({ email: 'b@test.local', password: 'sai-mat-khau' }).expect(401);
-      expect(wrong.body.message).toBe('Email hoặc mật khẩu không chính xác');
+      expect(wrong.body.message).toBe(LOGIN_FAILED_MESSAGE);
       const right = await http.post('/api/v1/auth/login').send({ email: 'b@test.local', password: 'Password123!' }).expect(401);
       expect(right.body.message).toContain('khóa');
       await http.get('/api/v1/objects').set(auth(tokenB)).expect(401);
