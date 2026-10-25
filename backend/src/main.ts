@@ -22,6 +22,7 @@ async function bootstrap() {
     // Nhiều địa chỉ cách nhau bằng dấu phẩy, ví dụ: CORS_ORIGIN=https://app.example.com,http://localhost:3000
     origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',').map((o) => o.trim()),
     credentials: true,
+    exposedHeaders: ['X-Total-Count'],
   });
 
   // Global validation pipe

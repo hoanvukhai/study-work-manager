@@ -8,6 +8,9 @@ import { KnowledgeService } from '../knowledge/knowledge.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ObjectLifecycle, ObjectType, TaskStatus, Priority } from '@prisma/client';
 
+/** Giới hạn cứng số mục trả về một lần (chống truy vấn quá nặng). */
+export const MAX_PAGE_SIZE = 500;
+
 @Injectable()
 export class ObjectsService {
   constructor(
@@ -90,8 +93,8 @@ export class ObjectsService {
     return this.findOne(userId, created.id);
   }
 
-  async findAll(userId: string, query: QueryObjectsDto) {
-    const where: Prisma.ObjectWhereInput = {
+  private buildWhere(userId: string, query: QueryObjectsDto): Prisma.ObjectWhereInput {
+    return {
       userId,
       deletedAt: query.lifecycle === ObjectLifecycle.TRASH ? { not: null } : null,
       ...(query.lifecycle ? { lifecycle: query.lifecycle } : { lifecycle: ObjectLifecycle.ACTIVE }),
@@ -117,10 +120,19 @@ export class ObjectsService {
         ],
       }),
     };
+  }
 
+  /** Tổng số mục khớp bộ lọc (không tính giới hạn) — trả qua header X-Total-Count. */
+  countAll(userId: string, query: QueryObjectsDto) {
+    return this.prisma.object.count({ where: this.buildWhere(userId, query) });
+  }
+
+  async findAll(userId: string, query: QueryObjectsDto) {
     return this.prisma.object.findMany({
-      where,
+      where: this.buildWhere(userId, query),
       orderBy: [{ createdAt: 'desc' }],
+      take: Math.min(query.limit ?? MAX_PAGE_SIZE, MAX_PAGE_SIZE),
+      skip: query.offset ?? 0,
       include: {
         spaceObjects: {
           include: {

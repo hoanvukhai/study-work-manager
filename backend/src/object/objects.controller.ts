@@ -1,8 +1,9 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, UseGuards,
+  Body, Param, Query, UseGuards, Res,
   ParseUUIDPipe,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ObjectsService } from './objects.service';
 import { CreateObjectDto } from './dto/create-object.dto';
 import { UpdateObjectDto } from './dto/update-object.dto';
@@ -23,8 +24,17 @@ export class ObjectsController {
   }
 
   @Get()
-  findAll(@CurrentUser('id') userId: string, @Query() query: QueryObjectsDto) {
-    return this.objectsService.findAll(userId, query);
+  async findAll(
+    @CurrentUser('id') userId: string,
+    @Query() query: QueryObjectsDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const [items, total] = await Promise.all([
+      this.objectsService.findAll(userId, query),
+      this.objectsService.countAll(userId, query),
+    ]);
+    res.setHeader('X-Total-Count', String(total));
+    return items;
   }
 
   @Delete('trash/empty')

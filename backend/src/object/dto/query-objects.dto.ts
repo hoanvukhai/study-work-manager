@@ -1,4 +1,5 @@
-import { IsOptional, IsEnum, IsUUID, IsString } from 'class-validator';
+import { IsOptional, IsEnum, IsUUID, IsString, IsInt, Min, Max } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ObjectType, TaskStatus, Priority, ObjectLifecycle } from '@prisma/client';
 
 export class QueryObjectsDto {
@@ -28,4 +29,18 @@ export class QueryObjectsDto {
 
   @IsOptional()
   unassigned?: any;
+
+  /** Số mục tối đa trả về (mặc định và tối đa 500). */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(500)
+  limit?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  offset?: number;
 }
