@@ -17,6 +17,7 @@ import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ReportsModule } from './reports/reports.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ReportsModule } from './reports/reports.module';
     MailModule,
     CalendarModule,
     ReportsModule,
+    AccountModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
