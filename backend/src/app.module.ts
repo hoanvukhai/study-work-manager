@@ -15,6 +15,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
+import { CalendarModule } from './calendar/calendar.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MailModule } from './mail/mail.module';
     NotificationsModule,
     AdminModule,
     MailModule,
+    CalendarModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

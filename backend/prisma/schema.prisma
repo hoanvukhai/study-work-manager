@@ -76,6 +76,7 @@ model User {
   studySessions        StudySession[]
   notificationSettings NotificationSettings?
   passwordResets       PasswordReset[]
+  calendarToken        String?               @unique @map("calendar_token") @db.VarChar(64)
   adminLogs            AdminAuditLog[]       @relation("AuditAdmin")
   auditedAsTarget      AdminAuditLog[]       @relation("AuditTarget")
 

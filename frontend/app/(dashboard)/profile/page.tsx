@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import NotificationSettingsCard from '@/components/notifications/NotificationSettingsCard';
+import CalendarFeedCard from '@/components/notifications/CalendarFeedCard';
 
 export default function ProfilePage() {
   const { user, updateProfile, changePassword } = useAuth();
@@ -190,6 +191,8 @@ export default function ProfilePage() {
       </div>
 
       <NotificationSettingsCard />
+
+      <CalendarFeedCard />
 
       {/* Change Password Card */}
       <div className={styles.card}>
