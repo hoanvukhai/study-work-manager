@@ -6,10 +6,17 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { MailService } from '../mail/mail.service';
+import { createHash, randomBytes } from 'crypto';
 
 /** Sai mật khẩu quá số lần này thì khoá đăng nhập tạm thời (FR-AUTH-10). */
 export const MAX_FAILED_LOGINS = 5;
 export const LOCKOUT_MINUTES = 15;
+/** Liên kết đặt lại mật khẩu hết hạn sau ngần này phút. */
+export const RESET_TOKEN_MINUTES = 30;
+export const FORGOT_PASSWORD_MESSAGE = 'Nếu email này đã đăng ký, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.';
+const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
+
 /** Một thông báo duy nhất cho mọi lý do đăng nhập thất bại → không lộ tài khoản nào tồn tại / đang bị khoá tạm. */
 export const LOGIN_FAILED_MESSAGE =
   'Email hoặc mật khẩu không chính xác, hoặc tài khoản đang tạm khoá do nhập sai nhiều lần (thử lại sau 15 phút).';
@@ -19,6 +26,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mail: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -186,6 +194,53 @@ export class AuthService {
     });
 
     return { message: 'Đổi mật khẩu thành công' };
+  }
+
+  /**
+   * Quên mật khẩu: luôn trả cùng một thông báo dù email có tồn tại hay không (không lộ tài khoản).
+   * Mỗi lần yêu cầu mới sẽ vô hiệu hoá các liên kết cũ chưa dùng.
+   */
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (user && !user.lockedAt) {
+      const token = randomBytes(32).toString('hex');
+      await this.prisma.$transaction([
+        this.prisma.passwordReset.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } }),
+        this.prisma.passwordReset.create({
+          data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + RESET_TOKEN_MINUTES * 60000) },
+        }),
+      ]);
+      const base = (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+      await this.mail.send({
+        to: user.email,
+        subject: 'Đặt lại mật khẩu Study & Work',
+        text:
+          `Xin chào ${user.fullName},\n\n` +
+          `Bạn (hoặc ai đó) vừa yêu cầu đặt lại mật khẩu. Mở liên kết sau trong ${RESET_TOKEN_MINUTES} phút:\n` +
+          `${base}/reset-password?token=${token}\n\n` +
+          `Nếu không phải bạn yêu cầu, hãy bỏ qua thư này — mật khẩu của bạn không bị thay đổi.`,
+      });
+    }
+    return { message: FORGOT_PASSWORD_MESSAGE };
+  }
+
+  /** Đặt mật khẩu mới bằng token: dùng được một lần, còn hạn; thành công thì huỷ mọi liên kết còn lại. */
+  async resetPassword(token: string, newPassword: string) {
+    const record = await this.prisma.passwordReset.findUnique({ where: { tokenHash: hashToken(token) } });
+    if (!record || record.usedAt || record.expiresAt.getTime() < Date.now()) {
+      throw new BadRequestException('Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: record.userId },
+        // Đặt lại cả bộ đếm đăng nhập sai và khoá tạm: người dùng vừa chứng minh sở hữu email
+        data: { passwordHash, failedLoginCount: 0, lockoutUntil: null },
+      }),
+      this.prisma.passwordReset.updateMany({ where: { userId: record.userId, usedAt: null }, data: { usedAt: new Date() } }),
+    ]);
+    return { message: 'Đặt lại mật khẩu thành công. Hãy đăng nhập bằng mật khẩu mới.' };
   }
 
   private generateToken(userId: string, email: string): string {

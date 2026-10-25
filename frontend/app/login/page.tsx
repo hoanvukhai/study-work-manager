@@ -77,6 +77,12 @@ export default function LoginPage() {
             placeholder="Nhập mật khẩu..."
           />
 
+          <div style={{ textAlign: 'right', marginTop: -4 }}>
+            <Link href="/forgot-password" className={styles.footerLink} style={{ fontSize: 13 }}>
+              Quên mật khẩu?
+            </Link>
+          </div>
+
           <Button
             type="submit"
             variant="primary"

@@ -46,6 +46,7 @@ import { RelationType, RELATION_LABELS } from '@/lib/relations-api';
 import NoteCards from '@/components/study/NoteCards';
 import LinkTextarea from '@/components/knowledge/LinkTextarea';
 import MarkdownView from '@/components/knowledge/MarkdownView';
+import RecurrenceField, { RecurrenceValue } from '@/components/objects/RecurrenceField';
 import mdStyles from '@/components/knowledge/Markdown.module.css';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
@@ -134,6 +135,7 @@ export default function ObjectDetailDrawer({
   const [endAt, setEndAt] = useState('');
   const [url, setUrl] = useState('');
   const [estimated, setEstimated] = useState('');
+  const [recurrence, setRecurrence] = useState<RecurrenceValue | null>(null);
   const [confirmDoneBlocked, setConfirmDoneBlocked] = useState(false);
 
   // UI state
@@ -162,6 +164,7 @@ export default function ObjectDetailDrawer({
       setUrl(object.url || '');
       setDescMode(object.type === 'NOTE' && object.description ? 'preview' : 'edit');
       setEstimated(object.estimatedMinutes ? String(object.estimatedMinutes) : '');
+      setRecurrence(object.recurrence ?? null);
       setIsDirty(false);
     }
   }, [object]);
@@ -195,6 +198,7 @@ export default function ObjectDetailDrawer({
           dueDate: localInputToIso(dueDate),
           estimatedMinutes: estimated ? Math.max(1, Math.round(Number(estimated))) : null,
         }),
+        ...((object.type === 'TASK' || object.type === 'EVENT') && { recurrence }),
         ...(object.type === 'EVENT' && {
           priority,
           startAt: localInputToIso(startAt),
@@ -205,9 +209,14 @@ export default function ObjectDetailDrawer({
         }),
       };
 
-      await updateObjectMutation.mutateAsync({ id: object.id, payload });
+      const saved = await updateObjectMutation.mutateAsync({ id: object.id, payload });
       setIsDirty(false);
       toast.success('Đã lưu thay đổi');
+      if (saved.nextOccurrenceId) toast.info('Đã tạo lần lặp kế tiếp của công việc này');
+      if (saved.planningWarnings?.length) {
+        const names = saved.planningWarnings.map((w) => `"${w.title}"`).join(', ');
+        toast.info(`Cảnh báo: dời hạn này có thể làm trễ ${saved.planningWarnings.length} việc đang chờ: ${names}`, 9000);
+      }
     } catch {
       toast.error('Có lỗi xảy ra khi lưu thay đổi');
     }
@@ -703,6 +712,21 @@ export default function ObjectDetailDrawer({
             </div>
 
             {/* Description / Content */}
+            {(object.type === 'TASK' || object.type === 'EVENT') && (
+              <div className={styles.section}>
+                <span className={styles.sectionTitle}>Lặp lại</span>
+                <RecurrenceField
+                  value={recurrence}
+                  onChange={(v) => {
+                    setRecurrence(v);
+                    setIsDirty(true);
+                  }}
+                  hasDate={object.type === 'TASK' ? Boolean(dueDate) : Boolean(startAt)}
+                  noun={object.type === 'TASK' ? 'công việc' : 'sự kiện'}
+                />
+              </div>
+            )}
+
             {object.type === 'TASK' && (blockers.length > 0 || waitingOnMe.length > 0 || children.length > 0 || parent) && (
               <div className={styles.section}>
                 <span className={styles.sectionTitle}>Kế hoạch</span>

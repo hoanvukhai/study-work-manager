@@ -35,6 +35,11 @@ export interface AppObject {
   endAt: string | null;
   url: string | null;
   estimatedMinutes?: number | null;
+  recurrence?: { freq: 'DAILY' | 'WEEKLY' | 'MONTHLY'; interval: number; until?: string | null } | null;
+  /** Chỉ có trong phản hồi khi sửa: Task lặp lại vừa xong → id lần kế tiếp. */
+  nextOccurrenceId?: string;
+  /** Chỉ có trong phản hồi khi sửa: các việc phía sau có thể bị trễ do dời hạn. */
+  planningWarnings?: { id: string; title: string; dueDate: string | null }[];
   metadata: any;
   archivedAt: string | null;
   deletedAt: string | null;
@@ -68,6 +73,7 @@ export interface UpdateObjectPayload {
   endAt?: string | null;
   url?: string | null;
   estimatedMinutes?: number | null;
+  recurrence?: { freq: 'DAILY' | 'WEEKLY' | 'MONTHLY'; interval: number; until?: string | null } | null;
   metadata?: any;
 }
 
