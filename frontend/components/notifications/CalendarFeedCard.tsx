@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CalendarSync, Copy } from 'lucide-react';
+import { CalendarDays, Copy } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -49,7 +49,7 @@ export default function CalendarFeedCard() {
   return (
     <div className={profileStyles.card}>
       <div className={profileStyles.cardHeader}>
-        <CalendarSync size={18} style={{ color: 'var(--primary-blue)' }} />
+        <CalendarDays size={18} style={{ color: 'var(--primary-blue)' }} />
         <h2 className={profileStyles.cardTitle}>Đồng bộ lịch (Google Calendar, điện thoại)</h2>
       </div>
 
